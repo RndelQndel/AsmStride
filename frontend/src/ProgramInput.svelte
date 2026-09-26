@@ -41,11 +41,54 @@
       error = (await load(request)) ?? '';
     } catch (cause) { error = (cause as Error).message; }
   }
+  async function applyPreset(type: 'thumb-it' | 'mixed-arm-thumb' | 'mixed-thumb-arm' | 'thumb-loop' | 'arm-basic') {
+    if (disabled || reading) return;
+    if (type === 'thumb-it') {
+      kind = 'disassembly';
+      mode = 'thumb';
+      format = 'generic';
+      imported = '$t\n0x2000: 2000     MOVS r0, #0\n0x2002: bf18     IT NE\n0x2004: 2101     MOVNE r1, #1\n0x2006: 2202     MOV r2, #2\n0x2008: 2001     MOVS r0, #1\n0x200a: bf08     IT EQ\n0x200c: 2303     MOVEQ r3, #3';
+    } else if (type === 'mixed-arm-thumb') {
+      kind = 'disassembly';
+      mode = 'arm';
+      format = 'generic';
+      imported = '$a\n0x1000: e3a0002a MOV r0, #42\n0x1004: e28f1001 ADD r1, pc, #1\n0x1008: e12fff11 BX r1\n$t\n0x100c: 2205     MOVS r2, #5\n0x100e: 4b01     LDR r3, [pc, #4]\n0x1010: 4770     BX lr\n$d\n0x1014: 12345678 .word 0x12345678';
+    } else if (type === 'mixed-thumb-arm') {
+      kind = 'disassembly';
+      mode = 'thumb';
+      format = 'generic';
+      imported = '$t\n0x1000: 2000     MOVS r0, #0\n0x1002: bf18     IT NE\n0x1004: 2101     MOVNE r1, #1\n0x1006: f242 0100 MOVW r1, #0x2000\n0x100a: 4708     BX r1\n$a\n0x2000: e3a0202a MOV r2, #42\n0x2004: e59f3000 LDR r3, [pc, #0]\n0x2008: e12fff1e BX lr\n$d\n0x200c: cafebabe .word 0xcafebabe';
+    } else if (type === 'thumb-loop') {
+      kind = 'assembly';
+      mode = 'thumb';
+      base = '0x2000';
+      source = 'movs r0, #0\nloop:\nadds r0, r0, #1\ncmp r0, #10\nbne loop\nb .';
+    } else {
+      kind = 'assembly';
+      mode = 'arm';
+      base = '0x1000';
+      source = 'mov r0, #5\nadd r1, r0, #3\ncmp r1, #8';
+    }
+    const text = kind === 'assembly' ? source : imported;
+    const common = { text, mode, ...(customStack ? { stack: { base: uint32(stackBase), size: uint32(stackSize) } } : {}) };
+    const request: LoadRequest = kind === 'assembly'
+      ? { ...common, input_kind: kind, base_address: uint32(base) }
+      : { ...common, input_kind: kind, format, encoding };
+    error = (await load(request)) ?? '';
+  }
 </script>
 <section aria-labelledby="input-title">
   <div class="panel-header">
     <h2 id="input-title">Program input</h2>
     <span class="muted">Assemble ARM/Thumb snippet or import disassembly</span>
+  </div>
+  <div class="presets-bar" aria-label="Example presets">
+    <span class="presets-label">⚡ Quick Presets:</span>
+    <button type="button" class="preset-pill" disabled={disabled || reading} onclick={() => applyPreset('mixed-thumb-arm')}>Mixed (Thumb ➔ ARM + Data)</button>
+    <button type="button" class="preset-pill" disabled={disabled || reading} onclick={() => applyPreset('mixed-arm-thumb')}>Mixed (ARM ➔ Thumb + Data)</button>
+    <button type="button" class="preset-pill" disabled={disabled || reading} onclick={() => applyPreset('thumb-it')}>Thumb-2 IT Blocks</button>
+    <button type="button" class="preset-pill" disabled={disabled || reading} onclick={() => applyPreset('thumb-loop')}>Thumb Loop & Run</button>
+    <button type="button" class="preset-pill" disabled={disabled || reading} onclick={() => applyPreset('arm-basic')}>ARM Basic</button>
   </div>
   <form onsubmit={submit}>
     <fieldset disabled={disabled || reading}>

@@ -1,8 +1,22 @@
 <script lang="ts">
   import { hex } from './api';
-  import type { Diagnostic, ErrorEnvelope, StepResult } from './api';
-  let { diagnostics, error, step, message }: { diagnostics: Diagnostic[]; error: ErrorEnvelope | null; step: StepResult | null; message: string } = $props();
+  import type { Diagnostic, ErrorEnvelope, RunResult, StepResult } from './api';
+
+  let {
+    diagnostics,
+    error,
+    step,
+    message,
+    runResult = null
+  }: {
+    diagnostics: Diagnostic[];
+    error: ErrorEnvelope | null;
+    step: StepResult | null;
+    message: string;
+    runResult?: RunResult | null;
+  } = $props();
 </script>
+
 <section aria-labelledby="status-title">
   <div class="panel-header">
     <h2 id="status-title">Status &amp; diagnostics</h2>
@@ -27,10 +41,33 @@
         {#each error.preview as instruction}<pre style="margin: 2px 0;">{hex(instruction.address)} {instruction.bytes} {instruction.decoded_text}</pre>{/each}
       </details>
     {/if}
+    {#if runResult}
+      <div class="run-summary-card" style="padding: 8px 12px; background: var(--bg-subtle); border: 1px solid var(--border-light); border-radius: 6px; margin-top: 6px;">
+        <p style="margin: 0 0 4px;">
+          <strong>Run result:</strong> Stop reason: <span class="badge">{runResult.stop_reason}</span>
+          · {runResult.steps_committed} steps committed
+          · {runResult.elapsed_ms.toFixed(1)} ms
+          {#if runResult.breakpoint_hit !== null}
+            · Breakpoint hit at <code>{hex(runResult.breakpoint_hit)}</code>
+          {/if}
+        </p>
+      </div>
+    {/if}
     {#if step}
       <div style="padding: 8px 12px; background: var(--bg-subtle); border: 1px solid var(--border-light); border-radius: 6px; margin-top: 6px;">
         <p style="margin: 0 0 4px;"><strong>{step.status}</strong> · <code>{hex(step.pc_before)}</code> → <code>{hex(step.pc_after)}</code> · step_seq {step.step_seq}</p>
-        {#if step.condition_passed !== null}<p style="margin: 2px 0;">Instruction condition: {step.condition_passed ? 'passed' : 'not passed (skipped)'}</p>{/if}
+        {#if step.it_context}
+          <p class="it-context" style="margin: 2px 0;">
+            <strong>IT Block [{step.it_context.block_index}/{step.it_context.block_total}]:</strong>
+            Condition {step.it_context.condition} — {step.it_context.passed ? 'passed (executed)' : 'not passed (conditionally skipped)'}
+          </p>
+        {/if}
+        {#if step.condition_passed !== null && !step.it_context}
+          <p style="margin: 2px 0;">Instruction condition: {step.condition_passed ? 'passed' : 'not passed (skipped)'}</p>
+        {/if}
+        {#if step.executed === false && step.condition_passed === false}
+          <p class="notice" style="margin: 2px 0;">Instruction conditionally skipped: no state mutated.</p>
+        {/if}
         {#if step.branch}<p style="margin: 2px 0;">{step.branch.kind} · {step.branch.condition ?? 'unconditional'} · {step.branch.taken ? 'taken' : 'not taken'} · target {hex(step.branch.target)} · fallthrough {hex(step.branch.fallthrough)}</p>{/if}
         {#if step.stop_reason}<p class="notice" style="margin: 4px 0;">Stop: {step.stop_reason} at {hex(step.pc_after)}</p>{/if}
         {#if step.error}

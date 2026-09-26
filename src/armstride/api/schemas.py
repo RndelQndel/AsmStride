@@ -74,6 +74,16 @@ class Region(Schema):
     permissions: Literal['rx', 'rw']
 
 
+class Breakpoint(Schema):
+    address: UInt32
+    mode: Literal['arm', 'thumb']
+
+
+class BreakpointRequest(Schema):
+    address: UInt32
+    mode: Literal['arm', 'thumb'] | None = None
+
+
 class State(Schema):
     session_id: str
     status: Literal['empty', 'ready', 'stopped', 'unavailable']
@@ -88,6 +98,7 @@ class State(Schema):
     stack: Stack | None
     regions: list[Region]
     last_step: StepResult | None
+    breakpoints: list[Breakpoint] = []
 
 
 class DiagnosticView(Schema):
@@ -108,6 +119,14 @@ class InstructionView(Schema):
     display_text: str
     decoded_text: str
     feature_exclusion: str | None
+    mode: Literal['arm', 'thumb'] | None = None
+
+
+class DataRegionView(Schema):
+    address: UInt32
+    size: PositiveSize
+    bytes: str
+    source_line: int | None
 
 
 class Program(Schema):
@@ -116,6 +135,7 @@ class Program(Schema):
     format: str
     source_text: str
     instructions: list[InstructionView]
+    data_regions: list[DataRegionView] = []
     diagnostics: list[DiagnosticView]
     instruction_count: int
     ignored_line_count: int
@@ -147,6 +167,32 @@ class CreateResponse(Schema):
 class StepResponse(Schema):
     result: StepResult
     state: State
+
+
+class RunRequest(Schema):
+    step_limit: Annotated[int, Field(ge=1, le=100_000)] = 10_000
+    time_limit_ms: Annotated[int, Field(ge=1, le=10_000)] = 2000
+
+
+class RunResultView(Schema):
+    start_step_seq: int
+    end_step_seq: int
+    steps_committed: int
+    steps_executed: int
+    stop_reason: str
+    elapsed_ms: float
+    breakpoint_hit: UInt32 | None
+    last_step: StepResult | None = None
+    last_step_result: StepResult | None = None
+
+
+class RunResponse(Schema):
+    run_result: RunResultView
+    state: State
+
+
+class StopResponse(Schema):
+    signaled: bool
 
 
 class MemoryCellView(Schema):

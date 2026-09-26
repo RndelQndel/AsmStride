@@ -1,16 +1,16 @@
 # ArmStride Software Requirements Specification
 
-Status: behavioral contract for the first usable version (P0). P0 execution, browser workflows, and package checks are fully verified. See ARCHITECTURE.md for the authoritative current roadmap.
+Status: Product P0 baseline is fully verified and accepted as the stable foundation. This specification defines the completed P0 baseline, formal Product P1 requirements and acceptance criteria, and deferred post-P1 scope. See ARCHITECTURE.md and milestones/P1.md for implementation roadmaps.
 
 ## 1. Authority and terminology
 
-[concept.md](concept.md) is the primary source of product intent. [README.md](../README.md) is its public summary. This specification resolves their open behavioral questions; [ARCHITECTURE.md](ARCHITECTURE.md) describes how to satisfy it. ArmStride remains the working name.
+[concept.md](concept.md) is the primary source of product intent. [README.md](../README.md) is its public summary. This specification resolves their open behavioral questions; [ARCHITECTURE.md](ARCHITECTURE.md) describes how to satisfy it, and [milestones/P1.md](milestones/P1.md) defines the Product P1 milestone. ArmStride remains the working name.
 
-**Shall** denotes a P0 requirement. P1 and deferred items are not P0 acceptance obligations. An **instruction address** is the address of its first byte. A **snippet** is an ordered set of addressed instructions, possibly with gaps. **Known memory** means bytes supplied by the user, loaded as code, or explicitly initialized by the tool. **Unknown memory** means no byte value has been established; it does not mean a symbolic value. A **Step** attempts one architectural instruction, including a conditionally skipped instruction.
+**Shall** denotes an active product requirement. P0 requirements represent the completed and immutable baseline. P1 requirements are prefixed with `P1-` and define the current development milestone. Deferred items are post-P1 obligations. An **instruction address** is the address of its first byte. An **execution location** in P1 is the tuple `(address, mode)` where mode is `arm` or `thumb`. A **snippet** is an ordered set of addressed instructions, possibly with gaps. A **DataRegion** is an addressed sequence of concrete, readable, non-executable data bytes (such as a literal pool). **Known memory** means bytes supplied by the user, loaded as code/data, or explicitly initialized by the tool. **Unknown memory** means no byte value has been established; it does not mean a symbolic value. A **Step** attempts one architectural instruction, including a conditionally skipped instruction. A **Run** is a sequence of atomic Steps bounded by step and wall-clock limits or interrupted by a breakpoint or user stop.
 
-### Explicit assumptions and decisions
+### 1.1 Product P0 baseline assumptions and decisions
 
-These choices make ambiguous concept behavior implementable; they are not claims that the source documents already specify them.
+These choices established the accepted P0 release:
 
 | ID | Decision | Reason |
 | --- | --- | --- |
@@ -19,9 +19,24 @@ These choices make ambiguous concept behavior implementable; they are not claims
 | A-03 | Unknown memory access stops execution. No demand-zero mapping occurs. A visible, zero-filled scratch stack is the one tool-created data region. | Missing evidence must not silently become a plausible zero value, while basic PUSH/POP must work immediately. |
 | A-04 | Unspecified general registers and LR default to zero; flags default to zero. Defaults are labeled assumptions. | Concrete execution requires concrete values; symbolic state is excluded. |
 | A-05 | User Baseline State starts with load defaults and receives every accepted manual register, flag, PC, and memory edit. Runtime State receives the same edits plus execution effects. Reset copies the baseline into runtime. | Evidence discovered during stepping must survive Reset; CPU-generated changes must not become initial evidence. |
-| A-06 | Run and breakpoints are P1. Mixed ARM/Thumb execution, Thumb IT blocks, and advanced CPU features are deferred. | A bounded single-step integer workflow is the smallest useful release. |
-| A-07 | Atomic Step remains the required product behavior: a failed attempt restores pre-Step runtime registers, flags, and memory. Its mechanism must pass the Phase 0 Unicorn spike before core implementation. | Users can repair missing state and retry without hidden partial effects; engine rollback is not assumed. |
+| A-06 | Single-step execution is the initial release boundary. Run, breakpoints, mixed-mode images, and Thumb IT blocks were deferred to P1. | A bounded single-step integer workflow was the smallest useful initial release. |
+| A-07 | Atomic Step remains the required product behavior: a failed attempt restores pre-Step runtime registers, flags, and memory. Its mechanism passed the Phase 0 Unicorn spike before core implementation. | Users can repair missing state and retry without hidden partial effects; engine rollback is not assumed. |
 | A-08 | Sessions are local and ephemeral; browser refresh starts a new session. | Persistence and shared sessions are not product requirements. |
+
+### 1.2 Product P1 assumptions and decisions
+
+These choices formalize the Product P1 milestone:
+
+| ID | Decision | Reason |
+| --- | --- | --- |
+| P1-A-01 | Disassembly import accepts ARM mapping symbols `$a`, `$t`, `$d` as parser state transitions. ProgramImage supports mixed ARM and Thumb instructions alongside non-executable DataRegions. | Real disassembly listings (fromelf, objdump) transition between ARM, Thumb, and embedded literal data pools using mapping symbols. |
+| P1-A-02 | Concrete data bytes represented by `$d` are loaded into known logical memory as non-executable data. They participate in range/overlap checks and are accessible to PC-relative literal loads (LDR), but reject direct execution. | Literal pools must be readable without user memory patching, while retaining strict memory and code execution boundaries. |
+| P1-A-03 | Execution location is conceptually `(address, mode)` where mode is `arm` or `thumb`. Numeric PC alone does not determine whether an executable instruction is valid. | In mixed-mode execution, the CPU execution state (CPSR T bit) must match the instruction encoding at that address. |
+| P1-A-04 | Runtime ARM/Thumb interworking is supported across all PC-writing instructions (BX, BLX, POP to PC, LDM to PC, etc.) via native CPSR T-bit resolution, committing exactly one architectural instruction atomically. | Eliminates the P0 `unsupported_mode_transition` error for valid architectural state switches while preserving all atomic rollback guarantees. |
+| P1-A-05 | Thumb-2 IT blocks (IT, ITT, ITE, etc.) are supported for 1–4 controlled instructions, requiring a dedicated validation spike on the pinned Unicorn engine before production support is committed. | Step-by-step IT execution requires verifying native ITSTATE/CPSR persistence across single-step boundaries on the pinned engine. |
+| P1-A-06 | Manual entry into the interior of an IT block without executing the preceding IT instruction is prohibited and yields an explicit validation error. | ArmStride executes verified architectural state and will not synthesize arbitrary unestablished ITSTATE. |
+| P1-A-07 | Bounded Run is implemented strictly by composing existing atomic Steps, subject to configurable maximum step and wall-clock execution limits. Correctness and rollback fidelity take precedence over execution speed. | Prevents introducing an unverified high-speed emulation bypass that could compromise strict memory checking, rollback, and `step_seq` isolation. |
+| P1-A-08 | Stop is concurrent and non-blocking via a thread-safe cancellation primitive evaluated between Steps. Breakpoints identify `(address, mode)` locations, halt pre-execution, and support a one-time resume bypass. | Guarantees machine state is always paused at a clean, complete Step boundary without deadlocking active Run requests. |
 
 ## 2. Product definition
 
@@ -71,6 +86,8 @@ For `LDR r0, [r1, #4]`, the user knows R1 but not the addressed word. The Step f
 
 ## 6. Functional requirements
 
+### 6.1 Completed Product P0 baseline requirements
+
 | ID | P0 requirement |
 | --- | --- |
 | FR-001 | Accept pasted plain text and the contents of a user-selected local UTF-8 text file without requiring ELF, binary, symbols, or firmware. Loading file content and pasting identical text shall produce identical results for the selected source/import workflow. |
@@ -91,12 +108,35 @@ For `LDR r0, [r1, #4]`, the user knows R1 but not the addressed word. The Step f
 | FR-016 | Report execution failures with stable categories and relevant PC, instruction, access address/width/type, or backend context. A failed Step shall leave all machine state unchanged. Missing code after a successful instruction is a stop, not a rollback-triggering execution error. |
 | FR-017 | Mark instructions known to require excluded features before execution. Otherwise attempt loadable instructions using the selected CPU profile; report engine rejection as an explicit failed Step. Do not skip, approximate, or replace instructions with NOP. Encodings that fail decoding or have incorrect byte widths shall be load errors; engine-only incompatibilities may be discovered at Step. |
 | FR-018 | Apply the strict memory policy and the labeled defaults in Sections 9–10. Neither inspection nor an access failure shall silently create bytes. |
-| FR-019 | Support the ARM and Thumb instruction scope in Section 11, including both two- and four-byte Thumb instructions. Report attempted execution-mode changes as unsupported and restore the pre-Step state. |
+| FR-019 | Support the ARM and Thumb instruction scope in Section 11, including both two- and four-byte Thumb instructions. In P0 single-mode images, report attempted execution-mode changes as unsupported and restore the pre-Step state. |
 | FR-020 | Each browser page instance shall have its own simulation state. Loading, editing, stepping, resetting, or closing one session shall not change another. |
 | FR-021 | Run locally through a browser UI without an account or external service. P0 execution controls shall be Load, Step, Reset, and start/current PC input; disable conflicting controls while a request is pending. |
 | FR-022 | Report control-flow effects per Step: condition when applicable, taken/not-taken for a branch, PC before/after, and destination. A non-branch shall not be labeled “branch not taken.” |
 | FR-023 | Every accepted manual edit shall update only its explicitly addressed register, flag bits, PC, or memory bytes in both User Baseline State and Runtime State. Show that manual edits survive Reset. Never copy unrelated execution changes into the baseline. Rejected edits change neither state. |
 | FR-024 | Expose a session-local `step_seq`, initially zero, increasing by one for each successfully committed Step, including conditional skips and stops at unloaded PC. Failed Steps, manual edits, Reset, and program replacement leave it unchanged. Use it to distinguish completed Steps with identical PC/state; do not promise exactly-once HTTP execution. |
+
+### 6.2 Product P1 functional requirements
+
+| ID | Product P1 requirement |
+| --- | --- |
+| P1-FR-001 | Accept ARM mapping symbols `$a` (or `$a.N`), `$t` (or `$t.N`), and `$d` (or `$d.N`) in disassembly listings as parser state transitions between ARM code, Thumb code, and non-executable data. Transition state shall determine opcode interpretation and record emission without requiring a single global mode per image. |
+| P1-FR-002 | Model data regions represented by `$d` as non-executable `DataRegion` records in ProgramImage and as known logical memory in MemoryState. Data regions shall retain their exact concrete addresses and bytes, participate in overlap/range validation, be available to PC-relative literal loads (LDR), and reject direct CPU execution attempts. Data regions shall never be converted into fake instructions or silently zero-filled. |
+| P1-FR-003 | Model executable location as the tuple `(address, mode)` where mode is `arm` or `thumb`. When validating whether an execution location is valid, the current CPU architectural mode (CPSR T bit) must match the mode of the instruction at that address. Reject execution attempts where address exists but mode mismatches. |
+| P1-FR-004 | Support architectural runtime ARM/Thumb interworking on all PC-writing instructions capable of changing execution state, including BX, BLX, POP to PC, LDM to PC, returns, and ALU operations writing PC. Authoritative execution mode shall be read directly from post-execution CPSR T bit (bit 5) and canonicalized PC (bit 0 cleared). |
+| P1-FR-005 | Preserve strict transactional rollback during interworking instructions. A successful interworking instruction shall commit exactly one architectural instruction. If an interworking instruction fails due to unmapped memory, permission fault, backend error, or execution location mismatch at the target, all register, flag, and memory state shall be restored to the pre-Step state. |
+| P1-FR-006 | Support Thumb-2 IT blocks (IT, ITT, ITE, and all 1–4 instruction variants) across successive single-Step operations, gated by the successful completion of the P1 IT validation spike. Execution shall preserve architectural ITSTATE in CPSR across Step boundaries and advance through the block until all controlled instructions retire. |
+| P1-FR-007 | Report IT block execution outcomes distinguishing an instruction that executed with condition passed (even if producing no numeric register/memory changes) from an instruction that was conditionally skipped. StepResult shall report `condition`, `condition_passed`, and IT execution metadata. |
+| P1-FR-008 | Reject manual PC entry (via Go or PC edit) into the interior of an IT block when valid ITSTATE was not established by stepping the corresponding IT instruction. Manual ITSTATE injection is excluded in P1. |
+| P1-FR-009 | Provide a bounded Run operation composed strictly of sequential atomic Steps. Run shall execute a loop that checks cancellation, breakpoints, and limits, performs one existing atomic Step, inspects the result, and halts when a boundary or failure is encountered. No bypass execution path that circumvents Step rollback or memory checks shall exist. |
+| P1-FR-010 | Bound every Run by two independent limits: a maximum committed Step count (`step_limit`, default 10,000 steps) and a wall-clock execution duration (`time_limit`, default 2.0 seconds). Reaching either bound shall stop Run cleanly at the last committed Step boundary with the corresponding stop reason. |
+| P1-FR-011 | Support concurrent, non-blocking Stop signaling while a Run operation is active. The session's primary mutation lock shall not block Stop delivery. Stop shall be signaled via a thread-safe primitive (`stop_event`); in-flight Steps shall complete or roll back atomically, after which Run shall halt before beginning the next Step with stop reason `user_stop`. |
+| P1-FR-012 | Aggregate Run termination results reporting `start_step_seq`, `end_step_seq`, `steps_committed`, `stop_reason`, and final `State`. Monotonic `step_seq` shall increase by exactly one for every committed Step during Run. No cumulative step history storage is maintained. |
+| P1-FR-013 | Manage breakpoints identified by `(address, mode)`. Validate breakpoint locations against loaded instruction starts; reject breakpoints on DATA records, code gaps, interior instruction bytes, unaligned addresses, or mode mismatches. |
+| P1-FR-014 | Halt Run immediately before executing an instruction at an active breakpoint (pre-execution semantics) with stop reason `breakpoint`. The machine state displayed at a breakpoint shall represent state immediately prior to executing that instruction. Manual Step shall ignore breakpoints, allowing single-stepping through them. |
+| P1-FR-015 | Implement a one-time resume bypass rule: when Run is initiated with PC currently paused at an active breakpoint, that specific breakpoint shall be bypassed for exactly one Step; normal breakpoint checking shall immediately resume for subsequent steps. Breakpoints shall remain enabled and shall not be deleted or globally suppressed. |
+| P1-FR-016 | Preserve breakpoints across single-step execution, manual register/flag/memory edits, and session Reset. Clear all breakpoints on a successful replacement Load. New sessions shall start with an empty breakpoint set. |
+| P1-FR-017 | Extend the browser workspace to support Run, Stop, breakpoint gutter toggling, Run stop reason badges, mixed ARM/Thumb/DATA listing rendering, and visual distinction between current PC markers, breakpoints, and combined PC+breakpoint locations. DATA rows shall not expose breakpoint interaction. |
+| P1-FR-018 | Assembly source input workflow shall remain single-mode per snippet in P1 (matching P0). Mixed ARM/Thumb/Data images are supported via the disassembly/import workflow. Arbitrary assembler mode-switching directives remain deferred post-P1. |
 
 ## 7. Input requirements
 
@@ -225,6 +265,30 @@ PF-08 rejects both conflicting addresses:
 
 For PF-01/PF-03/PF-05/PF-06, the instruction at `0x08000100` normalizes to `05 00 A0 E3`, size four. For PF-02/PF-04, the records normalize to `05 20` at `0x08000100` and `40 F2 08 01` at `0x08000102`, sizes two and four. Fixture expectations shall additionally state diagnostic severity, source lines, ignored-line counts, and whether installation is permitted. Format examples specify parser behavior; independent verification of executable bytes is required by the golden-case contract in ARCHITECTURE.md.
 
+### 7.5 Product P1 mixed-mode and data mapping syntax
+
+P1 disassembly parsers implement an explicit state machine for mixed ARM/Thumb/Data listings:
+
+- **State machine states:** `ARM_CODE`, `THUMB_CODE`, and `DATA`.
+- **Initial state:** Determined by the load request mode or the first mapping symbol encountered in the listing.
+- **`$a` / `$a.N` transition:** Switches the active parser state to `ARM_CODE`. Subsequent lines decode as ARM instructions (4-byte aligned, 4-byte width).
+- **`$t` / `$t.N` transition:** Switches the active parser state to `THUMB_CODE`. Subsequent lines decode as Thumb instructions (2-byte aligned, 2-byte or 4-byte width).
+- **`$d` / `$d.N` transition:** Switches the active parser state to `DATA`. Subsequent lines parse as concrete data byte records (e.g. `.word`, `.byte`, `DCD`, or raw hex byte sequences).
+
+#### DataRegion semantics
+
+Data lines are normalized into `DataRegion` instances rather than fake instructions:
+- Each `DataRegion` retains its concrete address and bytes.
+- Data regions appear in the normalized listing alongside instructions.
+- Data regions are mapped to `MemoryState` as known, readable, non-executable logical memory (e.g. for literal pools).
+- Data regions participate in address range and overlap validation.
+- Direct CPU execution attempts or branch transfers to addresses within a DataRegion are rejected as invalid execution locations.
+- Data regions shall not be silently zero-filled; absent bytes remain unknown.
+
+#### Source assembly scope in P1
+
+The assembly source input path (Keystone-based) remains strictly single-mode per snippet in P1 (matching P0). Assembler directives that create arbitrary mixed ARM/Thumb/Data source images are deferred post-P1. Mixed ARM/Thumb/Data images in P1 are produced via the disassembly/import pipeline.
+
 ## 8. Execution semantics
 
 ### 8.1 Load and start PC
@@ -260,6 +324,82 @@ No sentinel LR, host call stub, automatic return, implicit NOP, or page padding 
 Invalid/unsupported instructions, unknown memory reads/writes, writes to code, unsupported mode changes, and execution-engine failures stop the attempted Step without committed CPU or memory changes. The error includes sufficient context to locate the problem. Attempted memory access details may be shown as diagnostic events but must not be presented as committed writes.
 
 A user can repair registers/memory, select another valid PC, reload, or Reset and try again. There is no automatic skipping. A backend failure that prevents reliable restoration makes the session unavailable for further Step until Reset or successful reload; the UI shall not present partially recovered state as valid.
+
+### 8.5 Product P1 execution semantics
+
+#### 8.5.1 Runtime ARM/Thumb interworking
+
+In Product P1, runtime mode switching between ARM and Thumb is an architectural feature rather than an error:
+
+1. **Native execution:** The CPU backend executes the instruction natively. Any PC-writing instruction (such as `BX`, `BLX`, `POP {..., pc}`, `LDM ..., {..., pc}`, `LDR pc, [sp]`, etc.) updates architectural PC and CPSR.
+2. **State extraction:** Post-execution PC and CPSR are read from the backend. The resulting execution mode is determined directly from the architectural CPSR T bit (bit 5, `0x20`): `thumb` if set, `arm` if clear. The visible PC is canonicalized by clearing bit 0.
+3. **Execution location resolution:** The tuple `(resulting_pc, resulting_mode)` is resolved against `ProgramImage`:
+   - If an instruction exists at `resulting_pc` and its `mode == resulting_mode`, execution is ready for the next Step.
+   - If no instruction exists at `resulting_pc` (e.g. branch to an unloaded target or external address), the instruction completes successfully, its effects commit to Runtime State, `step_seq` increments by 1, and the session pauses with stop reason `pc_not_loaded`.
+   - If an instruction exists at `resulting_pc` but its mode does not match `resulting_mode` (mode mismatch), execution halts with an explicit mode mismatch diagnostic.
+   - If `resulting_pc` points inside a `DataRegion`, execution halts immediately as data is non-executable.
+4. **Rollback preservation:** If an interworking instruction fails during execution (due to memory fault, alignment fault, or backend error), atomic rollback restores pre-Step registers, CPSR (including original T bit), and memory completely. Exactly one architectural instruction is committed per successful Step.
+
+#### 8.5.2 Thumb-2 IT block stepping and skip reporting
+
+In Product P1, Thumb-2 IT blocks (IT, ITT, ITE, and all 1–4 instruction variants) are supported across successive single-Step operations, gated by the P1 IT validation spike:
+
+1. **IT instruction execution:** Stepping the `IT <cond>` instruction itself commits the initial `ITSTATE` field into CPSR (`CPSR[15:10, 26:25]`), updates PC to the first controlled instruction, and increments `step_seq`.
+2. **Controlled instruction execution:** Each subsequent Step attempts exactly one IT-controlled instruction using the current architectural CPSR (carrying active ITSTATE):
+   - **Condition passed:** The instruction executes its architectural effects, updates registers/memory, advances ITSTATE to the next instruction in the block, advances PC by instruction width, and reports `condition_passed: true` with `executed: true`.
+   - **Condition failed (skipped):** The instruction does not apply its conditional register/memory effects. The engine advances ITSTATE to the next instruction in the block, advances PC past the instruction, and reports `condition_passed: false` with `executed: false`.
+   - **Distinguishing skipped from no-op:** An instruction that executed with condition passed but produced no numeric changes (e.g. `MOV r0, r0` or `AND r1, r1, #0` when R1 was 0) shall report `condition_passed: true` and `executed: true`, distinguishing it from a conditionally skipped instruction (`condition_passed: false`, `executed: false`).
+3. **Manual entry restriction:** Setting PC manually into the interior of an IT block when valid ITSTATE was not established by stepping the IT instruction is rejected as `invalid_it_block_entry`. Manual ITSTATE injection is not supported in P1.
+4. **Breakpoints inside IT blocks:** A breakpoint may be placed on an IT-controlled instruction. Stopping at the breakpoint halts immediately before that instruction executes and preserves current ITSTATE in CPSR, allowing subsequent Step or Run continuation without losing IT block context.
+
+#### 8.5.3 Bounded Run loop and execution limits
+
+Product P1 provides bounded multi-step execution (Run) implemented strictly by composing existing atomic Steps:
+
+```text
+while running:
+    if stop_requested:
+        stop with user_stop
+        break
+    if at_breakpoint and not resume_bypass:
+        stop with breakpoint
+        break
+    if steps_committed >= max_steps:
+        stop with step_limit
+        break
+    if wall_clock_elapsed >= max_time:
+        stop with time_limit
+        break
+
+    clear resume_bypass
+    result = perform_one_atomic_step()
+
+    if result.status == "failed" or result.stop_reason is not null:
+        stop with (result.stop_reason or "execution_failure")
+        break
+```
+
+1. **No emulation bypass:** Run shall never bypass logical memory validation, rollback journals, interworking checks, `step_seq` increments, or UserBaseline isolation. Correctness and rollback fidelity take precedence over throughput.
+2. **Independent bounds:** Every Run is bounded by both:
+   - `step_limit`: maximum committed Step count (default 10,000 steps).
+   - `time_limit`: wall-clock execution duration (default 2.0 seconds).
+3. **Clean stopping:** Reaching any limit stops Run cleanly at a committed Step boundary. Session state represents the exact state after the last committed Step.
+4. **Monotonic sequence accounting:** `step_seq` increments by 1 for each successfully committed architectural Step during Run. Run returns `start_step_seq`, `end_step_seq`, `steps_committed`, `stop_reason`, and final `State`.
+
+#### 8.5.4 Concurrent Stop semantics
+
+1. **Non-blocking Stop:** A `Stop` request may be submitted concurrently while a `Run` request is actively executing.
+2. **Locking architecture:** The session registry and `SessionEntry` shall decouple Stop signaling from the session's primary mutation lock. Stop is signaled via a thread-safe primitive (`stop_event`) without waiting for the Run loop to terminate.
+3. **Step boundary invariant:** Stop never aborts native CPU execution midway through an instruction. The in-flight atomic Step completes or rolls back cleanly. The Run loop observes `stop_event` between Steps, exits cleanly, and returns with `stop_reason: user_stop`.
+
+#### 8.5.5 Breakpoint identity, pre-execution halting, and resume bypass
+
+1. **Identity:** A breakpoint is identified by the tuple `(address, mode)` where mode is `arm` or `thumb`.
+2. **Validation:** Setting a breakpoint validates that `(address, mode)` matches an existing instruction start in `ProgramImage`. Breakpoints on DATA records, code gaps, interior instruction bytes, or mismatched modes are rejected.
+3. **Pre-execution stop:** During Run, if current executable location matches an enabled breakpoint, Run halts immediately before attempting that instruction. Machine state reflects the pre-execution state.
+4. **Single-step bypass:** Manual single Step ignores breakpoints, allowing users to step through a breakpointed instruction.
+5. **One-time resume bypass:** When Run is initiated while PC is currently paused at an active breakpoint, that specific breakpoint is bypassed for exactly one Step. Normal breakpoint checking immediately resumes for subsequent steps. Breakpoints are never automatically deleted or globally disabled.
+6. **Lifecycle:** Breakpoints survive single Step, manual edits, and Reset. Breakpoints are cleared upon a successful replacement Load. New sessions start with an empty breakpoint set. Breakpoints are ephemeral and held in session memory.
 
 ## 9. Machine state and Reset
 
@@ -341,9 +481,19 @@ Engine support does not add absent machine facilities to the product. Privileged
 
 A mode-changing BX/BLX or PC load is not supported in P0; same-mode transfers are supported. Thumb return targets may contain bit 0 as required by the ISA, but the displayed resulting PC is canonical/even. Explicit PC edits use canonical addresses only. An IT instruction is marked unsupported; because entry ITSTATE is zero, users must not treat a fragment cut from the middle of an omitted IT block as a faithful replay.
 
-### P1 and deferred architecture scope
+### Product P1 architecture additions
 
-P1 candidates are Run with bounded execution and Stop, and basic address breakpoints. Thumb IT-state execution and mixed-mode/interworking support are later work requiring dedicated semantics and tests; they are not a hidden P0 dependency. Big-endian ARM, Cortex-M exception state, privileged/system execution, AArch64, RISC-V, and MIPS are deferred. The instruction model must preserve widths/modes without adding implementations for those architectures.
+Product P1 formalizes the following execution capabilities:
+
+1. **Runtime ARM/Thumb interworking:** Enabled for all PC-writing instructions (BX, BLX, POP to PC, LDM to PC, etc.) via native CPSR T-bit resolution, committing exactly one architectural instruction atomically.
+2. **Thumb-2 IT block execution:** Multi-step IT block support (IT, ITT, ITE, etc.) preserving ITSTATE in CPSR across Steps, gated by the P1 IT validation spike.
+3. **Bounded Run and concurrent Stop:** Composed of sequential atomic Steps bounded by configurable step and time limits.
+4. **Address/mode breakpoints:** Pre-execution halting at `(address, mode)` with single-step bypass and one-time resume bypass.
+5. **Mixed ARM/Thumb/Data listings:** Disassembly import driven by `$a`, `$t`, and `$d` mapping symbols.
+
+### Deferred architecture scope (post-P1)
+
+Big-endian ARM, Cortex-M exception state, privileged/system execution, SIMD/VFP/NEON, exclusive monitor state, AArch64, RISC-V, x86/x86-64, and MIPS remain explicitly deferred post-P1. The instruction model must preserve widths/modes without adding implementations for those architectures.
 
 ## 12. UI requirements
 
@@ -351,19 +501,22 @@ The local page shall resemble a compact debugger/code viewer: a dominant monospa
 
 - **Input/load:** source/import selector, text area, local text file selection, ARM/Thumb choice, Load, and assembly/parse diagnostics. Source requires a base/load address; import has format/encoding controls. Link diagnostics to source lines only when known. Preserve source separately from the generated execution listing. Optional scratch-stack fields can be grouped under setup. Loading a file only reads its text in the browser.
 - **Code view:** address, byte representation, source mnemonic/operands, decoded instruction, current-PC gutter marker, current-line highlight, and automatic scrolling to current PC. Unsupported instructions have a distinct marker. Selecting a line can fill the PC input; it does not execute.
+  - *P1 extension:* Mixed-mode listing displaying ARM code, Thumb code, and non-executable DATA records in address order with clear tags. Breakpoint gutter allows toggling breakpoints on instruction lines; DATA rows reject breakpoint clicks. Visually distinguish current-PC marker, breakpoint marker, and combined PC+breakpoint marker.
 - **Registers:** R0–R12, SP, LR, PC, CPSR and N/Z/C/V; in-place value editing, range errors next to inputs, origin labels, and changed-register/flag highlighting. Full CPSR is visible with protected bits explained.
 - **Memory:** address/range input, bytes and aligned little-endian words, `??` cells, source-region labels, byte/word patch input, explicit zero-fill action, and latest writes/changes.
 - **Stack:** follows SP, shows words and an SP marker, and supports scrolling around SP. At the initial top-of-stack SP, display words below the top so the empty scratch stack is visible. Out-of-range cells remain `??`.
-- **Controls:** Load, Step, Reset, and start/current PC with Go. Step and edits require a loaded program. Pending operations disable conflicting controls; no double Step from one click. No Run, Stop, or breakpoint gutter controls are shown in P0.
+- **Controls:** Load, Step, Reset, and start/current PC with Go. Step and edits require a loaded program. Pending operations disable conflicting controls; no double Step from one click.
+  - *P1 extension:* Add Run and Stop controls to the toolbar. Run initiates bounded execution; Stop halts an active Run at the next Step boundary. Disable conflicting inputs while Run is active; ensure Stop remains enabled and clickable during Run.
 - **Feedback:** parse warnings/errors, condition and branch result, stopped PC, missing-memory details, the manual-edit/baseline rule, `step_seq`, and transport failure feedback. Do not automatically retry Step after a lost response. Highlighting must also use markers/text so meaning does not depend on color alone. Inputs and buttons are keyboard accessible.
+  - *P1 extension:* StatusPanel displays Run stop reasons (`breakpoint`, `user_stop`, `step_limit`, `time_limit`, `pc_not_loaded`, etc.) and IT block execution/skip feedback.
 
 ## 13. P0, P1, and deferred scope
 
 | Release boundary | Features |
 | --- | --- |
-| Mandatory P0 | ARM/Thumb source assembly with explicit origin; supported addressed text formats; atomic assembly/parse/load; ARM and Thumb/Thumb-2 execution within the selected profile; arbitrary loaded start PC; exactly-one-instruction Step; register and N/Z/C/V edits; CPSR display; strict partial memory and explicit patches/zero-fill; scratch stack and stack inspection; current-PC and change highlights; branch results; deterministic Reset; isolated ephemeral local sessions; actionable errors. |
-| P1 | Bounded Run/Stop and basic address breakpoints, only after Step correctness is established. No commitment to a streaming transport is implied. |
-| Deferred | Exact source-level debug mapping, assembly build-system features, mixed-mode images/interworking, IT blocks, further ARM families/profiles, persistent experiments, binary/dump/ELF loaders, other ISAs, advanced debugger/analysis/integration features listed in Section 4. |
+| Mandatory P0 (Completed Baseline) | ARM/Thumb source assembly with explicit origin; supported addressed text formats; atomic assembly/parse/load; ARM and Thumb/Thumb-2 execution within the selected profile; arbitrary loaded start PC; exactly-one-instruction Step; register and N/Z/C/V edits; CPSR display; strict partial memory and explicit patches/zero-fill; scratch stack and stack inspection; current-PC and change highlights; branch results; deterministic Reset; isolated ephemeral local sessions; actionable errors. |
+| Product P1 (Current Milestone) | 1. Mixed ARM / Thumb / Data disassembly ProgramImages (`$a`, `$t`, `$d`).<br/>2. Non-executable DataRegions in ProgramImage and logical memory.<br/>3. Runtime ARM/Thumb interworking on all PC-writing instructions.<br/>4. Thumb-2 IT blocks (IT, ITT, ITE) with CPSR ITSTATE preservation and skip reporting (spike-gated).<br/>5. Bounded Run (composed of atomic Steps) bounded by step limit and wall-clock time limit.<br/>6. Concurrent, non-blocking Stop signaling.<br/>7. Address/mode breakpoints `(address, mode)` with pre-execution halting and one-time resume bypass.<br/>8. Browser UI integration for mixed listings, Run/Stop controls, and breakpoint gutter. |
+| Deferred (Post-P1) | Exact source-level debug mapping, assembly build-system / multi-section directives, persistent experiments, binary/dump/ELF loaders, Cortex-M exception model, privileged/system execution, SIMD/VFP/NEON, other ISAs (RISC-V, AArch64, x86), advanced debugger/analysis/integration features listed in Section 4. |
 
 ### Operational bounds (explicit P0 assumptions)
 
@@ -436,6 +589,8 @@ Create only directories used by the current phase. Phase 2 includes domain recor
 
 These criteria derive tests; the architecture adds mechanism-specific verification without expanding product scope.
 
+### 15.1 Completed Product P0 baseline acceptance criteria
+
 | ID | Given / When / Then | Requirements |
 | --- | --- | --- |
 | AC-01 | Given equivalent fromelf, objdump, generic word, and generic byte listings, when loaded under the same profile, then addresses, memory-order bytes, widths, and execution results agree. File selection and paste behave identically. | FR-001–004 |
@@ -450,7 +605,7 @@ These criteria derive tests; the architecture adds mechanism-specific verificati
 | AC-10 | Given a multi-register transfer whose final access crosses into unknown memory, when Step fails, then earlier writes, register updates, flags, and SP changes from that instruction are all absent. An unaligned word access similarly fails atomically. | FR-016, FR-018 |
 | AC-11 | Given initial register/memory/PC edits and executed changes, when the user adds missing memory, edits a register/flag or PC, and presses Reset, then every manual edit remains, unrelated CPU-generated changes disappear, PC equals the latest manually selected start, and highlights clear. Patching one byte shall not copy neighboring runtime stores into baseline; toggling one flag shall not copy other runtime flags. | FR-015, FR-023 |
 | AC-12 | Given a same-mode branch or POP to an unloaded address, when Step succeeds, then its register/memory effects commit, PC shows the destination, and `pc_not_loaded` is displayed without a misleading code marker. Another Step executes nothing. | FR-006, FR-013, FR-016, FR-022 |
-| AC-13 | Given a decoded instruction requiring a known excluded feature, when loaded, then it is marked and Step fails without changes. An engine-rejected instruction or mode-changing transfer also fails atomically with an explicit category. An ordinary integer instruction is not rejected solely because it is absent from the representative validation table. | FR-016–019 |
+| AC-13 | Given a decoded instruction requiring a known excluded feature, when loaded, then it is marked and Step fails without changes. An engine-rejected instruction or mode-changing transfer in P0 single-mode images also fails atomically with an explicit category. An ordinary integer instruction is not rejected solely because it is absent from the representative validation table. | FR-016–019 |
 | AC-14 | Given a Step that changes R0, Z, and one stack word but rewrites another byte to its existing value, then only changed values highlight and both writes are listed. A subsequent manual edit or failed Step clears old execution highlights. | FR-012–014 |
 | AC-15 | Given two browser sessions, when one loads/edits/steps/resets or is destroyed, then the other retains its state. After expiry, requests return an expired/missing-session error, not another session's state. | FR-020–021 |
 | AC-16 | Given a loaded page, when controls are used with the keyboard and a Step request is pending, then the PC marker, register/flag results, memory view, and errors remain usable and no second conflicting operation is sent. Go never executes. | FR-005, FR-013, FR-021 |
@@ -460,4 +615,25 @@ These criteria derive tests; the architecture adds mechanism-specific verificati
 | AC-20 | Given PF-01–PF-08, when the appropriate mode/format is selected, then normalized bytes, sizes, original source lines and diagnostics match the fixture contract; recognized noise is visible as ignored lines and malformed instruction records are never silently discarded. | FR-001–004, FR-017 |
 | AC-21 | Given equivalent ARM/Thumb source and fixed imported bytes, when assembled at the same origin, then normalized addresses/bytes/widths and Step results agree with independent golden expectations. Cover labels, PC-relative encoding, origin changes, adjacent Thumb widths, syntax/decode/profile failures and atomic preservation of an existing experiment. Preserve source without fabricating line mappings. | FR-001–004, FR-017, FR-019, Section 7.0 |
 
-P0 is accepted only when these capabilities and representative ARM/Thumb golden cases pass. Passing them is not a claim of exhaustive ARM ISA conformance. Atomic execution remains a release requirement whose feasibility must first be demonstrated in Phase 0.
+P0 is accepted and fully verified across all AC-01 through AC-21 acceptance criteria and the 388 test suite baseline.
+
+### 15.2 Product P1 acceptance criteria
+
+| ID | Given / When / Then | Requirements |
+| --- | --- | --- |
+| P1-AC-01 | Given a disassembly listing containing `$a`, `$t`, and `$d` mapping symbols, when parsed and loaded, then instructions are classified with their respective `arm` and `thumb` modes and data lines normalize into `DataRegion` records with concrete addresses and bytes. | P1-FR-001, P1-FR-002 |
+| P1-AC-02 | Given a `DataRegion` representing an embedded literal pool, when an instruction performs a valid PC-relative literal read (`LDR r0, [pc, #offset]`), then the access succeeds, returning the expected data bytes; when execution branches directly into a `DataRegion` address, execution halts immediately with a non-executable target stop reason. | P1-FR-002 |
+| P1-AC-03 | Given an ARM instruction performing a mode-switching branch to Thumb (e.g. `BX r0` with bit 0 set to 1), when stepped, then CPSR T-bit updates to 1, visible PC is canonicalized (even address), the resulting `(pc, thumb)` location is verified against `ProgramImage`, and exactly one architectural Step commits with `step_seq` incremented by 1. | P1-FR-003, P1-FR-004, P1-FR-005 |
+| P1-AC-04 | Given a Thumb instruction performing a mode-switching return to ARM (e.g. `POP {..., pc}` or `BX lr` where LR bit 0 is 0), when stepped, then CPSR T-bit updates to 0, visible PC is canonicalized, and the resulting `(pc, arm)` location is verified against `ProgramImage`, committing atomically. | P1-FR-003, P1-FR-004, P1-FR-005 |
+| P1-AC-05 | Given an interworking instruction whose destination or memory access encounters an unmapped address or execution fault, when executed, then full atomic rollback restores pre-Step registers, original CPSR mode/T-bit, and memory state completely without partial state commitment. | P1-FR-005 |
+| P1-AC-06 | Given an interworking instruction that targets an address loaded in `ProgramImage` with the opposite mode (e.g. PC at address possessing an ARM instruction while CPU mode is Thumb), then execution halts with an explicit mode mismatch diagnostic. | P1-FR-003, P1-FR-004 |
+| P1-AC-07 | Given a Thumb-2 IT block (IT, ITT, ITE) with flags satisfying or failing the condition, when stepped sequentially, then ITSTATE in CPSR correctly governs execution: matching conditions execute their effects, failing conditions conditionally skip without modifying registers/memory, and PC advances appropriately across each Step. | P1-FR-006 |
+| P1-AC-08 | Given an IT-controlled instruction, when executed, StepResult distinguishes an instruction that executed with condition passed but produced no register/memory change from an instruction that was conditionally skipped (`executed: false`, `condition_passed: false`). | P1-FR-007 |
+| P1-AC-09 | Given a session with loaded Thumb-2 code, when a user attempts to manually set PC to an instruction in the interior of an IT block without active ITSTATE established by the preceding IT instruction, then the operation is rejected with `invalid_it_block_entry`. | P1-FR-008 |
+| P1-AC-10 | Given a program with sequential instructions and loops, when Run is initiated, then it executes consecutive atomic Steps until hitting the configured `step_limit`, halting cleanly at a Step boundary with stop reason `step_limit` and exact `step_seq` accounting. | P1-FR-009, P1-FR-010, P1-FR-012 |
+| P1-AC-11 | Given a tight self-branch loop or infinite execution loop, when Run is initiated, then it halts cleanly upon reaching the wall-clock execution deadline with stop reason `time_limit` and valid committed machine state. | P1-FR-009, P1-FR-010, P1-FR-012 |
+| P1-AC-12 | Given an active Run in progress, when a concurrent Stop request is received, then the in-flight atomic Step finishes or rolls back completely, Run terminates before starting the subsequent Step, and the session returns stop reason `user_stop` with machine state paused at that Step boundary. | P1-FR-011, P1-FR-012 |
+| P1-AC-13 | Given Run encountering an unmapped memory access or CPU execution error, then Run halts immediately at that Step; the failed Step rolls back to its pre-step state, and the Run result reports the corresponding fault stop reason. | P1-FR-009, P1-FR-012 |
+| P1-AC-14 | Given an active breakpoint at `(address, mode)`, when Run reaches that instruction, then Run halts immediately before attempting execution with stop reason `breakpoint` and pre-execution state preserved; when manual Step is subsequently pressed, the breakpointed instruction executes normally. | P1-FR-013, P1-FR-014 |
+| P1-AC-15 | Given a session halted at an active breakpoint, when Run is initiated again, then the current breakpoint is bypassed for exactly one Step, execution continues, and if execution branches back to that breakpoint location later in the Run, execution halts again. | P1-FR-014, P1-FR-015 |
+| P1-AC-16 | Given registered breakpoints, when Step, manual edits, or Reset are performed, then breakpoints remain unchanged; when a replacement Load succeeds, all breakpoints are cleared; attempting to set a breakpoint on a DATA address or unaligned address is rejected. | P1-FR-013, P1-FR-016 |

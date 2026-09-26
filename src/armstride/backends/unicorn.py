@@ -17,8 +17,10 @@ FETCH_ACCESSES = (uc.UC_MEM_FETCH_UNMAPPED, uc.UC_MEM_FETCH_PROT)
 
 class UnicornBackend:
     def __init__(self, program, state):
+        self.program = program
         self.mode = program.mode
         self.timeout_us = 1_000_000
+
         self._engine = None
         try:
             engine = uc.Uc(uc.UC_ARCH_ARM, uc.UC_MODE_THUMB if self.mode == 'thumb' else uc.UC_MODE_ARM)
@@ -114,13 +116,16 @@ class UnicornBackend:
                 native.emu_stop()
             return False
 
+        in_it = (state.registers['cpsr'] & 0x0000FC00) != 0 or (state.registers['cpsr'] & 0x06000000) != 0
+        is_thumb = instruction.mode == 'thumb'
+        until = (instruction.address + instruction.size) & 0xFFFFFFFF if (is_thumb and (instruction.decode.operation == 'it' or in_it)) else 0xFFFFFFFF
         native_error = None
         try:
             handles.append(engine.hook_add(uc.UC_HOOK_CODE, code_hook))
             handles.append(engine.hook_add(uc.UC_HOOK_MEM_READ | uc.UC_HOOK_MEM_WRITE, memory_hook))
             handles.append(engine.hook_add(uc.UC_HOOK_MEM_INVALID, memory_hook))
             try:
-                engine.emu_start(instruction.address | int(self.mode == 'thumb'), 0xFFFFFFFF,
+                engine.emu_start(instruction.address | int(is_thumb), until,
                                  timeout=self.timeout_us, count=1)
             except uc.UcError as error:
                 native_error = error
@@ -132,10 +137,16 @@ class UnicornBackend:
         if engine.query(uc.UC_QUERY_TIMEOUT):
             raise DomainError('execution_timeout', 'Instruction exceeded the native deadline.')
         after = self._registers()
-        if (after['cpsr'] ^ state.registers['cpsr']) & 0x20:
-            raise DomainError('unsupported_mode_transition', 'Interworking is outside P0.')
-        if code_count != 1:
+        after['pc'] = after['pc'] & ~1
+        resulting_mode = 'thumb' if after['cpsr'] & 0x20 else 'arm'
+        if after['pc'] in self.program.address_index:
+            target_inst = self.program.address_index[after['pc']]
+            if target_inst.mode != resulting_mode:
+                raise DomainError('unsupported_mode_transition',
+                                  f'Execution mode {resulting_mode} does not match target instruction mode {target_inst.mode}.')
+        if code_count != 1 and not (code_count == 0 and in_it and after['pc'] == (instruction.address + instruction.size) & 0xFFFFFFFF):
             raise DomainError('execution_failure', 'No single instruction completion was observed.')
+
         if native_error:
             if native_error.errno == uc.UC_ERR_INSN_INVALID:
                 raise DomainError('unsupported_instruction', 'Engine rejected the instruction.')
@@ -150,7 +161,8 @@ class UnicornBackend:
     @staticmethod
     def _retired_fetch(instruction, state, after, reads, fetches):
         """Accept only a proven destination fetch after the one entry code hook."""
-        if not fetches or fetches != [after['pc']]:
+        canonical_fetches = [f & ~1 for f in fetches]
+        if not canonical_fetches or canonical_fetches != [after['pc']]:
             return False
         if condition_passed(instruction, state.registers) is False or not is_control_flow(instruction):
             target = (instruction.address + instruction.size) & 0xFFFFFFFF
@@ -163,3 +175,4 @@ class UnicornBackend:
                 if reads and reads[-1]['size'] == 4:
                     target = int.from_bytes(bytes.fromhex(reads[-1]['bytes']), 'little') & ~1
         return target is not None and after['pc'] == target
+

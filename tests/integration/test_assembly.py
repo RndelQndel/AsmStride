@@ -109,7 +109,7 @@ def test_source_failure_preserves_existing_experiment(failure, monkeypatch):
 
 @pytest.mark.parametrize('mode,source,code', [
     ('arm', 'svc #0', 'unsupported_instruction'),
-    ('thumb', 'it eq\nmoveq r0,r1', 'unsupported_instruction'),
+    ('thumb', 'clrex', 'unsupported_instruction'),
     ('arm', 'bx r0', 'unsupported_mode_transition'),
 ])
 def test_existing_feature_and_interworking_rejection(mode, source, code):

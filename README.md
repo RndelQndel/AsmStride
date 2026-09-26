@@ -11,7 +11,7 @@
 [![Svelte 5](https://img.shields.io/badge/Svelte-5-FF3E00.svg)](https://svelte.dev)
 [![Unicorn Engine](https://img.shields.io/badge/Emulation-Unicorn%20Engine-brightgreen.svg)](https://www.unicorn-engine.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Status: P0 Complete](https://img.shields.io/badge/Milestone-P0%20Verified-success.svg)](docs/SRS.md)
+[![Status: P1 Complete](https://img.shields.io/badge/Milestone-P1%20Verified-success.svg)](docs/SRS.md)
 
 <br/>
 
@@ -39,11 +39,14 @@ Setting up a complete QEMU machine, full firmware image, target hardware, or GDB
 | Feature | Description |
 | :--- | :--- |
 | ⚡ **Zero Setup & Local-First** | No target board, complete ELF file, or cross-compiler required. Runs 100% locally. |
-| 🧩 **Smart Input Parsing** | Supports ARM/Thumb assembly source or raw `objdump` / `fromelf` disassembly text. |
-| 📊 **Compact Register Grid** | 2-column tabular layout (R0–R15 + CPSR) with visual change indicators. |
+| 🔀 **Mixed ARM/Thumb & Data** | Parses `$a`, `$t`, `$d` mapping symbols. Loads literal pools as non-executable known memory. |
+| 🔄 **Runtime Interworking** | Full interworking via CPSR T-bit inspection (`BX`, `BLX`, `POP {pc}`, etc.) with canonical PC. |
+| 🎯 **Thumb-2 IT Blocks** | Conditional block execution (`IT`, `ITT`, `ITE`) with `ITSTATE` tracking and skip reporting. |
+| 🛑 **Breakpoints & Bounded Run** | Pre-execution breakpoints with 1-step resume bypass; bounded Run loop with concurrent Stop. |
+| 📊 **Compact Register Grid** | 2-column tabular layout (R0–R15 + CPSR) with visual change indicators and inline editing. |
 | 🧠 **Strict Memory Virtualization** | Distinguishes code, synthetic stack, and unmapped `??` bytes. Unmapped access halts safely. |
 | ⏪ **Deterministic Stepping & Rollback** | Step instruction-by-instruction. Memory faults trigger atomic rollback to previous valid state. |
-| ⌨️ **Keyboard Navigation** | `F7` / `F8` to Step, `F9` to Reset. |
+| ⌨️ **Keyboard Navigation** | `F5` to Run, `F7` / `F8` to Step, `F9` to Reset. |
 
 ---
 
@@ -126,7 +129,7 @@ finally:
 
 ## 🧪 Testing & Quality Assurance
 
-ArmStride maintains comprehensive test coverage across both unit and end-to-end layers:
+ArmStride maintains 100% regression-free test coverage across unit, simulation, integration, frontend, and browser end-to-end layers (447 automated tests passing):
 
 ```sh
 # Run Python unit tests (API, parsers, logical memory)
@@ -160,6 +163,7 @@ Detailed architectural specifications and milestone documentation:
 - [Visual Guide & Tour](docs/VISUAL_GUIDE.md)
 - [System Requirements Specification (SRS)](docs/SRS.md)
 - [Architecture & State Management](docs/ARCHITECTURE.md)
+- [Product P1 Specification & Roadmap](docs/milestones/P1.md)
 - [Example Snippets & Crash Logs](examples/README.md)
 
 ---

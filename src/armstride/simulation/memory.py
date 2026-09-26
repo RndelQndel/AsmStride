@@ -92,13 +92,17 @@ class MemoryState:
         validate_range(stack_base, stack_size, "invalid_memory_patch")
         if stack_base % 4 or stack_size % 4 or stack_base + stack_size >= ADDRESS_SPACE:
             raise DomainError("invalid_memory_patch", "Stack must be word-aligned with a representable top.")
-        if stack_size + sum(i.size for i in program.instructions) > MAX_LOGICAL_BYTES:
+        program_bytes_len = sum(i.size for i in program.instructions) + sum(d.size for d in program.data_regions)
+        if stack_size + program_bytes_len > MAX_LOGICAL_BYTES:
             raise DomainError("resource_limit", "Stack exceeds the logical memory budget.",
                               budget="logical_bytes", limit=MAX_LOGICAL_BYTES)
         code = tuple(MemoryRegion(i.address, i.raw_bytes, "code") for i in program.instructions)
-        if any(region.address < stack_base + stack_size and region.end > stack_base for region in code):
+        data = tuple(MemoryRegion(d.address, d.data, "code") for d in program.data_regions)
+        all_program = code + data
+        if any(region.address < stack_base + stack_size and region.end > stack_base for region in all_program):
             raise DomainError("stack_conflict", "Scratch stack overlaps code.")
-        return cls(code + (MemoryRegion(stack_base, bytes(stack_size), "scratch_stack"),))
+        return cls(all_program + (MemoryRegion(stack_base, bytes(stack_size), "scratch_stack"),))
+
 
     def patch(self, address: int, raw_bytes: bytes) -> "MemoryState":
         if not isinstance(raw_bytes, bytes):

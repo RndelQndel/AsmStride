@@ -1,18 +1,18 @@
 # ArmStride Architecture
 
-Status: architecture for [SRS.md](SRS.md). P0 simulation engine, browser workspace, and release checks are fully implemented and verified.
-
-Implementation update: P0 single-mode ARMv7-A execution, session lifecycle, memory page virtualization, and browser workspace are complete and verified across 388 integration tests and full Playwright acceptance suites. This document is the authoritative current roadmap.
+Status: Architecture specification for [SRS.md](SRS.md). Product P0 baseline is fully verified and accepted as the stable foundation across 388 integration tests and Playwright suites. This document defines the Product P1 architecture design and implementation roadmap; see [milestones/P1.md](milestones/P1.md) for the dedicated milestone specification.
 
 ## 1. Architectural principles and requirement basis
 
-The SRS is the behavioral contract. Its assumptions A-01–A-08, engine-based execution scope, memory policy, user-baseline lifecycle, and operational bounds are binding here. [concept.md](concept.md) supplies product intent; [README.md](../README.md) supplies the public summary. The original design started without an implementation to preserve or migrate; subsequent phases follow the component boundaries below.
+The SRS is the behavioral contract. Its baseline assumptions A-01–A-08, Product P1 assumptions P1-A-01–P1-A-08, engine-based execution scope, memory policy, user-baseline lifecycle, and operational bounds are binding here. [concept.md](concept.md) supplies product intent; [README.md](../README.md) supplies the public summary. Historical Phases 0–8 describe how the P0 product was built and verified, and now serve as immutable historical evidence. Product P1 is organized into dependency-ordered implementation stages (P1-A through P1-F).
 
 Apply YAGNI to a small local developer tool: one process, normal HTTP, in-memory sessions, and one execution engine. There is no database, authentication service, distributed worker, plugin registry, symbolic execution, or angr dependency. There is no backward-compatibility requirement. Separate pure parsing/normalization from execution, and execution policy from HTTP and rendering. Use small modules and composition; introduce interfaces only at demonstrated boundaries. ARM details belong in one profile/codec and the Unicorn adapter, not in endpoint handlers or Svelte components.
 
 The core owns product semantics. Unicorn supplies CPU execution, not session policy, user defaults, baseline selection, input parsing, or the definition of known memory. The frontend renders domain results and does not infer CPU behavior from pasted mnemonic strings.
 
 ### Requirement-to-component map
+
+#### Product P0 baseline map
 
 | SRS obligations | Responsible components | Primary verification |
 | --- | --- | --- |
@@ -24,6 +24,18 @@ The core owns product semantics. Unicorn supplies CPU execution, not session pol
 | FR-016 | Domain errors and transactional Step boundary | Fault injection and multi-access rollback tests |
 | FR-020 | In-memory session registry and per-session lock | Isolation, concurrent requests, deletion/expiry tests |
 | FR-021, FR-024 | FastAPI boundary, local launcher, Svelte controls, session Step counter | API/browser workflows and monotonic `step_seq` tests |
+
+#### Product P1 requirement map
+
+| P1 obligations | Responsible components | Primary verification |
+| --- | --- | --- |
+| P1-FR-001, P1-FR-002, P1-FR-018 | Parser state machine (`$a`/`$t`/`$d`), `DataRegion`, `ProgramImage` extensions | Parser fixtures P1-PF-01–04, literal read tests, non-executable data tests |
+| P1-FR-003, P1-FR-004, P1-FR-005 | `ExecutionLocation`, `SimulationSession`, `UnicornBackend` CPSR T-bit resolution | ARM/Thumb interworking tests, BX/BLX/POP-PC golden cases, rollback tests |
+| P1-FR-006, P1-FR-007, P1-FR-008 | `DecodeMetadata` IT context, `UnicornBackend` ITSTATE handling, `StepResult` | Headless P1 IT spike, sequential IT/ITT/ITE execution/skip golden tests |
+| P1-FR-009, P1-FR-010, P1-FR-012 | `SimulationSession.run()`, execution limits, `RunResult` | Sequential Run tests, step/time limit cutoff tests, monotonic `step_seq` tests |
+| P1-FR-011 | `SessionEntry.stop_event`, concurrent `POST .../stop` endpoint | Concurrent stop integration tests, mid-step atomic completion tests |
+| P1-FR-013, P1-FR-014, P1-FR-015, P1-FR-016 | `BreakpointRegistry`, `SimulationSession`, breakpoint API routes | Pre-execution stop tests, one-time resume bypass tests, lifecycle tests |
+| P1-FR-017 | Svelte `CodeView`, `Toolbar`, `StatusPanel`, typed API client | Frontend component and Playwright workflow tests for mixed listings, Run/Stop, breakpoints |
 
 ## 2. Recommended technology stack
 
@@ -56,13 +68,13 @@ The `armstride` command starts one Uvicorn worker on loopback, serves `/api` and
 
 ```mermaid
 flowchart TD
-    UI[Svelte UI and typed HTTP client] --> API[FastAPI routes and transport schemas]
-    API --> Sessions[In-memory session registry]
-    API --> Core[SimulationSession operations]
+    UI[Svelte UI: CodeView, Run/Stop, Breakpoints] --> API[FastAPI routes: step, run, stop, breakpoints]
+    API --> Sessions[In-memory session registry with operation_lock and stop_event]
+    API --> Core[SimulationSession: Step, bounded Run, Breakpoint registry]
     Sessions --> Core
-    Core --> Domain[ProgramImage, MemoryState, snapshots and errors]
-    API --> Parsing[Pure format parsers and normalization]
-    API --> Assembly[AssemblerBackend / KeystoneAssembler]
+    Core --> Domain[ProgramImage: Instructions + DataRegions; Breakpoints, MemoryState, RunResult]
+    API --> Parsing[Format parsers: $a/$t/$d state transitions]
+    API --> Assembly[AssemblerBackend: single-mode source assembly]
     Assembly --> Domain
     Assembly --> Keystone[Keystone binding]
     Assembly --> Profile[ARM profile and codec]
@@ -70,37 +82,40 @@ flowchart TD
     Parsing --> Profile
     Core --> Profile
     Profile --> Capstone[Capstone adapter]
-    Core --> Port[Small ExecutionBackend contract]
-    UnicornAdapter[UnicornBackend] -. implements .-> Port
+    Core --> Port[ExecutionBackend contract]
+    UnicornAdapter[UnicornBackend: CPSR T-bit resolution, ITSTATE preservation] -. implements .-> Port
     UnicornAdapter --> Domain
     UnicornAdapter --> Unicorn[Unicorn binding]
 ```
 
 Arrows show source dependencies or calls; the backend implements a core-owned contract. The composition root selects the ARM assembler and parser producers, session registry, and execution backend factory. Both producers return an optional validated ProgramImage; only a successful candidate is passed to SimulationSession.load. FastAPI routes validate transport input, look up and lock a session, call one core operation, and serialize results. They do not implement register aliases, branch evaluation, instruction sizes, memory defaults, or Reset behavior.
 
-The simulation core imports neither FastAPI/Pydantic nor frontend code. Parsers and assemblers create records, never emulator instances; the core does not import either producer or Keystone. The frontend sees profile/mode identifiers and domain register names, never `UC_*`, Capstone constants, native objects, or native error numbers. Native-library translation stays in its adapter. HTTP is the only UI/core transport; there is no WebSocket in P0.
+The simulation core imports neither FastAPI/Pydantic nor frontend code. Parsers and assemblers create records, never emulator instances; the core does not import either producer or Keystone. In P1, `SessionEntry` introduces a thread-safe `stop_event` primitive that allows `POST .../stop` to signal cancellation directly without waiting on the active Run mutation lock. HTTP is the only UI/core transport; there is no WebSocket or streaming in P1.
 
 ## 4. Domain model and ownership
 
-Favor immutable value records for parse output, instructions, snapshots, results, and errors. Mutable state has one owner: its SimulationSession. Avoid class hierarchies for input formats and ISA families that do not yet exist.
+Favor immutable value records for parse output, instructions, data regions, snapshots, results, breakpoints, and errors. Mutable state has one owner: its SimulationSession. Avoid class hierarchies for input formats and ISA families that do not yet exist.
 
 | Object | Responsibility and important fields | Ownership, lifetime, relationships |
 | --- | --- | --- |
-| Instruction | One addressed decoded instruction: `address`, `raw_bytes`, derived `size`, `source_line`, `source_text`, `display_text`, `decoded_text`, `architecture`, `mode`, normalized decode metadata, `feature_exclusion` and reason if known. Decode metadata includes operation kind, condition and operands needed for branch reporting and small excluded-feature guards. A null exclusion is not a certificate of engine support. | Immutable member of ProgramImage; retained until reload/session destruction. Contains no library objects/constants. |
-| ProgramImage | Validated executable listing: profile/mode, sorted instructions, address index, exact code byte intervals, original text, parser format. | Immutable per successful load; shared by current state and baseline. Gaps are not instructions or initialized bytes. |
-| AssemblyResult / AssemblerBackend | `assemble(source, profile, mode, base_address)` returns original source, base address, emitted bytes, optional ProgramImage and application Diagnostic values. Failure exposes no executable bytes/image. | Stateless producer boundary in `assembly.py`; Keystone objects/errors/constants stay in `backends/keystone.py`. No architecture registry. |
-| ArchitectureProfile | Small ARM profile value plus ARM-specific functions: register descriptors/aliases, address width, endianness, alignment, initial CPSR, explicit feature exclusions, condition evaluation, PC normalization. | Application-lifetime read-only object for `armv7-a-le`; mode is selected per image. No architecture registry or plugin discovery. |
+| Instruction | One addressed decoded instruction: `address`, `raw_bytes`, derived `size`, `source_line`, `source_text`, `display_text`, `decoded_text`, `architecture`, `mode` (`arm` or `thumb`), normalized decode metadata, `feature_exclusion` and reason if known. | Immutable member of ProgramImage; retained until reload/session destruction. Contains no library objects/constants. |
+| DataRegion | One addressed concrete data record (e.g. literal pool): `address`, `raw_bytes`, derived `size`, `source_line`, `source_text`, `display_text`. Non-executable; mapped into known memory. | Immutable member of ProgramImage; retained until reload/session destruction. |
+| ProgramImage | Validated executable listing: `instructions` (ARM and Thumb), `data_regions`, `execution_locations` index mapping `(address, mode)` to Instruction, address index, original text, parser format. | Immutable per successful load; shared by current state and baseline. Gaps are neither instructions nor initialized bytes. |
+| Breakpoint | Active execution breakpoint: `address`, `mode`. Identifies a valid loaded instruction start. | Value record owned by `BreakpointRegistry` on SimulationSession; preserved across Step, edits, and Reset; cleared on replacement Load. |
+| RunResult | Aggregated result of bounded Run: `start_step_seq`, `end_step_seq`, `steps_committed`, `stop_reason`, `final_state`, `last_step`. | Ephemeral return value of a Run operation; no cumulative execution history is stored. |
+| AssemblyResult / AssemblerBackend | `assemble(source, profile, mode, base_address)` returns original source, base address, emitted bytes, optional ProgramImage and application Diagnostic values. Single-mode per snippet in P1. | Stateless producer boundary in `assembly.py`; Keystone objects/errors/constants stay in `backends/keystone.py`. No architecture registry. |
+| ArchitectureProfile | Small ARM profile value plus ARM-specific functions: register descriptors/aliases, address width, endianness, alignment, initial CPSR, explicit feature exclusions, condition evaluation, PC normalization. | Application-lifetime read-only object for `armv7-a-le`. |
 | RegisterState | R0–R15 and CPSR values plus origin labels; aliases resolve to the same slot. N/Z/C/V are derived from CPSR, not separately writable storage. | Value snapshot owned by MachineState; replaced on committed operations. |
-| MemoryState | Exact logical code/data/stack intervals, bytes and source labels; answers full-range access checks, pure inspections, validated patches, and cloning for a baseline/rollback. | Mutable only through its session; it is authoritative for known bytes. Backend page mappings are a derived representation. |
+| MemoryState | Exact logical code/data/stack intervals, bytes and source labels; answers full-range access checks, pure inspections, validated patches, and cloning for a baseline/rollback. In P1, includes DataRegions as known, readable, non-executable data. | Mutable only through its session; it is authoritative for known bytes. Backend page mappings are a derived representation. |
 | MachineState | Current RegisterState and MemoryState plus active mode; immutable public snapshots expose register values and region metadata, not all memory bytes. | Owned by one session. No second independent register source of truth in the UI. Backend state is synchronized at transaction boundaries. |
-| StepResult | One attempted step: instruction identity, before/after PC, deltas, memory events, condition/control-flow result, completion/stop/error. | Retain only latest result per session; no trace history store. See Section 11. |
-| SimulationSession | Program load, manual edits, Step, Reset, and consistent snapshots. Fields: optional image/backend, Runtime State, optional User Baseline State, `step_seq`, latest result, readiness status. | Created/destroyed by registry. Owns one backend. Does not own HTTP locks, TTL, or request parsing. |
-| UserBaselineState | Program reference, load defaults, registers/CPSR, restart PC and logical memory updated by accepted manual edits only. | Private session-owned state with an independent copy of memory/registers. Every manual edit updates the exact requested fields in baseline and runtime atomically. Reset clones it; CPU execution never mutates it. No history UI or baseline freeze. |
-| ParseResult | Optional normalized candidate image, diagnostics, selected/detected format, parsed/ignored counts, optional partial instruction preview. | Short-lived per load request. An image is installable only with no errors and at least one instruction. |
+| StepResult | One attempted step: instruction identity, before/after PC, deltas, memory events, condition/control-flow result, IT execution context, completion/stop/error. | Retain only latest result per session; no trace history store. See Section 11. |
+| SimulationSession | Program load, manual edits, Step, bounded Run, Reset, breakpoint management, and consistent snapshots. Fields: optional image/backend, Runtime State, optional User Baseline State, `step_seq`, breakpoints, latest result, readiness status. | Created/destroyed by registry. Owns one backend. Does not own HTTP locks, TTL, or request parsing. |
+| UserBaselineState | Program reference, load defaults, registers/CPSR, restart PC and logical memory updated by accepted manual edits only. | Private session-owned state with an independent copy of memory/registers. Every manual edit updates the exact requested fields in baseline and runtime atomically. Reset clones it; CPU execution never mutates it. |
+| ParseResult | Optional normalized candidate image (with instructions and data regions), diagnostics, selected/detected format, parsed/ignored counts. | Short-lived per load request. An image is installable only with no errors and at least one instruction. |
 | DomainError / Diagnostic | Stable code, message, structured context, severity and source line when relevant. | Values returned or raised at domain boundaries; independent of HTTP status. |
-| ExecutionBackend | Small behavioral contract for initializing, synchronizing edits, checkpoint/restore, attempting one instruction, reading the resulting state, and closing native resources. | One UnicornBackend per loaded session. A test fake is the only other necessary implementation. |
+| ExecutionBackend | Behavioral contract for initializing, synchronizing edits, checkpoint/restore, attempting one instruction, reading resulting state, and closing native resources. In P1, handles CPSR T-bit mode transitions and ITSTATE preservation. | One UnicornBackend per loaded session. A test fake is the only other necessary implementation. |
 
-The **session registry** is an application-layer dictionary of opaque IDs to session entries containing a lock and last-access time. It handles lifecycle only; it must not absorb simulation logic. `MemoryRegion` and `RegisterDescriptor` are simple records inside MemoryState/profile, not standalone services. Do not introduce repositories, event buses, command buses, generic CPU factories, or a separate class for every use case.
+The **session registry** is an application-layer dictionary of opaque IDs to session entries containing an operation lock, a thread-safe `stop_event`, and last-access time. It handles lifecycle and concurrency only; it must not absorb simulation logic. `MemoryRegion` and `RegisterDescriptor` are simple records inside MemoryState/profile, not standalone services. Do not introduce repositories, event buses, command buses, generic CPU factories, or a separate class for every use case.
 
 ## 5. Instruction representation and parsing
 
@@ -169,19 +184,83 @@ The core exposes operations matching requirements: load, snapshot, set PC, set r
 
 ### 6.2 Step transaction
 
-1. Reject a missing program, unavailable backend, or PC not in the image index. Resolve decoded metadata and reject known unsupported instructions.
+1. Reject a missing program, unavailable backend, or PC not in the image index. Resolve decoded metadata and reject known unsupported instructions. In Thumb-2 IT blocks, reject manual PC entry into the interior of an IT block when valid ITSTATE is not established.
 2. Save a native CPU context checkpoint and a Runtime State memory snapshot. UserBaselineState is not part of execution mutation and needs no per-Step rewrite. Session operation serialization prevents concurrent edits.
 3. Invoke `execute_one` at canonical PC with the active mode. Collect ordered, validated data read/write events; check full byte intervals and alignment before allowing effects. Stop immediately on the first rejected access.
-4. Read the resulting registers/CPSR. Verify mode remains unchanged and the adapter reports exactly one attempted architectural instruction. Classify conditional execution and branch outcome from decoded metadata, pre-state and actual post-PC, not from a string comparison or PC delta alone.
-5. On error, restore native CPU context and all affected backing bytes/mappings, retain the pre-state, clear stale highlights, and return a failed StepResult. No attempt events become committed deltas. If restoration itself fails, mark the backend unavailable and require Reset/reload; retain the authoritative pre-state for recovery.
-6. On success, apply collected writes to runtime MemoryState, publish the resulting register snapshot, and increment session `step_seq` once in the same commit. Compare before/after to produce deltas. Leave UserBaselineState unchanged. Failed attempts do not increment the counter.
-7. Check post-PC against loaded starts. Return `pc_not_loaded` after committed execution when it is not a start; otherwise return ready. Do not execute or fetch a second logical instruction. There is no implicit Run loop.
-
-A full copy of at most the configured logical memory budget for a checkpoint is acceptable initially. Optimize to a write journal only if measured workload requires it. The adapter still needs a write journal for memory event reporting; every write carries its before/after bytes. Repeated writes in a single instruction retain event order, while highlights compare the final value with the pre-Step snapshot.
+4. Read the resulting registers/CPSR:
+   - In P0 single-mode execution, mode changes were rejected.
+   - In Product P1, interworking is supported: read resulting CPSR T-bit (`cpsr & 0x20`): if set, `resulting_mode = "thumb"`; if clear, `resulting_mode = "arm"`.
+   - Canonicalize visible PC (`pc & 0xFFFFFFFE`).
+   - Classify conditional execution, IT block context (`it_context`), and branch outcome from decoded metadata, pre-state and actual post-state.
+5. On error, restore native CPU context and all affected backing bytes/mappings, retain the pre-state (including pre-Step mode), clear stale highlights, and return a failed StepResult. No attempt events become committed deltas. If restoration itself fails, mark the backend unavailable and require Reset/reload; retain the authoritative pre-state for recovery.
+6. On success, apply collected writes to runtime MemoryState, publish the resulting register snapshot and active mode, and increment session `step_seq` once in the same commit. Compare before/after to produce deltas. Leave UserBaselineState unchanged. Failed attempts do not increment the counter.
+7. Resolve `(resulting_pc, resulting_mode)` against `ProgramImage.execution_locations`:
+   - If an instruction exists and its mode matches `resulting_mode`, session status is ready for the next Step.
+   - If `resulting_pc` is outside loaded instruction starts, stop with `pc_not_loaded`.
+   - If `resulting_pc` matches an instruction start but mode mismatches, halt with an explicit mode mismatch diagnostic.
+   - If `resulting_pc` lands in a `DataRegion`, halt immediately with non-executable target stop reason.
 
 ### 6.3 Reset
 
-Create a fresh backend and Runtime State from UserBaselineState, then atomically swap them in. This restores defaults plus all manual evidence, including edits made after successful or failed Steps, while discarding execution effects. The baseline retains its independent memory/register storage and is not aliased to mutable runtime. Restore profile defaults for unexposed native state; excluded IT/exclusive/system features are not part of the baseline. Clear latest result/error/highlights, preserve session `step_seq`, and retain the latest manually set restart PC. If recreation fails, keep the baseline available for retry; do not erase the program or pretend Reset succeeded.
+Create a fresh backend and Runtime State from UserBaselineState, then atomically swap them in. This restores defaults plus all manual evidence, including edits made after successful or failed Steps, while discarding execution effects. The baseline retains its independent memory/register storage and is not aliased to mutable runtime. Restore profile defaults for unexposed native state; excluded IT/exclusive/system features are not part of the baseline. Breakpoints are explicitly preserved across Reset. Clear latest result/error/highlights, preserve session `step_seq`, and retain the latest manually set restart PC. If recreation fails, keep the baseline available for retry; do not erase the program or pretend Reset succeeded.
+
+### 6.4 Bounded Run and concurrent Stop execution mechanics
+
+Product P1 implements Run strictly by composing existing atomic Steps:
+
+```python
+def run(self, stop_event: threading.Event, max_steps: int = 10_000, max_seconds: float = 2.0) -> RunResult:
+    start_seq = self.step_seq
+    steps_committed = 0
+    start_time = monotonic()
+    stop_reason = None
+
+    # Handle one-time resume bypass if starting at a breakpoint
+    bypassed_bp = self._current_breakpoint()
+
+    while True:
+        if stop_event.is_set():
+            stop_reason = "user_stop"
+            break
+        curr_bp = self._current_breakpoint()
+        if curr_bp and curr_bp != bypassed_bp:
+            stop_reason = "breakpoint"
+            break
+        bypassed_bp = None
+
+        if steps_committed >= max_steps:
+            stop_reason = "step_limit"
+            break
+        if (monotonic() - start_time) >= max_seconds:
+            stop_reason = "time_limit"
+            break
+
+        step_res = self.step()
+        if step_res.status == "failed":
+            stop_reason = step_res.stop_reason or "execution_failure"
+            break
+        steps_committed += 1
+        if step_res.stop_reason is not None:
+            stop_reason = step_res.stop_reason
+            break
+
+    return RunResult(start_step_seq=start_seq, end_step_seq=self.step_seq,
+                     steps_committed=steps_committed, stop_reason=stop_reason,
+                     final_state=self.snapshot(), last_step=self.last_step)
+```
+
+1. **Step composition guarantee:** Run introduces no alternate execution engine or fast-path loop that skips memory checks, page journaling, rollback, or `step_seq` increments.
+2. **Termination reasons:** Stable categories: `breakpoint`, `user_stop`, `step_limit`, `time_limit`, `pc_not_loaded`, `execution_failure`, `backend_unavailable`.
+3. **Atomic cancellation:** A `Stop` request signals `stop_event` without acquiring the session's execution lock. The currently executing atomic Step finishes or rolls back completely before Run terminates and exits cleanly.
+
+### 6.5 Breakpoints and resume bypass
+
+1. **Identity & Storage:** Stored as `(address, mode)` tuples on `SimulationSession.breakpoints`.
+2. **Validation:** Setting a breakpoint validates that `(address, mode)` exists in `ProgramImage.execution_locations`. Setting on DATA records, gaps, or unaligned addresses is rejected.
+3. **Pre-execution halt:** When Run encounters a breakpoint, it halts before executing that instruction.
+4. **Single-step bypass:** Manual `step()` ignores breakpoints completely.
+5. **One-time resume bypass:** When Run starts at an active breakpoint, it bypasses that breakpoint once for the first step, then immediately resumes normal checking. If a loop branches back to the breakpoint, Run halts again.
+6. **Lifecycle:** Breakpoints persist across Steps, manual edits, and Reset. Breakpoints are cleared when a new program is loaded via replacement Load.
 
 ## 7. Unicorn boundary and ARM/Thumb semantics
 
@@ -195,16 +274,17 @@ Use a fixed ARMv7-A-capable CPU model (Cortex-A15 is the initial candidate) with
 
 - Map domain R0–R12/SP/LR/PC/CPSR to Unicorn IDs in one table inside the adapter. Resolve aliases in the ARM profile before this boundary.
 - Initialize all general registers, CPSR, mode, and scratch memory explicitly. Never rely on undocumented engine defaults. Write status/mode and PC in an order verified by integration tests.
-- For Thumb, use the engine's required execution-entry convention inside the adapter (the official [ARM sample](https://github.com/unicorn-engine/unicorn/blob/master/samples/sample_arm.c) uses an odd entry address). Domain addresses and API PC values remain canonical/even. Do not strip bit 0 from ordinary register values or LR.
+- For Thumb, use the engine's required execution-entry convention inside the adapter (`address | 1`). Domain addresses and API PC values remain canonical/even. Do not strip bit 0 from ordinary register values or LR.
 - Use native instruction execution for pipeline-PC reads, literal-load alignment, flags, call return addresses, and computed branches. The adapter reads post-PC/CPSR; the core never simulates these by incrementing PC.
-- CPSR edits permit only N/Z/C/V bits (`0xF0000000`). A full CPSR edit may change only those bits relative to runtime CPSR and applies all four flag values to baseline and runtime. A one-flag UI toggle supplies only that flag mask and value, applied independently to each state. T and mode bits remain controlled by the image/profile. Thumb ITSTATE is initialized to zero and IT instructions are unsupported in P0.
-- BX/BLX and PC-writing instructions can request another mode. If the attempted operation changes CPSR T, the core rejects the whole Step and rolls it back. Same-mode returns preserve actual LR and canonicalize only the displayed PC. Thumb and ARM mixed images require a future design change, not heuristics in the parser.
+- CPSR edits permit only N/Z/C/V bits (`0xF0000000`). A full CPSR edit may change only those bits relative to runtime CPSR and applies all four flag values to baseline and runtime. A one-flag UI toggle supplies only that flag mask and value, applied independently to each state. T and mode bits remain controlled by the image/profile.
+- **P1 Runtime Interworking:** In Product P1, mode switching is authoritative from native execution. When `execute_one` completes, the adapter reads CPSR T-bit (bit 5). If set, mode is Thumb; if clear, mode is ARM. Subsequent `execute_one` calls use the resulting mode for entry address convention (`address | 1` for Thumb, `address` for ARM).
+- **P1 Thumb-2 IT Blocks:** In Product P1, CPSR ITSTATE (`CPSR[15:10, 26:25]`) is preserved across Step transactions. Stepping the `IT` instruction updates CPSR ITSTATE. Subsequent Steps of IT-controlled instructions pass this CPSR directly to Unicorn. Controlled instructions that fail their condition are conditionally skipped: the engine advances PC past the instruction and updates ITSTATE without committing register or memory writes, reporting `condition_passed: false` and `executed: false`.
 
 ### Enforcing exactly one instruction
 
 These are proposed adapter mechanisms, not verified library guarantees. Implementation begins with the headless Phase 0 spike in Section 15. The [Unicorn FAQ](https://github.com/unicorn-engine/unicorn/blob/master/docs/FAQ.md) documents instruction-count/PC behavior with version distinctions, while the [public API header](https://github.com/unicorn-engine/unicorn/blob/master/include/unicorn/unicorn.h) defines memory hooks, errors, and context operations. Neither reference is treated here as a guarantee of all-or-nothing instruction rollback. Record actual behavior for the selected version before depending on it.
 
-Use Unicorn's instruction-count limit of one, a defensive code hook, and a finite per-attempt native timeout (initially one second). The count limit is an engine mechanism; the SRS remains the acceptance contract. Verify behavior for two-/four-byte Thumb instructions, ARM conditions that fail, self-branches, and calls/returns. Timeout is a failed Step with rollback, not a successful no-op. A second code hook must stop before another instruction executes if the engine attempts one.
+Use Unicorn's instruction-count limit of one, a defensive code hook, and a finite per-attempt native timeout (initially one second). The count limit is an engine mechanism; the SRS remains the acceptance contract. Verify behavior for two-/four-byte Thumb instructions, ARM conditions that fail, self-branches, and calls/returns. Timeout is a failed Step with rollback, not a successful no-op. A second code hook must stop before another instruction executes if the engine attempts one. In P1 IT blocks, a conditionally skipped instruction also counts as exactly one instruction retirement.
 
 Native instruction fetch can fail after a completed branch into an unmapped address. The adapter must distinguish this from a fault within the current instruction: a completed single instruction within the selected profile, no rejected data access/invalid-instruction event, and observed post-state/target consistent with its decoded control flow can yield successful retirement plus `pc_not_loaded`. A fetch fault before the first instruction never counts as success. Prove this distinction with sequential-end, external branch, POP-PC, and mid-instruction-target tests on the pinned engine. Do not turn all `UC_ERR_FETCH_*` errors into success. If completion cannot be established reliably, the backend gate is blocked until the adapter is corrected; do not weaken the SRS or execute placeholder target code.
 
@@ -289,20 +369,29 @@ State includes the small register set for resynchronization; it never embeds all
 | `GET /api/sessions/{id}/memory?address={n}&length={n}` | Inspect logical memory; query values are decimal integers; 1–4096 bytes. | 200 `MemoryWindow`, including unknown cells | 409 no program; 422 range/overflow/inspection limit |
 | `POST /api/sessions/{id}/step` | Attempt one instruction. Body `{}`. | 200 `{result: StepResult, state: State}`; `result` equals `state.last_step` | 409 no program/unavailable state. Simulated invalid PC, unsupported instruction, memory faults, and execution errors are inside the 200 StepResult, not transport errors. |
 | `POST /api/sessions/{id}/reset` | Copy UserBaselineState into runtime, preserve manual evidence and `step_seq`, clear latest result. Body `{}`. | 200 `State` | 409 `program_not_loaded`; 503 backend recreation failure |
+| `POST /api/sessions/{id}/run` | Execute bounded Run loop of atomic Steps until bound, breakpoint, stop, or fault. Body `{step_limit?: int, time_limit_ms?: int}`. Default step limit 10,000; default time limit 2,000 ms. | 200 `{run_result: RunResult, state: State}` | 409 no program/unavailable state; 422 invalid limit bounds. Faults halt Run and return 200 with `run_result.stop_reason` and rolled-back StepResult. |
+| `POST /api/sessions/{id}/stop` | Concurrent request to signal active Run loop to stop cleanly before the next Step. Body `{}`. Signals `stop_event` without waiting on operation lock. | 200 `{stopped: bool}` | 404 session not found. Always succeeds if session exists, whether Run is active or idle. |
+| `GET /api/sessions/{id}/breakpoints` | List active breakpoints in session. No body. | 200 `{breakpoints: list[BreakpointView]}` | 409 no program; 404 session not found. |
+| `POST /api/sessions/{id}/breakpoints` | Add a breakpoint at `(address, mode)`. Body `{address: int, mode?: "arm" or "thumb"}`. Mode defaults to instruction mode at that address. | 200 `{breakpoints: list[BreakpointView]}` | 409 no program; 422 `invalid_breakpoint` (DATA address, gap, unaligned, or invalid mode). |
+| `DELETE /api/sessions/{id}/breakpoints/{address}` | Remove breakpoint at address. Optional query `mode`. No body. | 200 `{breakpoints: list[BreakpointView]}` | 409 no program; 404 breakpoint not found. |
 
-There is no Run, breakpoint, arbitrary-code evaluation, binary upload, WebSocket, user-management, or database endpoint. A separate “set initial state” bulk endpoint is unnecessary: every validated manual edit updates baseline and runtime, regardless of Step history. There is no temporary-versus-baseline edit mode.
+There is no arbitrary-code evaluation, binary upload, WebSocket/SSE, user-management, or database endpoint in P1. Stop is handled via synchronous HTTP request signaling `stop_event`.
 
-## 11. StepResult contract
+## 11. StepResult and RunResult contracts
+
+### StepResult contract
 
 The response describes an attempt, not always successful execution.
 
 | Field | Meaning |
 | --- | --- |
 | `status` | `executed` or `failed`. Conditional skip is `executed`. |
+| `executed` | Boolean: `true` if the instruction's architectural semantics actually executed (even if resulting register/memory values were unchanged); `false` if the instruction was conditionally skipped (e.g., under a false ARM condition code or false Thumb-2 IT block mask). |
 | `step_seq` | Session counter after the attempt; increments exactly once on commit, unchanged on failure. Matches returned State. |
 | `instruction` | `{address, size, source_line}` (`source_line` null for generated source instructions) or null when no instruction exists at PC. On failure it identifies the attempted instruction. Program already holds text/bytes. |
 | `pc_before`, `pc_after` | Canonical CPU instruction addresses. Identical pre-state on failure after rollback; a successful self-branch may also have equal values. |
 | `condition_passed` | Boolean for conditional execution, null if unconditional. |
+| `it_context` | Null outside IT blocks; otherwise `{block_index, block_total, condition, passed}` describing the instruction's position and outcome within a Thumb-2 IT block. |
 | `register_changes` | Canonical name to `{before, after}` for actually changed R0–R15; CPSR has its own before/after field. No duplicate R13/SP entries. |
 | `cpsr_change`, `flag_changes` | Full CPSR before/after or null, and changed named N/Z/C/V bits. Allows display of both raw status and comparison effects. |
 | `memory_reads` | Ordered successful data reads with `{address, size, bytes}`; excludes instruction fetch. |
@@ -315,24 +404,39 @@ On failure, committed register/flag/write deltas are empty and `branch`/`conditi
 
 The UI already has the program and uses bounded GET memory calls for visible panes. Do not return the entire image or memory space with every Step. Keep only the latest result for highlighting/recovery; no cumulative history collection is needed.
 
+### RunResult contract (P1)
+
+Bounded Run wraps sequential Step executions until a termination condition is reached.
+
+| Field | Meaning |
+| --- | --- |
+| `stop_reason` | Terminal condition: `breakpoint`, `user_stop`, `step_limit`, `time_limit`, `pc_not_loaded`, `execution_failure`, or `backend_unavailable`. |
+| `steps_executed` | Total count of atomic Steps committed during this Run invocation. |
+| `elapsed_ms` | Server wall-clock elapsed time in milliseconds for the Run operation. |
+| `breakpoint_hit` | Integer canonical address of the breakpoint hit, or null if stopped for another reason. |
+| `last_step_result` | StepResult of the last attempted step (null if stopped before any step). |
+| `state` | MachineState after Run stopped (always at a valid committed Step boundary or restored pre-step state). |
+
 ## 12. Frontend architecture
 
 ```text
 App (page-owned session controller and authoritative response state)
 ├── ProgramInput (source/import selector, textarea, file read, mode/stack, source base or import format)
-├── Toolbar (Load, Step, Reset, PC/Go, baseline-edit notice and `step_seq`)
-├── CodeView (gutter, current PC, source and decoded lines)
+├── Toolbar (Load, Step, Run, Stop, Reset, PC/Go, baseline-edit notice, step_seq, run limits)
+├── CodeView (gutter with breakpoint toggle, current PC marker, mode badges $a/$t/$d, source and decoded lines)
 ├── RegisterPanel (values, edits, CPSR/flags, origins, changes)
 ├── StackView (memory window centered around SP)
 ├── MemoryView (address/window, bytes/words, injection/zero-fill)
-└── StatusPanel (parse diagnostics, branch result, stop/error)
+└── StatusPanel (parse diagnostics, branch result, IT context, stop/error, run summaries)
 ```
 
-App owns the session ID, loaded Program, latest State/StepResult, selected inspection windows, and request/pending status. Child components receive read-only data and emit edit/step/select actions. A small typed API client centralizes serialization and error-envelope handling. Local form drafts stay in their components until submitted. No Redux-like store or duplicated CPU state is necessary.
+App owns the session ID, loaded Program, latest State/StepResult/RunResult, active breakpoints set, selected inspection windows, and request/pending status. Child components receive read-only data and emit edit/step/run/stop/breakpoint actions. A small typed API client centralizes serialization and error-envelope handling. Local form drafts stay in their components until submitted. No Redux-like store or duplicated CPU state is necessary.
 
-Use a serialized command function: mark pending, send the mutation, replace state from the response, refresh visible memory/stack windows, then enable controls. If a window refresh fails after a committed mutation, retain the confirmed CPU state but mark the old window stale and offer retry; do not label stale bytes as current. Keep reads inside the same pending interval as commands and discard results after page disposal, so older responses cannot overwrite newer state. A network failure after Step must not trigger another automatic Step: fetch State, compare `step_seq`, and report confirmed completion or unresolved outcome as described in Section 9. A lost Load response offers explicit replacement retry, not a program-recovery protocol.
+Use a serialized command function: mark pending, send the mutation, replace state from the response, refresh visible memory/stack windows, then enable controls. Exception: while a Run request is pending, the Stop button remains active and issues a non-blocking `POST /sessions/{id}/stop` request without waiting for the Run request to return.
 
-CodeView indexes rendered rows by instruction address. Selecting PC scrolls to that row; absent PC clears the marker. Register and flag highlights use explicit deltas, not a render-time comparison of arbitrary cached objects. Memory highlight uses the latest Step's pre/final values intersecting the current window. A same-value write can appear in StatusPanel without a changed-value highlight. Manual edit/load/reset/failure clears execution highlights per SRS.
+If a window refresh fails after a committed mutation, retain the confirmed CPU state but mark the old window stale and offer retry; do not label stale bytes as current. Keep reads inside the same pending interval as commands and discard results after page disposal, so older responses cannot overwrite newer state. A network failure after Step/Run must not trigger another automatic Step/Run: fetch State, compare `step_seq`, and report confirmed completion or unresolved outcome as described in Section 9. A lost Load response offers explicit replacement retry, not a program-recovery protocol.
+
+CodeView indexes rendered rows by instruction or data address. It displays mapping symbol indicators (`$a`, `$t`, `$d`) at section transitions and formats data records distinctly (e.g. hex byte strings) from decoded instructions. A clickable breakpoint gutter on instruction rows toggles breakpoints via `POST`/`DELETE /sessions/{id}/breakpoints`. Selecting PC scrolls to that row; absent PC clears the marker. Register and flag highlights use explicit deltas, not a render-time comparison of arbitrary cached objects. Memory highlight uses the latest Step's pre/final values intersecting the current window. A same-value write can appear in StatusPanel without a changed-value highlight. Manual edit/load/reset/failure clears execution highlights per SRS.
 
 ProgramInput sends the explicitly selected workflow; source mode shows a required base address, import shows format/encoding controls. CodeView uses generated addresses/decoded instructions for stepping and preserves the full source separately, with no invented source-line highlight. Input text is rendered as text, never HTML. No worker-based editor, routing framework, browser database, or client-side emulator is required.
 
@@ -366,11 +470,9 @@ ArmStride/
 │   └── verify_encodings.py     Independent assembler verification
 ├── frontend/                   Svelte/TypeScript UI, typed client, Vite and component tests
 ├── docs/                       Concept, SRS, architecture, and validation reports
-└── spikes/phase0/              Isolated experiment, excluded from the production package
-    ├── pyproject.toml          Spike-only dependencies
-    ├── uv.lock                 Spike-only lock
-    ├── probe.py                Reproducible native execution experiment
-    └── observations.json       Preserved engine observations
+├── spikes/
+│   ├── phase0/                 Historical P0 Unicorn execution spike (preserved)
+│   └── p1_it/                  Planned P1 Thumb-2 IT block semantics validation spike
 ```
 
 `domain/` owns immutable values without web or native-library imports. `architecture/` owns ARM defaults, aliases, encoding/width validation, decoded metadata, and explicit feature exclusions; Capstone objects stay there. `parser/` owns text classification, normalization, source locations, diagnostics, whole-input format selection, and creation of an installable ProgramImage only when no errors remain. `simulation/` owns the logical known-byte memory model in Phase 2, with no native emulator allocation.
@@ -486,9 +588,9 @@ Initial R0/R1/R2 are zero, PC is `0x08000100`, CPSR is `0x00000010`, other regis
 
 All other registers and data memory remain unchanged. Each stop/error is null; Step 4 does not execute its destination. The final fixture also asserts register/flag deltas and empty data-access events. The fixture set must include equally explicit memory-fault and baseline cases, not only arithmetic successes.
 
-### Dependency-ordered implementation phases
+### Historical P0 Validation and Roadmap (Phases 0–8 Completed)
 
-Authoritative current roadmap (Phase 8 is complete):
+The P0 product baseline was developed and verified through historical Phases 0–8:
 
 ```text
 Phase 0  Unicorn behavior spike                 COMPLETE
@@ -496,26 +598,57 @@ Phase 1  Parser fixtures and golden cases       COMPLETE
 Phase 2  Domain and parser                      COMPLETE
 Phase 3  Production backend / injection / Reset COMPLETE
 Phase 4  Core Step / result coverage            COMPLETE
-
 Phase 5  Assembly source input                  COMPLETE
 Phase 6  Local API and lifecycle                COMPLETE
 Phase 7  Basic browser workflow                 COMPLETE
 Phase 8  Memory/stack UI and P0 release check    COMPLETE
 ```
 
-| Phase | Deliverable | Completion condition |
-| --- | --- | --- |
-| 0. Unicorn behavior spike | The headless probes above, before production abstractions | Required Step/PC/fault behavior observed on the pinned engine; adapter rollback demonstrated, or a specific blocker recorded before proceeding. |
-| 1. Parser fixtures and golden cases | 5–10 parser fixtures with provenance and 15–30 compact golden execution cases | SRS PF-01–PF-08 are materialized; real tool captures verify format assumptions; independent expected bytes/state and diagnostics are recorded. No exhaustive ISA table. |
-| 2. Domain and parser | Records, ARM profile, logical MemoryState, errors and fixed text adapters | Parser fixtures pass, defaults/limits/widths and aliases are tested; domain has no web/native imports. |
-| 3. Production backend, injection and Reset | Small adapter based on spike findings, transactional manual edits to baseline/runtime | Golden cases prove Step/rollback, partial memory repair, and Reset preserving user evidence without copying runtime changes. |
-| 4. Core Step/result coverage | Deltas, branch/stop reporting, sequence counter and representative classes | Golden suite and core AC-03–14/17/19 pass for required modes; engine rejections and excluded features remain explicit. |
-| 5. Assembly source input | Small ARM/Thumb assembler boundary, source diagnostics, origin-aware byte normalization | Source/import equivalence, fixed golden outcomes and full Phase 0–4 regression checks; SRS and Phase 5 report updated. COMPLETE. |
-| 6. Local API and lifecycle | FastAPI schemas/routes, registry/locks, launcher and static serving contract | Endpoint tests cover isolation, expiry, atomic replacement load, `step_seq`, and lost-response state/counter recovery without request tracking. COMPLETE. |
-| 7. Basic browser workflow | Input, controls, code/register panels, errors and editing | Source assembly and disassembly import both support Load/inject/Step/Reset for ARM and Thumb; origin, source preservation, diagnostics, baseline PC and counter are visible. COMPLETE. |
-| 8. Memory/stack UI and P0 release check | Views/highlights, browser tests, packaged assets and reproducible dependencies | All SRS AC-01–21 pass, including fault/Reset workflows; one local command serves P0. COMPLETE. |
+All 388 Python unit and integration tests and Playwright acceptance suites pass and form the immutable regression baseline for P1.
 
-All P0 milestones are implemented and verified across 388 Python integration tests and Playwright acceptance suites. Historical milestone reports have been consolidated into this architecture document and the SRS.
+### P1 Semantics Validation: Thumb-2 IT Block Spike
+
+Before implementing production IT block support, an isolated execution semantics spike must be conducted in `spikes/p1_it/` to verify that the pinned execution backend (Unicorn 2.1.4, ARM CPU candidate, Thumb mode) correctly supports ArmStride's single-Step (`count=1`) execution model across IT blocks.
+
+| Probe | Test structure | Required observation / completion condition |
+| --- | --- | --- |
+| IT-01: Single-instruction IT condition true | `IT EQ` + `ADDEQ r0, r1` with Z=1 | `IT` executes, establishes ITSTATE; next step executes `ADDEQ`, updates `r0`, CPSR ITSTATE clears. Verify exact 1-step boundaries. |
+| IT-02: Single-instruction IT condition false | `IT EQ` + `ADDEQ r0, r1` with Z=0 | `IT` executes; next step conditionally skips `ADDEQ` (PC advances by instruction width, `r0` unchanged, no memory/register write deltas, ITSTATE clears). |
+| IT-03: Multi-instruction ITT condition true & false | `ITT NE` + 2 instructions with Z=0 and Z=1 | Verify both instructions execute in order when NE is true; verify both conditionally skip when NE is false across distinct single-step invocations. |
+| IT-04: Alternating ITE block | `ITE EQ` + 2 instructions with Z=1 and Z=0 | When Z=1: step 1 executes, step 2 skips. When Z=0: step 1 skips, step 2 executes. Verify PC advancement and ITSTATE progression. |
+| IT-05: Step-by-step ITSTATE preservation | CPSR read across `count=1` steps | Verify `CPSR[15:10, 26:25]` is faithfully retained and updated by Unicorn across consecutive `emu_start(..., count=1)` calls without premature zeroing or corruption. |
+| IT-06: Same-value execution vs conditional skip | Instruction writes current register value vs skip | Verify that an instruction writing its existing value produces an execution event / write delta, whereas a conditionally skipped instruction produces no write delta and sets `executed: false`. |
+| IT-07: Manual entry into IT block | Set PC directly to controlled instruction without executing `IT` | Verify backend and simulation behavior when ITSTATE is 0; confirm ArmStride preflight rejects manual jump into mid-IT-block. |
+| IT-08: Breakpoint on IT-controlled instruction | Breakpoint hit inside IT block | Verify stopping at a breakpoint on an IT-controlled instruction preserves ITSTATE so subsequent Step or Run continues correctly. |
+
+**Stop/Go Gate:** If the pinned Unicorn engine fails to maintain correct ITSTATE or fails to step through IT blocks one instruction at a time, production implementation of IT blocks must halt immediately, and the blocker must be formally documented before considering alternative strategies.
+
+### Product P1 Implementation Roadmap (Stages P1-A through P1-F)
+
+The P1 implementation follows a strict dependency-ordered progression across six stages:
+
+```text
+Stage P1-A  Validation Spikes & Parser Foundation
+    ↓
+Stage P1-B  ARM/Thumb Runtime Interworking & Data Non-Executability
+    ↓
+Stage P1-C  Thumb-2 IT Block Execution & Skip Reporting
+    ↓
+Stage P1-D  Breakpoints Engine & API
+    ↓
+Stage P1-E  Bounded Run Loop & Concurrent Stop
+    ↓
+Stage P1-F  Frontend UI Integration & Acceptance Verification
+```
+
+| Stage | Scope and deliverables | Completion condition / gates |
+| --- | --- | --- |
+| **Stage P1-A**<br>Validation Spikes & Parser Foundation | 1. Implement IT semantics spike in `spikes/p1_it/`.<br>2. Extend `ProgramImage` domain with `instructions: Sequence[Instruction]` and `data_regions: Sequence[DataRegion]`.<br>3. Parser support for `$a`, `$t`, `$d` mapping symbols as section state transitions.<br>4. Normalization and address overlap validation (instruction vs instruction, instruction vs data, data vs data). | IT spike passes all probes IT-01–08 or blocker documented. Disassembly imports containing `$a`, `$t`, `$d` parse into valid mixed images. Overlaps rejected with 422. Full P0 regression green. |
+| **Stage P1-B**<br>ARM/Thumb Runtime Interworking & Data Non-Executability | 1. Runtime interworking in `UnicornBackend` / `SimulationSession`: read post-step CPSR T-bit, canonicalize PC (`pc & ~1`), resolve `(address, resulting_mode)`.<br>2. Load `DataRegion` bytes into `MemoryState` as read-only known memory; reject execution at data addresses (`pc_not_loaded` or `unsupported_instruction`).<br>3. Interworking branch families tested: BX, BLX, POP {pc}, LDM {pc}.<br>4. Update Golden Execution suite with interworking cases. | Interworking branches cleanly switch mode in a single atomic Step. Data read via LDR succeeds; execution into data halts cleanly. P0 GE-26 replaced by valid interworking check. Full regression green. |
+| **Stage P1-C**<br>Thumb-2 IT Block Execution & Skip Reporting | 1. Implement IT block preflight validation (reject manual PC entry into mid-IT-block).<br>2. Extend `StepResult` with `executed: bool` and `it_context: Optional[ITContext]`.<br>3. Distinguish conditional skip (`executed=False, condition_passed=False`) from executed same-value write (`executed=True`).<br>4. Add golden execution fixtures for IT, ITT, ITE true/false conditions. | All IT block golden cases pass. StepResult accurately differentiates conditional skip from silent execution. Full regression green. |
+| **Stage P1-D**<br>Breakpoints Engine & API | 1. Add `Breakpoint` domain model keyed by `(address, mode)`.<br>2. Session-level breakpoint registry: add, remove, list, clear.<br>3. Pre-execution breakpoint check with single-step resume bypass.<br>4. Preserve ITSTATE and architectural context upon breakpoint hit.<br>5. REST endpoints: `GET /sessions/{id}/breakpoints`, `POST`, `DELETE`. | Breakpoint hit stops before instruction executes; state matches pre-execution; resume advances past breakpoint without immediately re-triggering. API tests green. Full regression green. |
+| **Stage P1-E**<br>Bounded Run Loop & Concurrent Stop | 1. Add `stop_event = threading.Event()` to `SessionEntry`.<br>2. Implement `run()` loop in `SimulationSession` composing existing atomic `step()` calls.<br>3. Enforcement of step count limit and wall-clock execution limit.<br>4. REST endpoint `POST /sessions/{id}/run` returning `RunResult`.<br>5. Non-blocking REST endpoint `POST /sessions/{id}/stop` setting `stop_event` without session lock contention. | Run executes bounded loops stopping on breakpoint, user stop, step limit, time limit, or failure. State remains strictly at a committed Step boundary. Full regression green. |
+| **Stage P1-F**<br>Frontend UI Integration & Acceptance Verification | 1. Update `CodeView` to display `$a`, `$t`, `$d` badges and format data regions.<br>2. Add breakpoint toggle gutter in `CodeView`.<br>3. Add Run and Stop buttons with limit indicators to `Toolbar`.<br>4. Handle `/run` and `/stop` API client workflows and status reporting.<br>5. Write Playwright end-to-end acceptance tests for P1 features.<br>6. Verify full P0 Playwright and backend test suites pass. | All P1 acceptance criteria (`P1-AC-01` through `P1-AC-16`) and P0 criteria (`AC-01` through `AC-21`) pass. Zero regressions. |
 
 ## 16. Architecture decision records
 
@@ -533,6 +666,12 @@ All P0 milestones are implemented and verified across 388 Python integration tes
 | ADR-010 | Fixed parser modules and a single backend implementation; no plugin infrastructure. | A new architecture/format requires an ordinary code change and tests. |
 | ADR-011 | Run and breakpoints are P1; no WebSocket now. | Users advance manually, which directly matches the first useful inspection workflow. |
 | ADR-012 | One monotonic session `step_seq`, plus explicit replacement Load retry; no request IDs, replay logs or recovery endpoint. | Distinguishes repeated identical successful Steps but does not promise exactly-once delivery or resolve every outstanding-request ambiguity. |
+| ADR-013 | Mixed ProgramImage with explicit DataRegions (no DATA CPU mode). Data is loaded into MemoryState as concrete non-executable known bytes; not converted to fake instructions or zero-filled. | Code and data must be kept in distinct collections within ProgramImage; direct execution of data addresses is rejected. |
+| ADR-014 | Runtime ARM/Thumb Interworking authoritative from native CPSR T-bit. Mode transitions determined by CPSR bit 5 post-step, verified against image `(address, mode)`. | Replaces P0's synthetic `GE-26` mode-transition error with architectural state resolution. Canonical PC masks bit 0 (`pc & ~1`). |
+| ADR-015 | Thumb-2 IT block semantics validation spike prerequisite. Mandatory verification of Unicorn 2.1.4 step-by-step ITSTATE preservation before production implementation. | Requires an isolated probe suite before writing production IT code. Blocks development if engine fails. |
+| ADR-016 | Distinguishing IT conditional skip from same-value execution via `executed` and `condition_passed`. Both cases return `status: executed`, but skipped instructions report `executed: false` and empty write sets. | UI and domain must inspect `executed` rather than inferring skips from empty deltas. |
+| ADR-017 | Breakpoints use pre-execution semantics with single-step resume bypass. Identified by `(address, mode)`, preserving execution context and ITSTATE. | Resuming from a breakpoint requires a one-step bypass to avoid re-triggering immediately. |
+| ADR-018 | Bounded Run composes atomic Steps with thread-safe `stop_event` cancellation. Zero duplicate execution paths; Run checks limits and cancellation between Steps. | Run throughput is bounded by individual Step transaction overhead, prioritizing absolute correctness over raw speed. |
 
 ## 17. Repository structure decision
 

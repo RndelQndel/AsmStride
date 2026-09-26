@@ -66,7 +66,12 @@ def test_golden(case):
                 if expected_result['error'] is not None:
                     subset(expected_result['error'], result['error'])
                     result = result | {'error': expected_result['error']}
-                assert result == expected_result
+                compare_result = dict(result)
+                if 'executed' not in expected_result:
+                    compare_result.pop('executed', None)
+                if 'it_context' not in expected_result:
+                    compare_result.pop('it_context', None)
+                assert compare_result == expected_result
             else:
                 assert session.last_step is None
     finally:

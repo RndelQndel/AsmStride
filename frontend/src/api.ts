@@ -2,10 +2,18 @@ export type Mode = 'arm' | 'thumb';
 export type Flag = 'n' | 'z' | 'c' | 'v';
 export interface Register { value: number; origin: 'default' | 'user' | 'execution' }
 export interface Change<T> { before: T; after: T }
+export interface ITContext {
+  block_index: number;
+  block_total: number;
+  condition: string;
+  passed: boolean;
+}
 export interface StepResult {
   status: 'executed' | 'failed'; step_seq: number;
   instruction: { address: number; size: number; source_line: number | null } | null;
   pc_before: number; pc_after: number; condition_passed: boolean | null;
+  executed?: boolean;
+  it_context?: ITContext | null;
   register_changes: Record<string, Change<number>>;
   cpsr_change: Change<number> | null; flag_changes: Partial<Record<Flag, Change<boolean>>>;
   memory_reads: { address: number; size: number; bytes: string }[];
@@ -14,6 +22,10 @@ export interface StepResult {
   stop_reason: string | null;
   error: { code: string; restored: boolean; context: Record<string, unknown> } | null;
 }
+export interface Breakpoint {
+  address: number;
+  mode: Mode;
+}
 export interface State {
   session_id: string; status: 'empty' | 'ready' | 'stopped' | 'unavailable';
   profile: string | null; mode: Mode | null; baseline_pc: number | null; step_seq: number;
@@ -21,6 +33,7 @@ export interface State {
   pc: number | null; stack: { base: number; size: number } | null;
   regions: { base: number; size: number; kind: string; permissions: string }[];
   last_step: StepResult | null;
+  breakpoints?: Breakpoint[];
 }
 export interface Diagnostic {
   code: string; severity: string; message: string; line: number | null;
@@ -29,10 +42,37 @@ export interface Diagnostic {
 export interface Instruction {
   address: number; bytes: string; size: number; source_line: number | null;
   source_text: string; display_text: string; decoded_text: string; feature_exclusion: string | null;
+  mode?: Mode;
+}
+export interface DataRegion {
+  address: number;
+  size: number;
+  bytes: string;
+  source_line: number | null;
 }
 export interface Program {
   profile: string; mode: Mode; format: string; source_text: string;
-  instructions: Instruction[]; diagnostics: Diagnostic[]; instruction_count: number; ignored_line_count: number;
+  instructions: Instruction[];
+  data_regions?: DataRegion[];
+  diagnostics: Diagnostic[]; instruction_count: number; ignored_line_count: number;
+}
+export interface RunResult {
+  start_step_seq: number;
+  end_step_seq: number;
+  steps_committed: number;
+  steps_executed: number;
+  stop_reason: string;
+  elapsed_ms: number;
+  breakpoint_hit: number | null;
+  last_step?: StepResult | null;
+  last_step_result?: StepResult | null;
+}
+export interface RunResponse {
+  run_result: RunResult;
+  state: State;
+}
+export interface StopResponse {
+  signaled: boolean;
 }
 interface LoadCommon { text: string; mode: Mode; stack?: { base: number; size: number } }
 export type LoadRequest = LoadCommon & (
@@ -53,7 +93,7 @@ export async function request<T>(path: string, method = 'GET', body?: unknown): 
     headers: body === undefined ? {} : { 'Content-Type': 'application/json' },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  const result = await response.json();
+  const result = response.status === 204 ? (null as T) : await response.json();
   if (!response.ok) throw new ApiError(response.status, result);
   return result as T;
 }

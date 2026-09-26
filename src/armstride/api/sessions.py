@@ -3,7 +3,7 @@
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from secrets import token_urlsafe
-from threading import Lock
+from threading import Event, Lock
 from time import monotonic
 
 from armstride.domain.models import DomainError
@@ -20,6 +20,7 @@ class SessionEntry:
     lock: object = field(default_factory=Lock)
     users: int = 0
     stack: dict | None = None
+    stop_event: Event = field(default_factory=Event)
 
 
 class SessionRegistry:
@@ -40,6 +41,14 @@ class SessionRegistry:
             session_id = token_urlsafe(24)
             self._entries[session_id] = SessionEntry(self._factory(), self._clock())
             return session_id
+
+    def signal_stop(self, session_id: str) -> bool:
+        with self._lock:
+            entry = self._entries.get(session_id)
+            if entry is None:
+                raise DomainError('session_not_found', 'Session missing or expired. Create a new session.')
+            entry.stop_event.set()
+            return True
 
     @contextmanager
     def access(self, session_id):

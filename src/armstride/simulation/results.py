@@ -41,13 +41,22 @@ class StepError(TypedDict):
     restored: bool
 
 
+class ITContext(TypedDict):
+    block_index: int
+    block_total: int
+    condition: str
+    passed: bool
+
+
 class StepResult(TypedDict):
     status: Literal['executed', 'failed']
+    executed: bool
     step_seq: int
     instruction: InstructionIdentity | None
     pc_before: int
     pc_after: int
     condition_passed: bool | None
+    it_context: ITContext | None
     register_changes: dict[str, ValueChange[int]]
     cpsr_change: ValueChange[int] | None
     flag_changes: dict[str, ValueChange[bool]]
@@ -55,6 +64,9 @@ class StepResult(TypedDict):
     memory_writes: list[MemoryWrite]
     branch: BranchResult | None
     stop_reason: Literal['pc_not_loaded', 'invalid_pc', 'unsupported_instruction',
-                         'memory_fault', 'unsupported_mode_transition', 'execution_error',
-                         'backend_unavailable'] | None
+                         'memory_fault', 'unsupported_mode_transition', 'mode_mismatch',
+                         'non_executable_target', 'invalid_it_block_entry',
+                         'breakpoint', 'user_stop', 'step_limit', 'time_limit',
+                         'execution_error', 'backend_unavailable'] | None
     error: StepError | None
+

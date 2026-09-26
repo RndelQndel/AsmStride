@@ -1,0 +1,296 @@
+{
+  "environment": {
+    "python": "3.14.7",
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "unicorn": "2.1.4",
+    "capstone": "5.0.7",
+    "cpu": "UC_CPU_ARM_CORTEX_A15"
+  },
+  "verdict": "PASS",
+  "probes": [
+    {
+      "case": "IT-01",
+      "name": "Single-instruction block IT EQ (condition true: Z=1)",
+      "observations": [
+        {
+          "step_name": "IT EQ",
+          "pc": "0x1002",
+          "cpsr": "0x60000830",
+          "itstate": "0x8",
+          "registers": {
+            "r1": "0x0"
+          },
+          "fault": null
+        },
+        {
+          "step_name": "MOVEQ r1, #42",
+          "pc": "0x1004",
+          "cpsr": "0x60000030",
+          "itstate": "0x0",
+          "registers": {
+            "r1": "0x2a"
+          },
+          "fault": null
+        }
+      ]
+    },
+    {
+      "case": "IT-02",
+      "name": "Single-instruction block IT EQ (condition false: Z=0)",
+      "observations": [
+        {
+          "step_name": "IT EQ",
+          "pc": "0x1002",
+          "cpsr": "0x20000830",
+          "itstate": "0x8",
+          "registers": {
+            "r1": "0x0"
+          },
+          "fault": null
+        },
+        {
+          "step_name": "MOVEQ r1, #42 (skipped)",
+          "pc": "0x1004",
+          "cpsr": "0x20000030",
+          "itstate": "0x0",
+          "registers": {
+            "r1": "0x0"
+          },
+          "fault": null
+        }
+      ]
+    },
+    {
+      "case": "IT-03",
+      "name": "Multi-instruction block ITT NE (condition true: Z=0)",
+      "observations": [
+        {
+          "step_name": "ITT NE",
+          "pc": "0x1002",
+          "cpsr": "0x20001430",
+          "itstate": "0x14",
+          "registers": {
+            "r1": "0x0",
+            "r2": "0x0"
+          },
+          "fault": null
+        },
+        {
+          "step_name": "MOVNE r1, #1",
+          "pc": "0x1004",
+          "cpsr": "0x20000830",
+          "itstate": "0x8",
+          "registers": {
+            "r1": "0x1",
+            "r2": "0x0"
+          },
+          "fault": null
+        },
+        {
+          "step_name": "MOVNE r2, #2",
+          "pc": "0x1006",
+          "cpsr": "0x20000030",
+          "itstate": "0x0",
+          "registers": {
+            "r1": "0x1",
+            "r2": "0x0"
+          },
+          "fault": null
+        }
+      ]
+    },
+    {
+      "case": "IT-04",
+      "name": "Multi-instruction block ITT NE (condition false: Z=1)",
+      "observations": [
+        {
+          "step_name": "ITT NE",
+          "pc": "0x1002",
+          "cpsr": "0x60001430",
+          "itstate": "0x14",
+          "registers": {
+            "r1": "0x0",
+            "r2": "0x0"
+          },
+          "fault": null
+        },
+        {
+          "step_name": "MOVNE r1, #1 (skipped)",
+          "pc": "0x1004",
+          "cpsr": "0x60000830",
+          "itstate": "0x8",
+          "registers": {
+            "r1": "0x0",
+            "r2": "0x0"
+          },
+          "fault": null
+        },
+        {
+          "step_name": "MOVNE r2, #2 (skipped)",
+          "pc": "0x1006",
+          "cpsr": "0x60000030",
+          "itstate": "0x0",
+          "registers": {
+            "r1": "0x0",
+            "r2": "0x2"
+          },
+          "fault": null
+        }
+      ]
+    },
+    {
+      "case": "IT-05",
+      "name": "Mixed block ITE EQ (True: Then executes, Else skips)",
+      "observations": [
+        {
+          "step_name": "ITE EQ",
+          "pc": "0x1002",
+          "cpsr": "0x60000c30",
+          "itstate": "0xc",
+          "registers": {
+            "r1": "0x0",
+            "r2": "0x0"
+          },
+          "fault": null
+        },
+        {
+          "step_name": "MOVEQ r1, #10 (executes)",
+          "pc": "0x1004",
+          "cpsr": "0x60001830",
+          "itstate": "0x18",
+          "registers": {
+            "r1": "0xa",
+            "r2": "0x0"
+          },
+          "fault": null
+        },
+        {
+          "step_name": "MOVNE r2, #20 (skips)",
+          "pc": "0x1006",
+          "cpsr": "0x60000030",
+          "itstate": "0x0",
+          "registers": {
+            "r1": "0xa",
+            "r2": "0x0"
+          },
+          "fault": null
+        }
+      ]
+    },
+    {
+      "case": "IT-06",
+      "name": "4-instruction block ITET EQ step-by-step",
+      "observations": [
+        {
+          "step_name": "ITET EQ",
+          "pc": "0x1002",
+          "cpsr": "0x64000830",
+          "itstate": "0xa",
+          "registers": {
+            "r1": "0x0",
+            "r2": "0x0",
+            "r3": "0x0",
+            "r4": "0x0"
+          },
+          "fault": null
+        },
+        {
+          "step_name": "MOVEQ r1, #1 (exec)",
+          "pc": "0x1004",
+          "cpsr": "0x60001430",
+          "itstate": "0x14",
+          "registers": {
+            "r1": "0x1",
+            "r2": "0x0",
+            "r3": "0x0",
+            "r4": "0x0"
+          },
+          "fault": null
+        },
+        {
+          "step_name": "MOVNE r2, #2 (skip)",
+          "pc": "0x1006",
+          "cpsr": "0x60000830",
+          "itstate": "0x8",
+          "registers": {
+            "r1": "0x1",
+            "r2": "0x0",
+            "r3": "0x0",
+            "r4": "0x0"
+          },
+          "fault": null
+        },
+        {
+          "step_name": "MOVEQ r3, #3 (exec)",
+          "pc": "0x1008",
+          "cpsr": "0x60000030",
+          "itstate": "0x0",
+          "registers": {
+            "r1": "0x1",
+            "r2": "0x0",
+            "r3": "0x3",
+            "r4": "0x0"
+          },
+          "fault": null
+        },
+        {
+          "step_name": "MOVNE r4, #4 (skip)",
+          "pc": "0x100a",
+          "cpsr": "0x20000030",
+          "itstate": "0x0",
+          "registers": {
+            "r1": "0x1",
+            "r2": "0x0",
+            "r3": "0x3",
+            "r4": "0x4"
+          },
+          "fault": null
+        }
+      ]
+    },
+    {
+      "case": "IT-07",
+      "name": "32-bit Thumb-2 instruction conditionally skipped without memory fault",
+      "observations": [
+        {
+          "step_name": "IT EQ",
+          "pc": "0x1002",
+          "cpsr": "0x20000830",
+          "itstate": "0x8",
+          "registers": {
+            "r0": "0x50000000",
+            "r1": "0x1234"
+          },
+          "fault": null
+        },
+        {
+          "step_name": "LDREQ.W r1, [r0] (skipped - no fault)",
+          "pc": "0x1006",
+          "cpsr": "0x20000030",
+          "itstate": "0x0",
+          "registers": {
+            "r0": "0x50000000",
+            "r1": "0x1234"
+          },
+          "fault": null
+        }
+      ]
+    },
+    {
+      "case": "IT-08",
+      "name": "Mid-IT block entry detection (ITSTATE==0 on controlled instruction)",
+      "observations": [
+        {
+          "step_name": "Manual jump into 0x1002 with ITSTATE==0",
+          "pc": "0x1004",
+          "cpsr": "0x20000030",
+          "itstate": "0x0",
+          "registers": {
+            "r1": "0x2a"
+          },
+          "fault": null
+        }
+      ]
+    }
+  ]
+}

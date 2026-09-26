@@ -17,7 +17,9 @@ def state_view(session_id, entry):
                 stack=entry.stack, last_step=session.last_step,
                 regions=[dict(base=r.address, size=len(r.raw_bytes), kind=r.origin,
                               permissions='rw' if r.writable else 'rx')
-                         for r in machine.memory.regions] if machine else [])
+                         for r in machine.memory.regions] if machine else [],
+                breakpoints=[dict(address=bp.address, mode=bp.mode)
+                             for bp in session.list_breakpoints()])
 
 
 def diagnostic_view(diagnostic):
@@ -30,7 +32,7 @@ def instruction_view(instruction):
     return dict(address=instruction.address, bytes=instruction.raw_bytes.hex(), size=instruction.size,
                 source_line=instruction.source_line, source_text=instruction.source_text,
                 display_text=instruction.display_text, decoded_text=instruction.decoded_text,
-                feature_exclusion=instruction.feature_exclusion)
+                feature_exclusion=instruction.feature_exclusion, mode=instruction.mode)
 
 
 def program_view(result):
@@ -38,6 +40,8 @@ def program_view(result):
     return dict(profile=program.profile, mode=program.mode, format=program.format,
                 source_text=program.source_text,
                 instructions=[instruction_view(i) for i in program.instructions],
+                data_regions=[dict(address=d.address, size=d.size, bytes=d.data.hex(), source_line=d.source_line)
+                              for d in program.data_regions],
                 diagnostics=[diagnostic_view(d) for d in result.diagnostics],
                 instruction_count=len(program.instructions),
                 ignored_line_count=sum(d.code == 'ignored_line' for d in result.diagnostics))

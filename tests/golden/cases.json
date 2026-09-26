@@ -3234,7 +3234,7 @@
   },
   {
     "id": "GE-18",
-    "name": "Thumb IT is loadable with a warning but cannot execute in P0",
+    "name": "Thumb IT executes and establishes ITSTATE in CPSR in P1",
     "profile": "armv7-a-le",
     "mode": "thumb",
     "program": [
@@ -3290,16 +3290,25 @@
         }
       ],
       "synthetic_policy_case": true,
-      "derivation": "Thumb IT is loadable with a warning but cannot execute in P0"
+      "derivation": "Thumb IT executes and establishes ITSTATE in CPSR in P1"
     },
     "actions": [
       {
         "op": "step",
         "arguments": {},
         "expect": {
-          "step_seq": 0,
+          "step_seq": 1,
           "runtime": {
-            "register_changes": {},
+            "register_changes": {
+              "cpsr": {
+                "before": 48,
+                "after": 2096
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4098
+              }
+            },
             "memory_changes": {}
           },
           "baseline": {
@@ -3307,26 +3316,29 @@
             "memory_changes": {}
           },
           "result": {
-            "status": "failed",
+            "status": "executed",
+            "executed": true,
             "pc_before": 4096,
-            "pc_after": 4096,
+            "pc_after": 4098,
             "condition_passed": null,
+            "it_context": null,
             "branch": null,
-            "stop_reason": "unsupported_instruction",
-            "error": {
-              "code": "unsupported_instruction",
-              "context": {
-                "pc": 4096,
-                "source_line": 1
-              },
-              "restored": true
-            },
+            "stop_reason": "pc_not_loaded",
+            "error": null,
             "memory_reads": [],
             "memory_writes": [],
             "flag_changes": {},
-            "step_seq": 0,
-            "register_changes": {},
-            "cpsr_change": null,
+            "step_seq": 1,
+            "register_changes": {
+              "pc": {
+                "before": 4096,
+                "after": 4098
+              }
+            },
+            "cpsr_change": {
+              "before": 48,
+              "after": 2096
+            },
             "instruction": {
               "address": 4096,
               "size": 2,
@@ -4412,7 +4424,7 @@
   },
   {
     "id": "GE-26",
-    "name": "Mode-changing BX rolls back even if the native transfer succeeds",
+    "name": "Mode-changing BX switches mode and canonicalizes PC",
     "profile": "armv7-a-le",
     "mode": "arm",
     "program": [
@@ -4468,16 +4480,25 @@
         }
       ],
       "synthetic_policy_case": true,
-      "derivation": "Mode-changing BX rolls back even if the native transfer succeeds"
+      "derivation": "Mode-changing BX switches mode and canonicalizes PC"
     },
     "actions": [
       {
         "op": "step",
         "arguments": {},
         "expect": {
-          "step_seq": 0,
+          "step_seq": 1,
           "runtime": {
-            "register_changes": {},
+            "register_changes": {
+              "cpsr": {
+                "before": 16,
+                "after": 48
+              },
+              "pc": {
+                "before": 4096,
+                "after": 36864
+              }
+            },
             "memory_changes": {}
           },
           "baseline": {
@@ -4485,26 +4506,34 @@
             "memory_changes": {}
           },
           "result": {
-            "status": "failed",
+            "status": "executed",
             "pc_before": 4096,
-            "pc_after": 4096,
+            "pc_after": 36864,
             "condition_passed": null,
-            "branch": null,
-            "stop_reason": "unsupported_mode_transition",
-            "error": {
-              "code": "unsupported_mode_transition",
-              "context": {
-                "pc": 4096,
-                "source_line": 1
-              },
-              "restored": true
+            "branch": {
+              "kind": "branch",
+              "taken": true,
+              "target": 36864,
+              "condition": null,
+              "fallthrough": 4100
             },
+            "stop_reason": "pc_not_loaded",
+
+            "error": null,
             "memory_reads": [],
             "memory_writes": [],
             "flag_changes": {},
-            "step_seq": 0,
-            "register_changes": {},
-            "cpsr_change": null,
+            "step_seq": 1,
+            "register_changes": {
+              "pc": {
+                "before": 4096,
+                "after": 36864
+              }
+            },
+            "cpsr_change": {
+              "before": 16,
+              "after": 48
+            },
             "instruction": {
               "address": 4096,
               "size": 4,
@@ -4514,6 +4543,7 @@
         }
       }
     ]
+
   },
   {
     "id": "GE-27",

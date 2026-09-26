@@ -157,11 +157,7 @@ def test_decode_golden_bytes_without_executing_or_using_display_as_an_oracle():
         assert result.load_success, (case["id"], result.diagnostics)
         assert [i.raw_bytes.hex() for i in result.records] == [i["bytes"] for i in case["program"]]
         assert [i.size for i in result.records] == [i["size"] for i in case["program"]]
-        if case["id"] == "GE-18":
-            assert result.records[0].feature_exclusion
-            assert result.diagnostics[0].code == "unsupported_instruction"
-        else:
-            assert not result.diagnostics, (case["id"], result.diagnostics)
+        assert not result.diagnostics, (case["id"], result.diagnostics)
 
 
 @pytest.mark.parametrize("name", ["NOP", "MOV", "ADDEQ", "MOVSNE", "B.W"])
@@ -196,3 +192,90 @@ def test_decoder_register_shift_uses_domain_register_names():
     assert result.load_success
     assert result.records[0].decode.operands[2].shift == ("lsl_reg", "r3")
     assert result.records[0].decode.registers_written == ("r0",)
+
+
+def test_p1_mapping_symbols_mixed_mode_parsing():
+    text = """$a
+0x1000: e3a00005 MOV r0, #5
+$t
+0x1004: 2106 MOVS r1, #6
+$d
+0x1006: 00000042 .word 0x42
+"""
+    result = parse(text, mode="arm", format="generic")
+    assert result.load_success
+    assert len(result.program.instructions) == 2
+    assert result.program.instructions[0].address == 0x1000
+    assert result.program.instructions[0].mode == "arm"
+    assert result.program.instructions[1].address == 0x1004
+    assert result.program.instructions[1].mode == "thumb"
+    assert len(result.program.data_regions) == 1
+    assert result.program.data_regions[0].address == 0x1006
+    assert result.program.data_regions[0].data == b"\x42\x00\x00\x00"
+    assert result.ignored_lines == (1, 3, 5)
+
+
+def test_p1_address_overlap_rejection():
+    # Instruction vs data overlap
+    text_overlap_inst_data = """$a
+0x1000: e3a00005 MOV r0, #5
+$d
+0x1002: 00000042 .word 0x42
+"""
+    res1 = parse(text_overlap_inst_data, mode="arm", format="generic")
+    assert not res1.load_success
+    assert errors(res1) == ["overlapping_instructions"]
+
+    # Data vs data overlap
+    text_overlap_data = """$a
+0x1008: e3a00005 MOV r0, #5
+$d
+0x1000: 00000042 .word 0x42
+0x1002: 00000010 .word 0x10
+"""
+    res2 = parse(text_overlap_data, mode="arm", format="generic")
+    assert not res2.load_success
+    assert errors(res2) == ["overlapping_data"]
+
+    # Duplicate instruction & data address
+    text_dup = """$a
+0x1000: e3a00005 MOV r0, #5
+$d
+0x1000: 00000042 .word 0x42
+"""
+    res3 = parse(text_dup, mode="arm", format="generic")
+    assert not res3.load_success
+    assert errors(res3) == ["duplicate_instruction_address"]
+
+
+def test_p1_objdump_and_fromelf_mapping_symbols():
+    # Objdump style
+    objdump_text = """00008000 <$a>:
+    8000:\te3a00005 \tmov\tr0, #5
+00008004 <$t>:
+    8004:\t2106     \tmovs\tr1, #6
+00008006 <$d>:
+    8006:\t00000042 \t.word\t0x00000042
+"""
+    res_obj = parse(objdump_text, mode="arm", format="objdump")
+    assert res_obj.load_success
+    assert res_obj.program.instructions[0].mode == "arm"
+    assert res_obj.program.instructions[1].mode == "thumb"
+    assert len(res_obj.program.data_regions) == 1
+    assert res_obj.program.data_regions[0].data == b"\x42\x00\x00\x00"
+
+    # Fromelf style
+    fromelf_text = """    $a
+    0x00008000:    e3a00005    ....    MOV      r0,#5
+    $t
+    0x00008004:    2106                MOVS     r1,#6
+    $d
+    0x00008006:    00000042    ....    DCD      0x00000042
+"""
+    res_fe = parse(fromelf_text, mode="arm", format="fromelf")
+    assert res_fe.load_success
+    assert res_fe.program.instructions[0].mode == "arm"
+    assert res_fe.program.instructions[1].mode == "thumb"
+    assert len(res_fe.program.data_regions) == 1
+    assert res_fe.program.data_regions[0].data == b"\x42\x00\x00\x00"
+

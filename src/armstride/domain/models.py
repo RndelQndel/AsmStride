@@ -38,6 +38,12 @@ class Diagnostic:
 
 
 @dataclass(frozen=True, slots=True)
+class Breakpoint:
+    address: int
+    mode: Mode
+
+
+@dataclass(frozen=True, slots=True)
 class Operand:
     kind: str
     register: str | None = None
@@ -94,23 +100,60 @@ class Instruction:
         return len(self.raw_bytes)
 
 
-def instruction_conflicts(instructions: tuple[Instruction, ...]) -> tuple[Diagnostic, ...]:
+@dataclass(frozen=True, slots=True)
+class DataRegion:
+    address: int
+    data: bytes
+    source_line: int | None = None
+    source_text: str = ""
+
+    def __post_init__(self):
+        if not isinstance(self.data, bytes):
+            raise TypeError("DataRegion data must be immutable bytes.")
+        validate_range(self.address, self.size, "invalid_encoding")
+        if self.source_line is not None and self.source_line < 1:
+            raise DomainError("invalid_input", "Source lines are one-based.")
+
+    @property
+    def size(self) -> int:
+        return len(self.data)
+
+
+def program_conflicts(
+    instructions: tuple[Instruction, ...],
+    data_regions: tuple[DataRegion, ...] = (),
+) -> tuple[Diagnostic, ...]:
     diagnostics = []
-    previous = None
+    items = []
+    for inst in instructions:
+        items.append((inst.address, inst.size, True, inst.source_line, inst.source_text))
+    for dr in data_regions:
+        items.append((dr.address, dr.size, False, dr.source_line, dr.source_text))
+    items.sort(key=lambda x: x[0])
+
     starts = {}
-    for instruction in sorted(instructions, key=lambda entry: entry.address):
-        duplicate = starts.get(instruction.address)
-        conflict = duplicate or (previous if previous and
-                                  instruction.address < previous.address + previous.size else None)
+    previous = None
+    for addr, size, is_inst, s_line, s_text in items:
+        duplicate = starts.get(addr)
+        conflict = duplicate or (previous if previous and addr < previous[0] + previous[1] else None)
         if conflict:
+            c_addr, c_size, c_is_inst, c_line, c_text = conflict
+            if duplicate:
+                code = "duplicate_instruction_address" if (is_inst or c_is_inst) else "duplicate_address"
+            else:
+                code = "overlapping_instructions" if (is_inst or c_is_inst) else "overlapping_data"
+            related = tuple(line for line in (c_line, s_line) if line is not None)
             diagnostics.append(Diagnostic(
-                "error", "duplicate_instruction_address" if duplicate else "overlapping_instructions",
-                "Instruction ranges conflict.", instruction.source_line, instruction.source_text,
-                tuple(line for line in (conflict.source_line, instruction.source_line) if line is not None)))
-        starts.setdefault(instruction.address, instruction)
-        if previous is None or instruction.address + instruction.size > previous.address + previous.size:
-            previous = instruction
+                "error", code, "Address ranges conflict.", s_line, s_text, related
+            ))
+        starts.setdefault(addr, (addr, size, is_inst, s_line, s_text))
+        if previous is None or addr + size > previous[0] + previous[1]:
+            previous = (addr, size, is_inst, s_line, s_text)
     return tuple(diagnostics)
+
+
+def instruction_conflicts(instructions: tuple[Instruction, ...]) -> tuple[Diagnostic, ...]:
+    return program_conflicts(instructions, ())
 
 
 @dataclass(frozen=True, slots=True)
@@ -120,6 +163,7 @@ class ProgramImage:
     source_text: str
     format: str
     profile: str = "armv7-a-le"
+    data_regions: tuple[DataRegion, ...] = ()
     address_index: Mapping[int, Instruction] = field(init=False, repr=False, compare=False)
 
     def __post_init__(self):
@@ -129,13 +173,15 @@ class ProgramImage:
         if len(ordered) > MAX_INSTRUCTIONS:
             raise DomainError("input_limit", "Too many instructions.", limit=MAX_INSTRUCTIONS)
         if self.mode not in ("arm", "thumb") or any(
-                instruction.mode != self.mode or instruction.profile != self.profile for instruction in ordered):
-            raise DomainError("invalid_input", "Instructions must share the program profile and mode.")
-        conflicts = instruction_conflicts(ordered)
+                instruction.mode not in ("arm", "thumb") or instruction.profile != self.profile for instruction in ordered):
+            raise DomainError("invalid_input", "Instructions must share the program profile and have valid modes.")
+        ordered_data = tuple(sorted(self.data_regions, key=lambda region: region.address))
+        conflicts = program_conflicts(ordered, ordered_data)
         if conflicts:
             raise DomainError(conflicts[0].code, conflicts[0].message,
                               related_lines=conflicts[0].related_lines)
         object.__setattr__(self, "instructions", ordered)
+        object.__setattr__(self, "data_regions", ordered_data)
         object.__setattr__(self, "address_index", MappingProxyType({i.address: i for i in ordered}))
 
     @property
@@ -149,10 +195,12 @@ class ParseResult:
     records: tuple[Instruction, ...]
     diagnostics: tuple[Diagnostic, ...]
     selected_format: str
+    data_regions: tuple[DataRegion, ...] = ()
 
     def __post_init__(self):
         object.__setattr__(self, "records", tuple(self.records))
         object.__setattr__(self, "diagnostics", tuple(self.diagnostics))
+        object.__setattr__(self, "data_regions", tuple(self.data_regions))
 
     @property
     def record_count(self) -> int:
@@ -169,3 +217,4 @@ class ParseResult:
     @property
     def ignored_line_count(self) -> int:
         return len(self.ignored_lines)
+

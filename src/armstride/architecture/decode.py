@@ -32,8 +32,6 @@ def register_name(instruction, register: int) -> str | None:
 
 
 def feature_exclusion(operation: str, groups: tuple[str, ...]) -> str | None:
-    if operation == "it":
-        return "Thumb IT blocks are outside P0."
     if operation.startswith(("ldrex", "strex")) or operation == "clrex":
         return "Exclusive monitor state is outside P0."
     if operation in SYSTEM_OPERATIONS or operation.startswith(("rfe", "srs")) or "privilege" in groups:

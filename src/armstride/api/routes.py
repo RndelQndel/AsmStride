@@ -5,8 +5,9 @@ from typing import Annotated
 from fastapi import APIRouter, Query, Request, Response
 from fastapi.responses import JSONResponse
 
-from armstride.api.schemas import (AssemblyRequest, BytesPatch, CreateResponse, EmptyRequest, ErrorEnvelope,
-    LoadRequest, LoadResponse, MemoryWindow, RegisterRequest, State, StepResponse, ValueRequest, ZeroPatch)
+from armstride.api.schemas import (AssemblyRequest, Breakpoint, BreakpointRequest, BytesPatch,
+    CreateResponse, EmptyRequest, ErrorEnvelope, LoadRequest, LoadResponse, MemoryWindow,
+    RegisterRequest, RunRequest, RunResponse, State, StepResponse, StopResponse, ValueRequest, ZeroPatch)
 from armstride.api.sessions import IDLE_SECONDS, MAX_SESSIONS
 from armstride.api.views import diagnostic_view, instruction_view, program_view, state_view
 from armstride.architecture.arm import STACK_BASE, STACK_SIZE
@@ -138,3 +139,39 @@ def reset(session_id: str, body: EmptyRequest, request: Request):
     with request.app.state.registry.access(session_id) as entry:
         entry.session.reset()
         return state_view(session_id, entry)
+
+
+@router.get('/{session_id}/breakpoints', response_model=list[Breakpoint])
+def list_breakpoints(session_id: str, request: Request):
+    with request.app.state.registry.access(session_id) as entry:
+        return [dict(address=bp.address, mode=bp.mode) for bp in entry.session.list_breakpoints()]
+
+
+@router.post('/{session_id}/breakpoints', status_code=201, response_model=Breakpoint)
+def add_breakpoint(session_id: str, body: BreakpointRequest, request: Request):
+    with request.app.state.registry.access(session_id) as entry:
+        bp = entry.session.add_breakpoint(body.address, mode=body.mode)
+        return dict(address=bp.address, mode=bp.mode)
+
+
+@router.delete('/{session_id}/breakpoints/{address}', status_code=204)
+def remove_breakpoint(session_id: str, address: int, request: Request):
+    with request.app.state.registry.access(session_id) as entry:
+        entry.session.remove_breakpoint(address)
+        return Response(status_code=204)
+
+
+@router.post('/{session_id}/run', response_model=RunResponse)
+def run_session(session_id: str, body: RunRequest, request: Request):
+    with request.app.state.registry.access(session_id) as entry:
+        entry.stop_event.clear()
+        run_res = entry.session.run(stop_event=entry.stop_event, max_steps=body.step_limit,
+                                   timeout_seconds=body.time_limit_ms / 1000.0)
+        return dict(run_result=run_res, state=state_view(session_id, entry))
+
+
+@router.post('/{session_id}/stop', response_model=StopResponse)
+def stop_session(session_id: str, body: EmptyRequest, request: Request):
+    request.app.state.registry.signal_stop(session_id)
+    return dict(signaled=True)
+

@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import App from '../src/App.svelte';
 import RegisterPanel from '../src/RegisterPanel.svelte';
+import CodeView from '../src/CodeView.svelte';
+import StatusPanel from '../src/StatusPanel.svelte';
 import { ApiError, request, uint32 } from '../src/api';
 import type { Program, State, StepResult } from '../src/api';
 import { PageSession } from '../src/session.svelte';
@@ -255,4 +257,125 @@ it('renders API lowercase flag keys and sends the corresponding unsigned mask', 
   expect(zero.classList.contains('changed')).toBe(true);
   await fireEvent.click(zero);
   expect(edit).toHaveBeenLastCalledWith('cpsr', 0, 1073741824);
+});
+
+it('supports breakpoint toggle via POST and DELETE and syncs with state', async () => {
+  const { session, fetcher } = await loadedSession();
+  // Initially no breakpoints
+  expect(session.hasBreakpoint(4096)).toBe(false);
+
+  // Toggle on -> calls POST /breakpoints then GET /breakpoints
+  fetcher.mockResolvedValueOnce(json({ address: 4096, mode: 'arm' }))
+    .mockResolvedValueOnce(json([{ address: 4096, mode: 'arm' }]));
+  await session.toggleBreakpoint(4096, 'arm');
+  expect(fetcher).toHaveBeenCalledWith('/api/sessions/page-1/breakpoints', expect.objectContaining({ method: 'POST' }));
+  expect(session.hasBreakpoint(4096)).toBe(true);
+
+  // Toggle off -> calls DELETE /breakpoints/4096 then GET /breakpoints
+  fetcher.mockResolvedValueOnce(new Response(null, { status: 204 }))
+    .mockResolvedValueOnce(json([]));
+  await session.toggleBreakpoint(4096, 'arm');
+  expect(fetcher).toHaveBeenCalledWith('/api/sessions/page-1/breakpoints/4096', expect.objectContaining({ method: 'DELETE' }));
+  expect(session.hasBreakpoint(4096)).toBe(false);
+});
+
+it('rejects setting breakpoint on a data region', async () => {
+  const { session } = await loadedSession();
+  session.program = {
+    ...program(),
+    data_regions: [{ address: 0x2000, size: 4, bytes: '12345678', source_line: 1 }]
+  };
+  const err = await session.toggleBreakpoint(0x2000);
+  expect(err).toBe('Cannot set breakpoint on data region.');
+  expect(session.message).toContain('data region');
+});
+
+it('executes Run loop, records runResult, and handles stop', async () => {
+  const { session, fetcher } = await loadedSession();
+  const runRes = {
+    start_step_seq: 0,
+    end_step_seq: 5,
+    steps_committed: 5,
+    steps_executed: 5,
+    stop_reason: 'breakpoint',
+    elapsed_ms: 12.5,
+    breakpoint_hit: 4100,
+    last_step: stepResult(),
+  };
+  fetcher.mockResolvedValueOnce(json({
+    run_result: runRes,
+    state: { ...state(), step_seq: 5, pc: 4100 }
+  }));
+  const promise = session.run(100, 1000);
+  expect(session.running).toBe(true);
+  expect(session.editable).toBe(false);
+  await promise;
+  expect(session.running).toBe(false);
+  expect(session.runResult?.stop_reason).toBe('breakpoint');
+  expect(session.state?.step_seq).toBe(5);
+
+  // Test stop
+  fetcher.mockResolvedValueOnce(json({ signaled: true }));
+  session.running = true;
+  await session.stop();
+  expect(fetcher).toHaveBeenCalledWith('/api/sessions/page-1/stop', expect.objectContaining({ method: 'POST' }));
+});
+
+it('renders CodeView with breakpoint gutter, marker combinations, and data rows', async () => {
+  const toggleBp = vi.fn();
+  const select = vi.fn();
+  const mixedProgram: Program = {
+    profile: 'armv7-a-le',
+    mode: 'arm',
+    format: 'fromelf',
+    source_text: 'source',
+    instructions: [
+      { address: 0x1000, bytes: 'e1a00000', size: 4, source_line: 1, source_text: 'nop', display_text: 'nop', decoded_text: 'nop', feature_exclusion: null, mode: 'arm' },
+      { address: 0x1004, bytes: '46c0', size: 2, source_line: 2, source_text: 'nop', display_text: 'nop', decoded_text: 'nop', feature_exclusion: null, mode: 'thumb' },
+    ],
+    data_regions: [
+      { address: 0x1008, size: 4, bytes: '12345678', source_line: 3 }
+    ],
+    diagnostics: [],
+    instruction_count: 2,
+    ignored_line_count: 0
+  };
+  const testState: State = {
+    ...state(),
+    pc: 0x1000,
+    breakpoints: [{ address: 0x1000, mode: 'arm' }]
+  };
+  render(CodeView, { program: mixedProgram, state: testState, disabled: false, select, onToggleBreakpoint: toggleBp });
+
+  // 0x1000 has both PC and BP -> button shows ▶●
+  const pcBtn0 = screen.getByRole('button', { name: 'Select PC 0x00001000' });
+  expect(pcBtn0.textContent).toContain('▶●');
+
+  // Toggle breakpoint button for 0x1000 is present and clickable
+  const bpBtn0 = screen.getByRole('button', { name: 'Toggle breakpoint at 0x00001000' });
+  expect(bpBtn0.textContent).toContain('●');
+  await fireEvent.click(bpBtn0);
+  expect(toggleBp).toHaveBeenCalledWith(0x1000, 'arm');
+
+  // Data row is rendered with $d badge and DATA label
+  expect(screen.getByText('DATA (4 bytes)')).toBeDefined();
+  expect(screen.getByText('$d · DATA')).toBeDefined();
+});
+
+it('renders StatusPanel with IT block condition details and conditional skip', () => {
+  const step: StepResult = {
+    ...stepResult(),
+    executed: false,
+    condition_passed: false,
+    it_context: {
+      block_index: 2,
+      block_total: 2,
+      condition: 'EQ',
+      passed: false
+    }
+  };
+  render(StatusPanel, { diagnostics: [], error: null, step, message: 'Step completed' });
+  expect(screen.getByText(/IT Block \[2\/2\]/)).toBeDefined();
+  expect(screen.getByText(/not passed \(conditionally skipped\)/)).toBeDefined();
+  expect(screen.getByText(/Instruction conditionally skipped/)).toBeDefined();
 });

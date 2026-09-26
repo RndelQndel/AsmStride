@@ -116,7 +116,7 @@ def test_incomplete_generated_bytes_fail_normalization(mode, raw, monkeypatch):
     assert result.diagnostics[0].code == 'invalid_encoding'
 
 
-@pytest.mark.parametrize('mode,source', [('arm', 'svc #0'), ('thumb', 'it eq\nmoveq r0,r1')])
+@pytest.mark.parametrize('mode,source', [('arm', 'svc #0'), ('thumb', 'clrex')])
 def test_excluded_execution_features_remain_loadable_with_warnings(mode, source):
     result = ASSEMBLER.assemble(source, mode=mode, base_address=0x1000)
     assert result.load_success

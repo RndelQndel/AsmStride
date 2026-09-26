@@ -6,7 +6,7 @@ from armstride.architecture.decode import is_bare_mnemonic
 from armstride.parser.records import ADDRESS_RECORD, SourceLine, addressed_record, is_common_metadata
 
 HEADERS = re.compile(r"(?:\*\* Section #\d+\b.*|Size\s*:\s*\d+ bytes.*|Address:\s*0[xX][0-9a-fA-F]+)\s*$")
-SYMBOL = re.compile(r"(?:\$[at](?:\.\d+)?|\[Anonymous symbol #\d+\]|[A-Za-z_.$][\w.$]*)$")
+SYMBOL = re.compile(r"(?:\$[atd](?:\.\d+)?|\[Anonymous symbol #\d+\]|[A-Za-z_.$][\w.$]*)$")
 
 
 def symbol_lines(lines: tuple[SourceLine, ...]) -> frozenset[int]:
