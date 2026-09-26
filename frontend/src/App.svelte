@@ -43,47 +43,37 @@
 </script>
 
 <svelte:window onpagehide={() => session.dispose()} onpageshow={(event) => { if (event.persisted) location.reload(); }} onkeydown={handleKeydown} />
-<header>
+<header class="app-header toolbar" aria-label="Execution controls">
   <div class="header-brand">
-    <h1>ArmStride</h1>
-    <p class="tagline">Interactive ARMv7-A Assembly Simulator</p>
+    <h1>⚡ ArmStride</h1>
+    <span class="badge">ARMv7-A</span>
   </div>
-  <span class="badge">ARMv7-A · little-endian</span>
+  <div class="header-controls">
+    <div class="action-buttons">
+      <button class="step-btn" disabled={!session.editable || session.running} onclick={() => session.step()} title="Step instruction (F7 or F8)">Step</button>
+      <button class="primary run-btn" disabled={!session.editable || session.running} onclick={() => session.run(stepLimit, timeLimitMs)} title="Run instructions until breakpoint or limit (F5)">Run</button>
+      <button class="stop-btn" disabled={!session.running} onclick={() => session.stop()} title="Stop execution">Stop</button>
+      <button class="reset-btn" disabled={session.running || session.pending || session.expired || !session.state || session.state.status === 'empty' || session.uncertainty === 'program'} onclick={() => session.reset()} title="Reset execution to baseline (F9)">Reset</button>
+    </div>
+    <div class="limit-controls">
+      <label title="Step count limit per Run">Limit <input type="number" min="1" max="100000" bind:value={stepLimit} disabled={session.running || !session.editable} style="width: 60px;" /> steps</label>
+    </div>
+    <form onsubmit={go} class="pc-form">
+      <label>Start / current PC<input bind:value={pc} disabled={!session.editable || session.running} aria-invalid={!!pcError} spellcheck="false" placeholder="0x1000" /></label>
+      <button disabled={!session.editable || session.running} class="go-btn" title="Jump PC without executing">Go</button>
+    </form>
+    <div class="status-chips">
+      <span class="status-badge status-{session.running ? 'running' : session.state?.status ?? 'empty'}" role="status">{session.running ? 'Running…' : session.pending ? 'Request pending…' : session.state?.status ?? 'Connecting…'}</span>
+      <span class="seq-badge">step_seq {session.state?.step_seq ?? 0}</span>
+    </div>
+  </div>
 </header>
+{#if pcError}<div class="alert-bar error" role="alert">{pcError}</div>{/if}
+{#if session.uncertainty}<div class="alert-bar notice">Outcome uncertain. {session.uncertainty === 'program' ? 'Load again to recover the program listing.' : 'Reset or reload before further execution or edits.'}</div>{/if}
+{#if session.state?.status === 'unavailable'}<div class="alert-bar error">Machine state is unavailable. Reset or reload to recover.</div>{/if}
 <main aria-busy={session.pending}>
   <div class="workspace">
     <div class="main-content">
-      <section class="toolbar" aria-label="Execution controls">
-        <div class="toolbar-main">
-          <div class="action-buttons">
-            <button class="step-btn" disabled={!session.editable || session.running} onclick={() => session.step()} title="Step instruction (F7 or F8)">Step</button>
-            <button class="primary run-btn" disabled={!session.editable || session.running} onclick={() => session.run(stepLimit, timeLimitMs)} title="Run instructions until breakpoint or limit (F5)">Run</button>
-            <button class="stop-btn" disabled={!session.running} onclick={() => session.stop()} title="Stop execution">Stop</button>
-            <button class="reset-btn" disabled={session.running || session.pending || session.expired || !session.state || session.state.status === 'empty' || session.uncertainty === 'program'} onclick={() => session.reset()} title="Reset execution to baseline (F9)">Reset</button>
-          </div>
-          <div class="limit-controls">
-            <label title="Step count limit per Run">Limit <input type="number" min="1" max="100000" bind:value={stepLimit} disabled={session.running || !session.editable} style="width: 70px;" /> steps</label>
-          </div>
-          <form onsubmit={go} class="pc-form">
-            <label>Start / current PC<input bind:value={pc} disabled={!session.editable || session.running} aria-invalid={!!pcError} spellcheck="false" /></label>
-            <button disabled={!session.editable || session.running} class="go-btn">Go</button>
-          </form>
-          <div class="status-chips">
-            <span class="status-badge status-{session.running ? 'running' : session.state?.status ?? 'empty'}" role="status">{session.running ? 'Running…' : session.pending ? 'Request pending…' : session.state?.status ?? 'Connecting…'}</span>
-            <span class="seq-badge">step_seq {session.state?.step_seq ?? 0}</span>
-          </div>
-        </div>
-        {#if pcError}<p class="error" role="alert">{pcError}</p>{/if}
-        <div class="toolbar-meta">
-          <span>Current PC: <code>{hex(session.state?.pc ?? null)}</code></span>
-          <span class="separator">·</span>
-          <span>Baseline PC: <code>{hex(session.state?.baseline_pc ?? null)}</code></span>
-          <span class="separator">·</span>
-          <span class="muted">Manual edits update the reset baseline. Go selects a starting instruction without executing. Click gutter to toggle breakpoint.</span>
-        </div>
-        {#if session.uncertainty}<p class="notice">Outcome uncertain. {session.uncertainty === 'program' ? 'Load again to recover the program listing.' : 'Reset or reload before further execution or edits.'}</p>{/if}
-        {#if session.state?.status === 'unavailable'}<p class="error">Machine state is unavailable. Reset or reload to recover.</p>{/if}
-      </section>
 
       <ProgramInput disabled={session.pending || session.running || !session.id || session.expired} load={(body) => session.load(body)} />
       <CodeView program={session.program} state={session.state?.status === 'unavailable' || session.uncertainty ? null : session.state} disabled={!session.editable || session.running} select={(address) => { pc = hex(address); pcError = ''; }} onToggleBreakpoint={(address, mode) => session.toggleBreakpoint(address, mode)} />
