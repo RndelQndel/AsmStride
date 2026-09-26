@@ -1,0 +1,305 @@
+{
+  "tools": {
+    "as": "GNU assembler (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 2.41.0.20231009",
+    "ld": "GNU ld (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 2.41.0.20231009",
+    "objcopy": "GNU objcopy (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 2.41.0.20231009",
+    "objdump": "GNU objdump (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 2.41.0.20231009",
+    "clang": "Apple clang version 21.0.0 (clang-2100.3.34.2)"
+  },
+  "programs": [
+    {
+      "id": "GE-01",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nmov r0,#5\n.org 4\nadd r1,r0,#3\n.org 8\nsub r2,r1,r0\n",
+      "bytes": "0500a0e3031080e2002041e0",
+      "sha256": "ac3900323f38454f4ee7d7efe72ae4d54a32809edbfbf50ba99e852d5811f564",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te3a00005 \tmov\tr0, #5\n    1004:\te2801003 \tadd\tr1, r0, #3\n    1008:\te0412000 \tsub\tr2, r1, r0\n"
+    },
+    {
+      "id": "GE-02",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\ncmp r0,#8\n.org 4\ntst r0,r1\n",
+      "bytes": "080050e3010010e1",
+      "sha256": "e7c7293f0b66ecf1971b777e8eeee4d624c1b16abab11e480881b23cc0a8b58c",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te3500008 \tcmp\tr0, #8\n    1004:\te1100001 \ttst\tr0, r1\n"
+    },
+    {
+      "id": "GE-03",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nmoveq r0,#5\n.org 4\nmovne r1,#7\n",
+      "bytes": "0500a0030710a013",
+      "sha256": "93b33f58c5d036acbfb442c6fce3aa88c8e717e9ea01d56fcf784fd80e3ac87b",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\t03a00005 \tmoveq\tr0, #5\n    1004:\t13a01007 \tmovne\tr1, #7\n"
+    },
+    {
+      "id": "GE-04",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nbeq .+8\n.org 4\nmov r0,#9\n.org 8\nbne .-8\n.org 12\nmov r1,#1\n",
+      "bytes": "0000000a0900a0e3fcffff1a0110a0e3",
+      "sha256": "90437b1b465a24a073b09581d01a7af7dbcf429ff916feeb43e7e0f0059f294d",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\t0a000000 \tbeq\t1008 <_start+0x8>\n    1004:\te3a00009 \tmov\tr0, #9\n    1008:\t1afffffc \tbne\t1000 <_start>\n    100c:\te3a01001 \tmov\tr1, #1\n"
+    },
+    {
+      "id": "GE-05",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nb .+4\n.org 4\nmov r0,#9\n",
+      "bytes": "ffffffea0900a0e3",
+      "sha256": "a2cb2dda6d64328df83671564645f27366e5d5cfcb0b84e83b60a70e9a2d75ee",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\teaffffff \tb\t1004 <_start+0x4>\n    1004:\te3a00009 \tmov\tr0, #9\n"
+    },
+    {
+      "id": "GE-06",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nb .\n",
+      "bytes": "feffffea",
+      "sha256": "db8c2881cbdfd6291ff7bdd5a0a304a850d07de94cb60566880df7389a38f1d2",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\teafffffe \tb\t1000 <_start>\n"
+    },
+    {
+      "id": "GE-07",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nbl .+8\n.org 4\nmov r0,#1\n.org 8\nbx lr\n",
+      "bytes": "000000eb0100a0e31eff2fe1",
+      "sha256": "5fbcfb60253d24fc6e683b4dc62cfb05ca00eb63e2e10e1f14ffa82f17b04c6f",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\teb000000 \tbl\t1008 <_start+0x8>\n    1004:\te3a00001 \tmov\tr0, #1\n    1008:\te12fff1e \tbx\tlr\n"
+    },
+    {
+      "id": "GE-08",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nstr r0,[r4]\n.org 4\nldr r1,[r4]\n",
+      "bytes": "000084e5001094e5",
+      "sha256": "8b404a069016f2ef711ed504b07ae78db62d04e514bda3676d1376e7b7ae727b",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te5840000 \tstr\tr0, [r4]\n    1004:\te5941000 \tldr\tr1, [r4]\n"
+    },
+    {
+      "id": "GE-09",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nldr r0,[r4]\n",
+      "bytes": "000094e5",
+      "sha256": "93e52e6054acec16f84b6e050efd85ea880f78ee384202273972de5c9676f248",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te5940000 \tldr\tr0, [r4]\n"
+    },
+    {
+      "id": "GE-10",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nldr r0,[pc,#0]\n",
+      "bytes": "00009fe5",
+      "sha256": "a572b6b3ce79db05d4f9843add5c735d5de6b6a0cb91e5bba6a22dfb6ea2d435",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te59f0000 \tldr\tr0, [pc]\t@ 1008 <_start+0x8>\n"
+    },
+    {
+      "id": "GE-11",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\npush {r0,lr}\n.org 4\nsub sp,sp,#8\n.org 8\nadd sp,sp,#8\n.org 12\npop {r1,r2}\n",
+      "bytes": "01402de908d04de208d08de20600bde8",
+      "sha256": "364be2f9653b8bfa461536b7c24cffad988fca48d1c946dab13e4044ca41ebc7",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te92d4001 \tpush\t{r0, lr}\n    1004:\te24dd008 \tsub\tsp, sp, #8\n    1008:\te28dd008 \tadd\tsp, sp, #8\n    100c:\te8bd0006 \tpop\t{r1, r2}\n"
+    },
+    {
+      "id": "GE-12",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nstmia r4!,{r0,r1}\n.org 4\nldmia r5!,{r2,r3}\n",
+      "bytes": "0300a4e80c00b5e8",
+      "sha256": "cda2a4eb1ffbab6a09dc6cfa4eb426d260bb9b0442d046c74599d177fe3b7233",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te8a40003 \tstmia\tr4!, {r0, r1}\n    1004:\te8b5000c \tldm\tr5!, {r2, r3}\n"
+    },
+    {
+      "id": "GE-13",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nldmia r4!,{r0,r1}\n",
+      "bytes": "0300b4e8",
+      "sha256": "6d5ac02b811777395435249bc0fc8c9a2d5f551842a8e86e990a98b9d78944a2",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te8b40003 \tldm\tr4!, {r0, r1}\n"
+    },
+    {
+      "id": "GE-14",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\npush {r0,r1}\n",
+      "bytes": "03002de9",
+      "sha256": "8c8568d37d1baa9fabd7e1caf3b759ffb6f88224bfc07d802ada507104ac2a8b",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te92d0003 \tpush\t{r0, r1}\n"
+    },
+    {
+      "id": "GE-15",
+      "source": ".syntax unified\n.cpu cortex-a15\n.thumb\n.text\n.global _start\n_start:\n.org 0\nmovs r0,#5\n.org 2\nmovs r1,#0\n",
+      "bytes": "05200021",
+      "sha256": "fd18cadf96f266678681558aa5b20d92deb796d0e38fdd148927df3638669789",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\t2005      \tmovs\tr0, #5\n    1002:\t2100      \tmovs\tr1, #0\n"
+    },
+    {
+      "id": "GE-16",
+      "source": ".syntax unified\n.cpu cortex-a15\n.thumb\n.text\n.global _start\n_start:\n.org 0\nmovs r0,#5\n.org 2\nmovw r1,#8\n.org 6\nadds r0,#1\n",
+      "bytes": "052040f208010130",
+      "sha256": "f2029251191ffd1d880bcf5e2cb54b661939714a49fac0548dccc1f372e5fdfa",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\t2005      \tmovs\tr0, #5\n    1002:\tf240 0108 \tmovw\tr1, #8\n    1006:\t3001      \tadds\tr0, #1\n"
+    },
+    {
+      "id": "GE-17",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nbl .+0x8000\n",
+      "bytes": "fe1f00eb",
+      "sha256": "8c2b09b6a184c203529792db173ec2bbfcab68749bfc8aca8dcf99a9b834574c",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\teb001ffe \tbl\t9000 <_start+0x8000>\n"
+    },
+    {
+      "id": "GE-18",
+      "source": ".syntax unified\n.cpu cortex-a15\n.thumb\n.text\n.global _start\n_start:\n.org 0\nit eq\n",
+      "bytes": "08bf",
+      "sha256": "9b7ef85a2bdf95e2f3f560b69642b6dbee46ea09e665357c6708261324d2362c",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\tbf08      \tit\teq\n"
+    },
+    {
+      "id": "GE-19",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nadd r0,r0,#1\n.org 4\nstr r0,[r4]\n.org 8\nmov r2,#9\n",
+      "bytes": "010080e2000084e50920a0e3",
+      "sha256": "cc48708b0be09cb95c7ad7750c2a21e015e42f1656c37da22739811bbf2bc819",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te2800001 \tadd\tr0, r0, #1\n    1004:\te5840000 \tstr\tr0, [r4]\n    1008:\te3a02009 \tmov\tr2, #9\n"
+    },
+    {
+      "id": "GE-20",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nldr r0,[r4]\n",
+      "bytes": "000094e5",
+      "sha256": "93e52e6054acec16f84b6e050efd85ea880f78ee384202273972de5c9676f248",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te5940000 \tldr\tr0, [r4]\n"
+    },
+    {
+      "id": "GE-21",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nstmia r4!,{r0,r1}\n",
+      "bytes": "0300a4e8",
+      "sha256": "7d3ebcf7724beac17b4e964c8082c4a462a1bd623d1ba77e95ae17ad511b95b7",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te8a40003 \tstmia\tr4!, {r0, r1}\n"
+    },
+    {
+      "id": "GE-22",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\npop {r0,r1}\n",
+      "bytes": "0300bde8",
+      "sha256": "2c1e0246bc8ca60562a980f3e9b85ad665b058fe11816f71c7c7a4dfc750864e",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te8bd0003 \tpop\t{r0, r1}\n"
+    },
+    {
+      "id": "GE-23",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nstr r0,[r4]\n",
+      "bytes": "000084e5",
+      "sha256": "c5990602275143bab63ded645531b4474e3d84e5830c7a6f9cb8b04723cafe56",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te5840000 \tstr\tr0, [r4]\n"
+    },
+    {
+      "id": "GE-24",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nldr r0,[r4]\n",
+      "bytes": "000094e5",
+      "sha256": "93e52e6054acec16f84b6e050efd85ea880f78ee384202273972de5c9676f248",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te5940000 \tldr\tr0, [r4]\n"
+    },
+    {
+      "id": "GE-25",
+      "source": ".syntax unified\n.cpu cortex-a15\n.thumb\n.text\n.global _start\n_start:\n.org 0\nbl .+6\n.org 4\nmovs r0,#9\n.org 6\nbx lr\n",
+      "bytes": "00f001f809207047",
+      "sha256": "b5f74d485a237671a9bd12a23c1f16846c68fe3b613e633f20c2b3bfe9ef877b",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\tf000 f801 \tbl\t1006 <_start+0x6>\n    1004:\t2009      \tmovs\tr0, #9\n    1006:\t4770      \tbx\tlr\n"
+    },
+    {
+      "id": "GE-26",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nbx r3\n",
+      "bytes": "13ff2fe1",
+      "sha256": "05db6722bc388caf339eafd26da7f855bd9932605d32b89cd2ad752a8176b161",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te12fff13 \tbx\tr3\n"
+    },
+    {
+      "id": "GE-27",
+      "source": ".syntax unified\n.cpu cortex-a15\n.thumb\n.text\n.global _start\n_start:\n.org 0\npop {r0,pc}\n",
+      "bytes": "01bd",
+      "sha256": "046dc70a4eba21473beb6d9460d880b8cfd6661308335f3a76bc9db304344e9e",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\tbd01      \tpop\t{r0, pc}\n"
+    },
+    {
+      "id": "GE-28",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\ncmp r0,#0\n",
+      "bytes": "000050e3",
+      "sha256": "bc6af13b64b078874699db341acef932e72c93eabad7abba11544746a1917788",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n00001000 <_start>:\n    1000:\te3500000 \tcmp\tr0, #0\n"
+    },
+    {
+      "id": "PF-08-0",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nmov r0,#5\n",
+      "bytes": "0500a0e3",
+      "sha256": "1bcc9cc00807b790baeafde4aa288b0cc7e272adc28fc77bae7abf14f02e1064",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n08000100 <_start>:\n 8000100:\te3a00005 \tmov\tr0, #5\n"
+    },
+    {
+      "id": "PF-08-1",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nmov r0,#6\n",
+      "bytes": "0600a0e3",
+      "sha256": "7814231abfa0368b36c6f6f79e2ed69763b81200acaa41a75c7956bd27ae5241",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n08000100 <_start>:\n 8000100:\te3a00006 \tmov\tr0, #6\n"
+    },
+    {
+      "id": "PF-01-0",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nmov r0,#5\n",
+      "bytes": "0500a0e3",
+      "sha256": "1bcc9cc00807b790baeafde4aa288b0cc7e272adc28fc77bae7abf14f02e1064",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n08000100 <_start>:\n 8000100:\te3a00005 \tmov\tr0, #5\n"
+    },
+    {
+      "id": "PF-09-0",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\npush {r11,lr}\n",
+      "bytes": "00482de9",
+      "sha256": "3bce1aed5c9366ac32edf95fe939760dc45cd3cae430ac99a2d91239763a58ad",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n000081a0 <_start>:\n    81a0:\te92d4800 \tpush\t{fp, lr}\n"
+    },
+    {
+      "id": "PF-09-1",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nmov r11,sp\n",
+      "bytes": "0db0a0e1",
+      "sha256": "49f888456d125e3c41b5d8583eef3aa535088653149164ac94bb833e1d09cc31",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n000081a4 <_start>:\n    81a4:\te1a0b00d \tmov\tfp, sp\n"
+    },
+    {
+      "id": "PF-02-0",
+      "source": ".syntax unified\n.cpu cortex-a15\n.thumb\n.text\n.global _start\n_start:\n.org 0\nmovs r0,#5\n",
+      "bytes": "0520",
+      "sha256": "f71065f7a827657ed178db89bcc73a6d2dd455711cc726eab113a0b8fa5ea38d",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n08000100 <_start>:\n 8000100:\t2005      \tmovs\tr0, #5\n"
+    },
+    {
+      "id": "PF-02-1",
+      "source": ".syntax unified\n.cpu cortex-a15\n.thumb\n.text\n.global _start\n_start:\n.org 0\nmovw r1,#8\n",
+      "bytes": "40f20801",
+      "sha256": "c60e998b77b7a39aed562f98313592aa80ad148a2f947d37a4461d11f14f768b",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n08000102 <_start>:\n 8000102:\tf240 0108 \tmovw\tr1, #8\n"
+    },
+    {
+      "id": "PF-06-0",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nmov r0,#5\n",
+      "bytes": "0500a0e3",
+      "sha256": "1bcc9cc00807b790baeafde4aa288b0cc7e272adc28fc77bae7abf14f02e1064",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n08000100 <_start>:\n 8000100:\te3a00005 \tmov\tr0, #5\n"
+    },
+    {
+      "id": "PF-07-0",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nmov r0,#5\n",
+      "bytes": "0500a0e3",
+      "sha256": "1bcc9cc00807b790baeafde4aa288b0cc7e272adc28fc77bae7abf14f02e1064",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n08000100 <_start>:\n 8000100:\te3a00005 \tmov\tr0, #5\n"
+    },
+    {
+      "id": "PF-05-0",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nmov r0,#5\n",
+      "bytes": "0500a0e3",
+      "sha256": "1bcc9cc00807b790baeafde4aa288b0cc7e272adc28fc77bae7abf14f02e1064",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n08000100 <_start>:\n 8000100:\te3a00005 \tmov\tr0, #5\n"
+    },
+    {
+      "id": "PF-03-0",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nmov r0,#5\n",
+      "bytes": "0500a0e3",
+      "sha256": "1bcc9cc00807b790baeafde4aa288b0cc7e272adc28fc77bae7abf14f02e1064",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n08000100 <_start>:\n 8000100:\te3a00005 \tmov\tr0, #5\n"
+    },
+    {
+      "id": "PF-03-1",
+      "source": ".syntax unified\n.cpu cortex-a15\n.arm\n.text\n.global _start\n_start:\n.org 0\nb .-4\n",
+      "bytes": "fdffffea",
+      "sha256": "0d36dac178bcaf6db57d6bb3c681d29e36c73c3781887780f6ed8db9b8ee6155",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n08000104 <_start>:\n 8000104:\teafffffd \tb\t8000100 <_start-0x4>\n"
+    },
+    {
+      "id": "PF-04-0",
+      "source": ".syntax unified\n.cpu cortex-a15\n.thumb\n.text\n.global _start\n_start:\n.org 0\nmovs r0,#5\n",
+      "bytes": "0520",
+      "sha256": "f71065f7a827657ed178db89bcc73a6d2dd455711cc726eab113a0b8fa5ea38d",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n08000100 <_start>:\n 8000100:\t2005      \tmovs\tr0, #5\n"
+    },
+    {
+      "id": "PF-04-1",
+      "source": ".syntax unified\n.cpu cortex-a15\n.thumb\n.text\n.global _start\n_start:\n.org 0\nmovw r1,#8\n",
+      "bytes": "40f20801",
+      "sha256": "c60e998b77b7a39aed562f98313592aa80ad148a2f947d37a4461d11f14f768b",
+      "gnu_objdump": "\ngnu.elf:     file format elf32-littlearm\n\n\nDisassembly of section .text:\n\n08000102 <_start>:\n 8000102:\tf240 0108 \tmovw\tr1, #8\n"
+    }
+  ]
+}

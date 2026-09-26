@@ -1,0 +1,4846 @@
+[
+  {
+    "id": "GE-01",
+    "name": "MOV=5; ADD immediate=8; SUB register=3, without flag updates",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "mov r0,#5",
+        "size": 4,
+        "bytes": "0500a0e3",
+        "source_line": 1
+      },
+      {
+        "address": 4100,
+        "assembly": "add r1,r0,#3",
+        "size": 4,
+        "bytes": "031080e2",
+        "source_line": 2
+      },
+      {
+        "address": 4104,
+        "assembly": "sub r2,r1,r0",
+        "size": 4,
+        "bytes": "002041e0",
+        "source_line": 3
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "ADD, SUB, RSB, ADC, SBC, and RSC",
+            "MOV and MVN (including MOVW)"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "MOV=5; ADD immediate=8; SUB register=3, without flag updates"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "r0": {
+                "before": 0,
+                "after": 5
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4100,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "r0": {
+                "before": 0,
+                "after": 5
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {
+              "r1": {
+                "before": 0,
+                "after": 8
+              },
+              "pc": {
+                "before": 4100,
+                "after": 4104
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4100,
+            "pc_after": 4104,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 2,
+            "register_changes": {
+              "r1": {
+                "before": 0,
+                "after": 8
+              },
+              "pc": {
+                "before": 4100,
+                "after": 4104
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4100,
+              "size": 4,
+              "source_line": 2
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 3,
+          "runtime": {
+            "register_changes": {
+              "r2": {
+                "before": 0,
+                "after": 3
+              },
+              "pc": {
+                "before": 4104,
+                "after": 4108
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4104,
+            "pc_after": 4108,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "pc_not_loaded",
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 3,
+            "register_changes": {
+              "r2": {
+                "before": 0,
+                "after": 3
+              },
+              "pc": {
+                "before": 4104,
+                "after": 4108
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4104,
+              "size": 4,
+              "source_line": 3
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-02",
+    "name": "CMP 8-8 sets Z/C; TST 8&0 keeps C and sets Z",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "cmp r0,#8",
+        "size": 4,
+        "bytes": "080050e3",
+        "source_line": 1
+      },
+      {
+        "address": 4100,
+        "assembly": "tst r0,r1",
+        "size": 4,
+        "bytes": "010010e1",
+        "source_line": 2
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 8,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 268435472
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "CMP and CMN",
+            "TST and TEQ"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "CMP 8-8 sets Z/C; TST 8&0 keeps C and sets Z"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "cpsr": {
+                "before": 268435472,
+                "after": 1610612752
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4100,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {
+              "z": {
+                "before": false,
+                "after": true
+              },
+              "c": {
+                "before": false,
+                "after": true
+              },
+              "v": {
+                "before": true,
+                "after": false
+              }
+            },
+            "step_seq": 1,
+            "register_changes": {
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "cpsr_change": {
+              "before": 268435472,
+              "after": 1610612752
+            },
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {
+              "pc": {
+                "before": 4100,
+                "after": 4104
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4100,
+            "pc_after": 4104,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "pc_not_loaded",
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 2,
+            "register_changes": {
+              "pc": {
+                "before": 4100,
+                "after": 4104
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4100,
+              "size": 4,
+              "source_line": 2
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-03",
+    "name": "EQ fails and NE passes with Z clear",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "moveq r0,#5",
+        "size": 4,
+        "bytes": "0500a003",
+        "source_line": 1
+      },
+      {
+        "address": 4100,
+        "assembly": "movne r1,#7",
+        "size": 4,
+        "bytes": "0710a013",
+        "source_line": 2
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "Condition codes",
+            "MOV and MVN (including MOVW)"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "EQ fails and NE passes with Z clear"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4100,
+            "condition_passed": false,
+            "branch": null,
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {
+              "r1": {
+                "before": 0,
+                "after": 7
+              },
+              "pc": {
+                "before": 4100,
+                "after": 4104
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4100,
+            "pc_after": 4104,
+            "condition_passed": true,
+            "branch": null,
+            "stop_reason": "pc_not_loaded",
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 2,
+            "register_changes": {
+              "r1": {
+                "before": 0,
+                "after": 7
+              },
+              "pc": {
+                "before": 4100,
+                "after": 4104
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4100,
+              "size": 4,
+              "source_line": 2
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-04",
+    "name": "BEQ taken to 0x1008; BNE not taken with Z set",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "beq .+8",
+        "size": 4,
+        "bytes": "0000000a",
+        "source_line": 1
+      },
+      {
+        "address": 4100,
+        "assembly": "mov r0,#9",
+        "size": 4,
+        "bytes": "0900a0e3",
+        "source_line": 2
+      },
+      {
+        "address": 4104,
+        "assembly": "bne .-8",
+        "size": 4,
+        "bytes": "fcffff1a",
+        "source_line": 3
+      },
+      {
+        "address": 4108,
+        "assembly": "mov r1,#1",
+        "size": 4,
+        "bytes": "0110a0e3",
+        "source_line": 4
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 1073741840
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "B, BL, BX, and BLX",
+            "Condition codes"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "BEQ taken to 0x1008; BNE not taken with Z set"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "pc": {
+                "before": 4096,
+                "after": 4104
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4104,
+            "condition_passed": true,
+            "branch": {
+              "kind": "branch",
+              "taken": true,
+              "target": 4104,
+              "condition": "eq",
+              "fallthrough": 4100
+            },
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "pc": {
+                "before": 4096,
+                "after": 4104
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {
+              "pc": {
+                "before": 4104,
+                "after": 4108
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4104,
+            "pc_after": 4108,
+            "condition_passed": false,
+            "branch": {
+              "kind": "branch",
+              "taken": false,
+              "target": 4096,
+              "condition": "ne",
+              "fallthrough": 4108
+            },
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 2,
+            "register_changes": {
+              "pc": {
+                "before": 4104,
+                "after": 4108
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4104,
+              "size": 4,
+              "source_line": 3
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-05",
+    "name": "Taken branch to fall-through is still taken",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "b .+4",
+        "size": 4,
+        "bytes": "ffffffea",
+        "source_line": 1
+      },
+      {
+        "address": 4100,
+        "assembly": "mov r0,#9",
+        "size": 4,
+        "bytes": "0900a0e3",
+        "source_line": 2
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "B, BL, BX, and BLX"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "Taken branch to fall-through is still taken"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4100,
+            "condition_passed": null,
+            "branch": {
+              "kind": "branch",
+              "taken": true,
+              "target": 4100,
+              "condition": null,
+              "fallthrough": 4100
+            },
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-06",
+    "name": "Two self-branches commit twice despite identical CPU state",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "b .",
+        "size": 4,
+        "bytes": "feffffea",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "B, BL, BX, and BLX"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "Two self-branches commit twice despite identical CPU state"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4096,
+            "condition_passed": null,
+            "branch": {
+              "kind": "branch",
+              "taken": true,
+              "target": 4096,
+              "condition": null,
+              "fallthrough": 4100
+            },
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {},
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4096,
+            "condition_passed": null,
+            "branch": {
+              "kind": "branch",
+              "taken": true,
+              "target": 4096,
+              "condition": null,
+              "fallthrough": 4100
+            },
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 2,
+            "register_changes": {},
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-07",
+    "name": "ARM BL saves 0x1004 and BX LR returns there",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bl .+8",
+        "size": 4,
+        "bytes": "000000eb",
+        "source_line": 1
+      },
+      {
+        "address": 4100,
+        "assembly": "mov r0,#1",
+        "size": 4,
+        "bytes": "0100a0e3",
+        "source_line": 2
+      },
+      {
+        "address": 4104,
+        "assembly": "bx lr",
+        "size": 4,
+        "bytes": "1eff2fe1",
+        "source_line": 3
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "B, BL, BX, and BLX",
+            "B, BL, BX, and BLX"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "ARM BL saves 0x1004 and BX LR returns there"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "lr": {
+                "before": 0,
+                "after": 4100
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4104
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4104,
+            "condition_passed": null,
+            "branch": {
+              "kind": "call",
+              "taken": true,
+              "target": 4104,
+              "condition": null,
+              "fallthrough": 4100
+            },
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "lr": {
+                "before": 0,
+                "after": 4100
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4104
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {
+              "pc": {
+                "before": 4104,
+                "after": 4100
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4104,
+            "pc_after": 4100,
+            "condition_passed": null,
+            "branch": {
+              "kind": "return",
+              "taken": true,
+              "target": 4100,
+              "condition": null,
+              "fallthrough": 4108
+            },
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 2,
+            "register_changes": {
+              "pc": {
+                "before": 4104,
+                "after": 4100
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4104,
+              "size": 4,
+              "source_line": 3
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-08",
+    "name": "Same-value STR remains a write event without memory highlights; LDR reads word",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "str r0,[r4]",
+        "size": 4,
+        "bytes": "000084e5",
+        "source_line": 1
+      },
+      {
+        "address": 4100,
+        "assembly": "ldr r1,[r4]",
+        "size": 4,
+        "bytes": "001094e5",
+        "source_line": 2
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 1144201745,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 10240,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [
+        {
+          "address": 10240,
+          "bytes": "11223344"
+        }
+      ],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "LDR (register-relative)",
+            "STR"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "Same-value STR remains a write event without memory highlights; LDR reads word"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4100,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [
+              {
+                "address": 10240,
+                "size": 4,
+                "before_bytes": "11223344",
+                "after_bytes": "11223344"
+              }
+            ],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {
+              "r1": {
+                "before": 0,
+                "after": 1144201745
+              },
+              "pc": {
+                "before": 4100,
+                "after": 4104
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4100,
+            "pc_after": 4104,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "pc_not_loaded",
+            "error": null,
+            "memory_reads": [
+              {
+                "address": 10240,
+                "size": 4,
+                "bytes": "11223344"
+              }
+            ],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 2,
+            "register_changes": {
+              "r1": {
+                "before": 0,
+                "after": 1144201745
+              },
+              "pc": {
+                "before": 4100,
+                "after": 4104
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4100,
+              "size": 4,
+              "source_line": 2
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-09",
+    "name": "Unknown then partial word fails; two explicit patches permit retry",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "ldr r0,[r4]",
+        "size": 4,
+        "bytes": "000094e5",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 10240,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "LDR (register-relative)"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": true,
+      "derivation": "Unknown then partial word fails; two explicit patches permit retry"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 0,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "failed",
+            "pc_before": 4096,
+            "pc_after": 4096,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "memory_fault",
+            "error": {
+              "code": "unmapped_memory_access",
+              "context": {
+                "address": 10240,
+                "size": 4,
+                "access": "read",
+                "pc": 4096,
+                "source_line": 1,
+                "missing_ranges": [
+                  {
+                    "address": 10240,
+                    "size": 4
+                  }
+                ]
+              },
+              "restored": true
+            },
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 0,
+            "register_changes": {},
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "patch_memory",
+        "arguments": {
+          "address": 10240,
+          "bytes": "1122"
+        },
+        "expect": {
+          "step_seq": 0,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {
+              "10240": {
+                "before": null,
+                "after": 17
+              },
+              "10241": {
+                "before": null,
+                "after": 34
+              }
+            }
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {
+              "10240": {
+                "before": null,
+                "after": 17
+              },
+              "10241": {
+                "before": null,
+                "after": 34
+              }
+            }
+          },
+          "result": null
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 0,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "failed",
+            "pc_before": 4096,
+            "pc_after": 4096,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "memory_fault",
+            "error": {
+              "code": "unmapped_memory_access",
+              "context": {
+                "address": 10240,
+                "size": 4,
+                "access": "read",
+                "pc": 4096,
+                "source_line": 1,
+                "missing_ranges": [
+                  {
+                    "address": 10242,
+                    "size": 2
+                  }
+                ]
+              },
+              "restored": true
+            },
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 0,
+            "register_changes": {},
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "patch_memory",
+        "arguments": {
+          "address": 10242,
+          "bytes": "3344"
+        },
+        "expect": {
+          "step_seq": 0,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {
+              "10242": {
+                "before": null,
+                "after": 51
+              },
+              "10243": {
+                "before": null,
+                "after": 68
+              }
+            }
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {
+              "10242": {
+                "before": null,
+                "after": 51
+              },
+              "10243": {
+                "before": null,
+                "after": 68
+              }
+            }
+          },
+          "result": null
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "r0": {
+                "before": 0,
+                "after": 1144201745
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4100,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "pc_not_loaded",
+            "error": null,
+            "memory_reads": [
+              {
+                "address": 10240,
+                "size": 4,
+                "bytes": "11223344"
+              }
+            ],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "r0": {
+                "before": 0,
+                "after": 1144201745
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-10",
+    "name": "ARM literal base is instruction address plus eight",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "ldr r0,[pc,#0]",
+        "size": 4,
+        "bytes": "00009fe5",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [
+        {
+          "address": 4104,
+          "bytes": "78563412"
+        }
+      ],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "LDR (PC-relative)"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "ARM literal base is instruction address plus eight"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "r0": {
+                "before": 0,
+                "after": 305419896
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4100,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "pc_not_loaded",
+            "error": null,
+            "memory_reads": [
+              {
+                "address": 4104,
+                "size": 4,
+                "bytes": "78563412"
+              }
+            ],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "r0": {
+                "before": 0,
+                "after": 305419896
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-11",
+    "name": "PUSH stores ascending register order; balanced SP arithmetic and POP restore",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "push {r0,lr}",
+        "size": 4,
+        "bytes": "01402de9",
+        "source_line": 1
+      },
+      {
+        "address": 4100,
+        "assembly": "sub sp,sp,#8",
+        "size": 4,
+        "bytes": "08d04de2",
+        "source_line": 2
+      },
+      {
+        "address": 4104,
+        "assembly": "add sp,sp,#8",
+        "size": 4,
+        "bytes": "08d08de2",
+        "source_line": 3
+      },
+      {
+        "address": 4108,
+        "assembly": "pop {r1,r2}",
+        "size": 4,
+        "bytes": "0600bde8",
+        "source_line": 4
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 17,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 34,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "PUSH and POP",
+            "ADD, SUB, RSB, ADC, SBC, and RSC"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "PUSH stores ascending register order; balanced SP arithmetic and POP restore"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "sp": {
+                "before": 537919488,
+                "after": 537919480
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "memory_changes": {
+              "537919480": {
+                "before": 0,
+                "after": 17
+              },
+              "537919484": {
+                "before": 0,
+                "after": 34
+              }
+            }
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4100,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [
+              {
+                "address": 537919480,
+                "size": 4,
+                "before_bytes": "00000000",
+                "after_bytes": "11000000"
+              },
+              {
+                "address": 537919484,
+                "size": 4,
+                "before_bytes": "00000000",
+                "after_bytes": "22000000"
+              }
+            ],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "sp": {
+                "before": 537919488,
+                "after": 537919480
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {
+              "sp": {
+                "before": 537919480,
+                "after": 537919472
+              },
+              "pc": {
+                "before": 4100,
+                "after": 4104
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4100,
+            "pc_after": 4104,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 2,
+            "register_changes": {
+              "sp": {
+                "before": 537919480,
+                "after": 537919472
+              },
+              "pc": {
+                "before": 4100,
+                "after": 4104
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4100,
+              "size": 4,
+              "source_line": 2
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 3,
+          "runtime": {
+            "register_changes": {
+              "sp": {
+                "before": 537919472,
+                "after": 537919480
+              },
+              "pc": {
+                "before": 4104,
+                "after": 4108
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4104,
+            "pc_after": 4108,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 3,
+            "register_changes": {
+              "sp": {
+                "before": 537919472,
+                "after": 537919480
+              },
+              "pc": {
+                "before": 4104,
+                "after": 4108
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4104,
+              "size": 4,
+              "source_line": 3
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 4,
+          "runtime": {
+            "register_changes": {
+              "sp": {
+                "before": 537919480,
+                "after": 537919488
+              },
+              "r2": {
+                "before": 0,
+                "after": 34
+              },
+              "r1": {
+                "before": 0,
+                "after": 17
+              },
+              "pc": {
+                "before": 4108,
+                "after": 4112
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4108,
+            "pc_after": 4112,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "pc_not_loaded",
+            "error": null,
+            "memory_reads": [
+              {
+                "address": 537919480,
+                "size": 4,
+                "bytes": "11000000"
+              },
+              {
+                "address": 537919484,
+                "size": 4,
+                "bytes": "22000000"
+              }
+            ],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 4,
+            "register_changes": {
+              "sp": {
+                "before": 537919480,
+                "after": 537919488
+              },
+              "r2": {
+                "before": 0,
+                "after": 34
+              },
+              "r1": {
+                "before": 0,
+                "after": 17
+              },
+              "pc": {
+                "before": 4108,
+                "after": 4112
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4108,
+              "size": 4,
+              "source_line": 4
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-12",
+    "name": "STM writeback advances eight; LDM loads two words in register order",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "stmia r4!,{r0,r1}",
+        "size": 4,
+        "bytes": "0300a4e8",
+        "source_line": 1
+      },
+      {
+        "address": 4100,
+        "assembly": "ldmia r5!,{r2,r3}",
+        "size": 4,
+        "bytes": "0c00b5e8",
+        "source_line": 2
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 1,
+        "r1": 2,
+        "r2": 0,
+        "r3": 0,
+        "r4": 10240,
+        "r5": 10240,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [
+        {
+          "address": 10240,
+          "bytes": "0000000000000000"
+        }
+      ],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "LDM and STM"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "STM writeback advances eight; LDM loads two words in register order"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "r4": {
+                "before": 10240,
+                "after": 10248
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "memory_changes": {
+              "10240": {
+                "before": 0,
+                "after": 1
+              },
+              "10244": {
+                "before": 0,
+                "after": 2
+              }
+            }
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4100,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [
+              {
+                "address": 10240,
+                "size": 4,
+                "before_bytes": "00000000",
+                "after_bytes": "01000000"
+              },
+              {
+                "address": 10244,
+                "size": 4,
+                "before_bytes": "00000000",
+                "after_bytes": "02000000"
+              }
+            ],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "r4": {
+                "before": 10240,
+                "after": 10248
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {
+              "r3": {
+                "before": 0,
+                "after": 2
+              },
+              "r2": {
+                "before": 0,
+                "after": 1
+              },
+              "r5": {
+                "before": 10240,
+                "after": 10248
+              },
+              "pc": {
+                "before": 4100,
+                "after": 4104
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4100,
+            "pc_after": 4104,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "pc_not_loaded",
+            "error": null,
+            "memory_reads": [
+              {
+                "address": 10240,
+                "size": 4,
+                "bytes": "01000000"
+              },
+              {
+                "address": 10244,
+                "size": 4,
+                "bytes": "02000000"
+              }
+            ],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 2,
+            "register_changes": {
+              "r3": {
+                "before": 0,
+                "after": 2
+              },
+              "r2": {
+                "before": 0,
+                "after": 1
+              },
+              "r5": {
+                "before": 10240,
+                "after": 10248
+              },
+              "pc": {
+                "before": 4100,
+                "after": 4104
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4100,
+              "size": 4,
+              "source_line": 2
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-13",
+    "name": "Late second access fails atomically, including earlier access and writeback",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "ldmia r4!,{r0,r1}",
+        "size": 4,
+        "bytes": "0300b4e8",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 9,
+        "r1": 10,
+        "r2": 0,
+        "r3": 0,
+        "r4": 12284,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [
+        {
+          "address": 12284,
+          "bytes": "11223344"
+        }
+      ],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "LDM and STM",
+            "PUSH and POP"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": true,
+      "derivation": "Late second access fails atomically, including earlier access and writeback"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 0,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "failed",
+            "pc_before": 4096,
+            "pc_after": 4096,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "memory_fault",
+            "error": {
+              "code": "unmapped_memory_access",
+              "context": {
+                "address": 12288,
+                "size": 4,
+                "access": "read",
+                "pc": 4096,
+                "source_line": 1,
+                "missing_ranges": [
+                  {
+                    "address": 12288,
+                    "size": 4
+                  }
+                ]
+              },
+              "restored": true
+            },
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 0,
+            "register_changes": {},
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-14",
+    "name": "Late second access fails atomically, including earlier access and writeback",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "push {r0,r1}",
+        "size": 4,
+        "bytes": "03002de9",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 9,
+        "r1": 10,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 12292,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [
+        {
+          "address": 12284,
+          "bytes": "11223344"
+        }
+      ],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "LDM and STM",
+            "PUSH and POP"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": true,
+      "derivation": "Late second access fails atomically, including earlier access and writeback"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 0,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "failed",
+            "pc_before": 4096,
+            "pc_after": 4096,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "memory_fault",
+            "error": {
+              "code": "unmapped_memory_access",
+              "context": {
+                "address": 12288,
+                "size": 4,
+                "access": "write",
+                "pc": 4096,
+                "source_line": 1,
+                "missing_ranges": [
+                  {
+                    "address": 12288,
+                    "size": 4
+                  }
+                ]
+              },
+              "restored": true
+            },
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 0,
+            "register_changes": {},
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-15",
+    "name": "Two Thumb16 MOVS preserve C/V while updating N/Z",
+    "profile": "armv7-a-le",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "movs r0,#5",
+        "size": 2,
+        "bytes": "0520",
+        "source_line": 1
+      },
+      {
+        "address": 4098,
+        "assembly": "movs r1,#0",
+        "size": 2,
+        "bytes": "0021",
+        "source_line": 2
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 805306416
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "MOV and MVN (including MOVW)"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "Two Thumb16 MOVS preserve C/V while updating N/Z"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "r0": {
+                "before": 0,
+                "after": 5
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4098
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4098,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "r0": {
+                "before": 0,
+                "after": 5
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4098
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 2,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {
+              "cpsr": {
+                "before": 805306416,
+                "after": 1879048240
+              },
+              "pc": {
+                "before": 4098,
+                "after": 4100
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4098,
+            "pc_after": 4100,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "pc_not_loaded",
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {
+              "z": {
+                "before": false,
+                "after": true
+              }
+            },
+            "step_seq": 2,
+            "register_changes": {
+              "pc": {
+                "before": 4098,
+                "after": 4100
+              }
+            },
+            "cpsr_change": {
+              "before": 805306416,
+              "after": 1879048240
+            },
+            "instruction": {
+              "address": 4098,
+              "size": 2,
+              "source_line": 2
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-16",
+    "name": "Adjacent Thumb16, Thumb32, Thumb16 each consume one step",
+    "profile": "armv7-a-le",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "movs r0,#5",
+        "size": 2,
+        "bytes": "0520",
+        "source_line": 1
+      },
+      {
+        "address": 4098,
+        "assembly": "movw r1,#8",
+        "size": 4,
+        "bytes": "40f20801",
+        "source_line": 2
+      },
+      {
+        "address": 4102,
+        "assembly": "adds r0,#1",
+        "size": 2,
+        "bytes": "0130",
+        "source_line": 3
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 48
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "MOV and MVN (including MOVW)",
+            "ADD, SUB, RSB, ADC, SBC, and RSC"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "Adjacent Thumb16, Thumb32, Thumb16 each consume one step"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "r0": {
+                "before": 0,
+                "after": 5
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4098
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4098,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "r0": {
+                "before": 0,
+                "after": 5
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4098
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 2,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {
+              "r1": {
+                "before": 0,
+                "after": 8
+              },
+              "pc": {
+                "before": 4098,
+                "after": 4102
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4098,
+            "pc_after": 4102,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 2,
+            "register_changes": {
+              "r1": {
+                "before": 0,
+                "after": 8
+              },
+              "pc": {
+                "before": 4098,
+                "after": 4102
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4098,
+              "size": 4,
+              "source_line": 2
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 3,
+          "runtime": {
+            "register_changes": {
+              "r0": {
+                "before": 5,
+                "after": 6
+              },
+              "pc": {
+                "before": 4102,
+                "after": 4104
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4102,
+            "pc_after": 4104,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "pc_not_loaded",
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 3,
+            "register_changes": {
+              "r0": {
+                "before": 5,
+                "after": 6
+              },
+              "pc": {
+                "before": 4102,
+                "after": 4104
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4102,
+              "size": 2,
+              "source_line": 3
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-17",
+    "name": "External BL commits LR and PC before pc_not_loaded; subsequent Step fails",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bl .+0x8000",
+        "size": 4,
+        "bytes": "fe1f00eb",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "B, BL, BX, and BLX"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "External BL commits LR and PC before pc_not_loaded; subsequent Step fails"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "lr": {
+                "before": 0,
+                "after": 4100
+              },
+              "pc": {
+                "before": 4096,
+                "after": 36864
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 36864,
+            "condition_passed": null,
+            "branch": {
+              "kind": "call",
+              "taken": true,
+              "target": 36864,
+              "condition": null,
+              "fallthrough": 4100
+            },
+            "stop_reason": "pc_not_loaded",
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "lr": {
+                "before": 0,
+                "after": 4100
+              },
+              "pc": {
+                "before": 4096,
+                "after": 36864
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "failed",
+            "pc_before": 36864,
+            "pc_after": 36864,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "invalid_pc",
+            "error": {
+              "code": "invalid_pc",
+              "context": {
+                "pc": 36864,
+                "source_line": null
+              },
+              "restored": true
+            },
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {},
+            "cpsr_change": null,
+            "instruction": null
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-18",
+    "name": "Thumb IT is loadable with a warning but cannot execute in P0",
+    "profile": "armv7-a-le",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "it eq",
+        "size": 2,
+        "bytes": "08bf",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 48
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "IT"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": true,
+      "derivation": "Thumb IT is loadable with a warning but cannot execute in P0"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 0,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "failed",
+            "pc_before": 4096,
+            "pc_after": 4096,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "unsupported_instruction",
+            "error": {
+              "code": "unsupported_instruction",
+              "context": {
+                "pc": 4096,
+                "source_line": 1
+              },
+              "restored": true
+            },
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 0,
+            "register_changes": {},
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 2,
+              "source_line": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-19",
+    "name": "Reset keeps explicit register/byte/PC edits without copying CPU-produced neighbors",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "add r0,r0,#1",
+        "size": 4,
+        "bytes": "010080e2",
+        "source_line": 1
+      },
+      {
+        "address": 4100,
+        "assembly": "str r0,[r4]",
+        "size": 4,
+        "bytes": "000084e5",
+        "source_line": 2
+      },
+      {
+        "address": 4104,
+        "assembly": "mov r2,#9",
+        "size": 4,
+        "bytes": "0920a0e3",
+        "source_line": 3
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 1,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 10240,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [
+        {
+          "address": 10240,
+          "bytes": "0000000000000000"
+        }
+      ],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "ADD, SUB, RSB, ADC, SBC, and RSC",
+            "STR"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": true,
+      "derivation": "Reset keeps explicit register/byte/PC edits without copying CPU-produced neighbors"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "r0": {
+                "before": 1,
+                "after": 2
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4100,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "r0": {
+                "before": 1,
+                "after": 2
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {
+              "pc": {
+                "before": 4100,
+                "after": 4104
+              }
+            },
+            "memory_changes": {
+              "10240": {
+                "before": 0,
+                "after": 2
+              }
+            }
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4100,
+            "pc_after": 4104,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [
+              {
+                "address": 10240,
+                "size": 4,
+                "before_bytes": "00000000",
+                "after_bytes": "02000000"
+              }
+            ],
+            "flag_changes": {},
+            "step_seq": 2,
+            "register_changes": {
+              "pc": {
+                "before": 4100,
+                "after": 4104
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4100,
+              "size": 4,
+              "source_line": 2
+            }
+          }
+        }
+      },
+      {
+        "op": "set_register",
+        "arguments": {
+          "name": "r1",
+          "value": 7
+        },
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {
+              "r1": {
+                "before": 0,
+                "after": 7
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {
+              "r1": {
+                "before": 0,
+                "after": 7
+              }
+            },
+            "memory_changes": {}
+          },
+          "result": null
+        }
+      },
+      {
+        "op": "patch_memory",
+        "arguments": {
+          "address": 10241,
+          "bytes": "aa"
+        },
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {
+              "10241": {
+                "before": 0,
+                "after": 170
+              }
+            }
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {
+              "10241": {
+                "before": 0,
+                "after": 170
+              }
+            }
+          },
+          "result": null
+        }
+      },
+      {
+        "op": "set_pc",
+        "arguments": {
+          "value": 4100
+        },
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {
+              "pc": {
+                "before": 4104,
+                "after": 4100
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "memory_changes": {}
+          },
+          "result": null
+        }
+      },
+      {
+        "op": "reset",
+        "arguments": {},
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {
+              "r0": {
+                "before": 2,
+                "after": 1
+              }
+            },
+            "memory_changes": {
+              "10240": {
+                "before": 2,
+                "after": 0
+              }
+            }
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": null
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-20",
+    "name": "Mapped page padding remains unknown",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "ldr r0,[r4]",
+        "size": 4,
+        "bytes": "000094e5",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 10244,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [
+        {
+          "address": 10240,
+          "bytes": "11223344"
+        }
+      ],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "LDR (register-relative)"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": true,
+      "derivation": "Mapped page padding remains unknown"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 0,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "failed",
+            "pc_before": 4096,
+            "pc_after": 4096,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "memory_fault",
+            "error": {
+              "code": "unmapped_memory_access",
+              "context": {
+                "address": 10244,
+                "size": 4,
+                "access": "read",
+                "pc": 4096,
+                "source_line": 1,
+                "missing_ranges": [
+                  {
+                    "address": 10244,
+                    "size": 4
+                  }
+                ]
+              },
+              "restored": true
+            },
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 0,
+            "register_changes": {},
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-21",
+    "name": "Late second access fails atomically, including earlier access and writeback",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "stmia r4!,{r0,r1}",
+        "size": 4,
+        "bytes": "0300a4e8",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 9,
+        "r1": 10,
+        "r2": 0,
+        "r3": 0,
+        "r4": 12284,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [
+        {
+          "address": 12284,
+          "bytes": "11223344"
+        }
+      ],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "LDM and STM",
+            "PUSH and POP"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": true,
+      "derivation": "Late second access fails atomically, including earlier access and writeback"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 0,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "failed",
+            "pc_before": 4096,
+            "pc_after": 4096,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "memory_fault",
+            "error": {
+              "code": "unmapped_memory_access",
+              "context": {
+                "address": 12288,
+                "size": 4,
+                "access": "write",
+                "pc": 4096,
+                "source_line": 1,
+                "missing_ranges": [
+                  {
+                    "address": 12288,
+                    "size": 4
+                  }
+                ]
+              },
+              "restored": true
+            },
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 0,
+            "register_changes": {},
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-22",
+    "name": "Late second access fails atomically, including earlier access and writeback",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "pop {r0,r1}",
+        "size": 4,
+        "bytes": "0300bde8",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 9,
+        "r1": 10,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 12284,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [
+        {
+          "address": 12284,
+          "bytes": "11223344"
+        }
+      ],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "LDM and STM",
+            "PUSH and POP"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": true,
+      "derivation": "Late second access fails atomically, including earlier access and writeback"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 0,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "failed",
+            "pc_before": 4096,
+            "pc_after": 4096,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "memory_fault",
+            "error": {
+              "code": "unmapped_memory_access",
+              "context": {
+                "address": 12288,
+                "size": 4,
+                "access": "read",
+                "pc": 4096,
+                "source_line": 1,
+                "missing_ranges": [
+                  {
+                    "address": 12288,
+                    "size": 4
+                  }
+                ]
+              },
+              "restored": true
+            },
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 0,
+            "register_changes": {},
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-23",
+    "name": "Word store to code fails without changing code or registers",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "str r0,[r4]",
+        "size": 4,
+        "bytes": "000084e5",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 305419896,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 4096,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "STR"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": true,
+      "derivation": "Word store to code fails without changing code or registers"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 0,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "failed",
+            "pc_before": 4096,
+            "pc_after": 4096,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "memory_fault",
+            "error": {
+              "code": "memory_permission_denied",
+              "context": {
+                "address": 4096,
+                "size": 4,
+                "access": "write",
+                "pc": 4096,
+                "source_line": 1
+              },
+              "restored": true
+            },
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 0,
+            "register_changes": {},
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-24",
+    "name": "Unaligned known word fails by product policy",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "ldr r0,[r4]",
+        "size": 4,
+        "bytes": "000094e5",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 10241,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [
+        {
+          "address": 10240,
+          "bytes": "0011223344556677"
+        }
+      ],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "LDR (register-relative)"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": true,
+      "derivation": "Unaligned known word fails by product policy"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 0,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "failed",
+            "pc_before": 4096,
+            "pc_after": 4096,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "memory_fault",
+            "error": {
+              "code": "unaligned_memory_access",
+              "context": {
+                "address": 10241,
+                "size": 4,
+                "access": "read",
+                "pc": 4096,
+                "source_line": 1
+              },
+              "restored": true
+            },
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 0,
+            "register_changes": {},
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-25",
+    "name": "Thumb BL tags return address and same-mode BX uses canonical PC",
+    "profile": "armv7-a-le",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bl .+6",
+        "size": 4,
+        "bytes": "00f001f8",
+        "source_line": 1
+      },
+      {
+        "address": 4100,
+        "assembly": "movs r0,#9",
+        "size": 2,
+        "bytes": "0920",
+        "source_line": 2
+      },
+      {
+        "address": 4102,
+        "assembly": "bx lr",
+        "size": 2,
+        "bytes": "7047",
+        "source_line": 3
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 48
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "B, BL, BX, and BLX",
+            "B, BL, BX, and BLX"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "Thumb BL tags return address and same-mode BX uses canonical PC"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "lr": {
+                "before": 0,
+                "after": 4101
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4102
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4102,
+            "condition_passed": null,
+            "branch": {
+              "kind": "call",
+              "taken": true,
+              "target": 4102,
+              "condition": null,
+              "fallthrough": 4100
+            },
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "lr": {
+                "before": 0,
+                "after": 4101
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4102
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 2,
+          "runtime": {
+            "register_changes": {
+              "pc": {
+                "before": 4102,
+                "after": 4100
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4102,
+            "pc_after": 4100,
+            "condition_passed": null,
+            "branch": {
+              "kind": "return",
+              "taken": true,
+              "target": 4100,
+              "condition": null,
+              "fallthrough": 4104
+            },
+            "stop_reason": null,
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 2,
+            "register_changes": {
+              "pc": {
+                "before": 4102,
+                "after": 4100
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4102,
+              "size": 2,
+              "source_line": 3
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-26",
+    "name": "Mode-changing BX rolls back even if the native transfer succeeds",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bx r3",
+        "size": 4,
+        "bytes": "13ff2fe1",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 36865,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 16
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "B, BL, BX, and BLX"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": true,
+      "derivation": "Mode-changing BX rolls back even if the native transfer succeeds"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 0,
+          "runtime": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "failed",
+            "pc_before": 4096,
+            "pc_after": 4096,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "unsupported_mode_transition",
+            "error": {
+              "code": "unsupported_mode_transition",
+              "context": {
+                "pc": 4096,
+                "source_line": 1
+              },
+              "restored": true
+            },
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 0,
+            "register_changes": {},
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-27",
+    "name": "Thumb POP-PC commits word loads and SP then stops at external target",
+    "profile": "armv7-a-le",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "pop {r0,pc}",
+        "size": 2,
+        "bytes": "01bd",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 10240,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 48
+      },
+      "memory": [
+        {
+          "address": 10240,
+          "bytes": "1122334401900000"
+        }
+      ],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "PUSH and POP"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": false,
+      "derivation": "Thumb POP-PC commits word loads and SP then stops at external target"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "sp": {
+                "before": 10240,
+                "after": 10248
+              },
+              "r0": {
+                "before": 0,
+                "after": 1144201745
+              },
+              "pc": {
+                "before": 4096,
+                "after": 36864
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 36864,
+            "condition_passed": null,
+            "branch": {
+              "kind": "return",
+              "taken": true,
+              "target": 36864,
+              "condition": null,
+              "fallthrough": 4098
+            },
+            "stop_reason": "pc_not_loaded",
+            "error": null,
+            "memory_reads": [
+              {
+                "address": 10240,
+                "size": 4,
+                "bytes": "11223344"
+              },
+              {
+                "address": 10244,
+                "size": 4,
+                "bytes": "01900000"
+              }
+            ],
+            "memory_writes": [],
+            "flag_changes": {},
+            "step_seq": 1,
+            "register_changes": {
+              "sp": {
+                "before": 10240,
+                "after": 10248
+              },
+              "r0": {
+                "before": 0,
+                "after": 1144201745
+              },
+              "pc": {
+                "before": 4096,
+                "after": 36864
+              }
+            },
+            "cpsr_change": null,
+            "instruction": {
+              "address": 4096,
+              "size": 2,
+              "source_line": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  {
+    "id": "GE-28",
+    "name": "Flag edit modifies each baseline independently; Reset restores baseline flags and register",
+    "profile": "armv7-a-le",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "cmp r0,#0",
+        "size": 4,
+        "bytes": "000050e3",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "registers": {
+        "r0": 0,
+        "r1": 0,
+        "r2": 0,
+        "r3": 0,
+        "r4": 0,
+        "r5": 0,
+        "r6": 0,
+        "r7": 0,
+        "r8": 0,
+        "r9": 0,
+        "r10": 0,
+        "r11": 0,
+        "r12": 0,
+        "sp": 537919488,
+        "lr": 0,
+        "pc": 4096,
+        "cpsr": 268435472
+      },
+      "memory": [],
+      "step_seq": 0
+    },
+    "verification": {
+      "encoding": "GNU as and Apple Clang; captures in ../provenance/encoding.json",
+      "semantics": [
+        {
+          "source": "https://documentation-service.arm.com/static/5f3fa899428f7a6b3328fd44",
+          "sections": [
+            "CMP and CMN"
+          ],
+          "document": "ARM Compiler armasm Reference Guide Version 6.01, ARM DUI 0802B"
+        },
+        {
+          "source": "../../docs/SRS.md",
+          "sections": [
+            "8",
+            "9",
+            "10",
+            "11"
+          ]
+        }
+      ],
+      "synthetic_policy_case": true,
+      "derivation": "Flag edit modifies each baseline independently; Reset restores baseline flags and register"
+    },
+    "actions": [
+      {
+        "op": "step",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "cpsr": {
+                "before": 268435472,
+                "after": 1610612752
+              },
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": {
+            "status": "executed",
+            "pc_before": 4096,
+            "pc_after": 4100,
+            "condition_passed": null,
+            "branch": null,
+            "stop_reason": "pc_not_loaded",
+            "error": null,
+            "memory_reads": [],
+            "memory_writes": [],
+            "flag_changes": {
+              "z": {
+                "before": false,
+                "after": true
+              },
+              "c": {
+                "before": false,
+                "after": true
+              },
+              "v": {
+                "before": true,
+                "after": false
+              }
+            },
+            "step_seq": 1,
+            "register_changes": {
+              "pc": {
+                "before": 4096,
+                "after": 4100
+              }
+            },
+            "cpsr_change": {
+              "before": 268435472,
+              "after": 1610612752
+            },
+            "instruction": {
+              "address": 4096,
+              "size": 4,
+              "source_line": 1
+            }
+          }
+        }
+      },
+      {
+        "op": "set_flags",
+        "arguments": {
+          "mask": 2147483648,
+          "value": 2147483648
+        },
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "cpsr": {
+                "before": 1610612752,
+                "after": 3758096400
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {
+              "cpsr": {
+                "before": 268435472,
+                "after": 2415919120
+              }
+            },
+            "memory_changes": {}
+          },
+          "result": null
+        }
+      },
+      {
+        "op": "reset",
+        "arguments": {},
+        "expect": {
+          "step_seq": 1,
+          "runtime": {
+            "register_changes": {
+              "cpsr": {
+                "before": 3758096400,
+                "after": 2415919120
+              },
+              "pc": {
+                "before": 4100,
+                "after": 4096
+              }
+            },
+            "memory_changes": {}
+          },
+          "baseline": {
+            "register_changes": {},
+            "memory_changes": {}
+          },
+          "result": null
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,171 @@
+"""Program and parsing contracts. No decoder or execution library types escape here."""
+
+from dataclasses import dataclass, field
+from types import MappingProxyType
+from typing import Literal, Mapping
+
+Mode = Literal["arm", "thumb"]
+ADDRESS_SPACE = 1 << 32
+MAX_TEXT_BYTES = 1 << 20
+MAX_INSTRUCTIONS = 10_000
+
+
+class DomainError(ValueError):
+    def __init__(self, code: str, message: str, **context):
+        super().__init__(message)
+        self.code = code
+        self.context = MappingProxyType(context)
+
+
+def validate_range(address: int, size: int, code: str = "invalid_input") -> None:
+    if (type(address) is not int or type(size) is not int or
+            address < 0 or size <= 0 or address + size > ADDRESS_SPACE):
+        raise DomainError(code, "Expected a nonempty range within the 32-bit address space.",
+                          address=address, size=size)
+
+
+@dataclass(frozen=True, slots=True)
+class Diagnostic:
+    severity: Literal["info", "warning", "error"]
+    code: str
+    message: str
+    line: int | None = None
+    source_text: str = ""
+    related_lines: tuple[int, ...] = ()
+
+    def __post_init__(self):
+        object.__setattr__(self, "related_lines", tuple(self.related_lines))
+
+
+@dataclass(frozen=True, slots=True)
+class Operand:
+    kind: str
+    register: str | None = None
+    immediate: int | None = None
+    memory: tuple[str | None, str | None, int] | None = None
+    shift: tuple[str, int | str] | None = None
+    subtracted: bool = False
+
+    def __post_init__(self):
+        if self.memory is not None:
+            object.__setattr__(self, "memory", tuple(self.memory))
+        if self.shift is not None:
+            object.__setattr__(self, "shift", tuple(self.shift))
+
+
+@dataclass(frozen=True, slots=True)
+class DecodeMetadata:
+    operation: str
+    condition: str | None
+    operands: tuple[Operand, ...]
+    groups: tuple[str, ...]
+    registers_read: tuple[str, ...]
+    registers_written: tuple[str, ...]
+    updates_flags: bool
+    writeback: bool
+
+    def __post_init__(self):
+        for name in ("operands", "groups", "registers_read", "registers_written"):
+            object.__setattr__(self, name, tuple(getattr(self, name)))
+
+
+@dataclass(frozen=True, slots=True)
+class Instruction:
+    address: int
+    raw_bytes: bytes
+    mode: Mode
+    source_line: int | None
+    source_text: str
+    display_text: str
+    decoded_text: str
+    decode: DecodeMetadata
+    profile: str = "armv7-a-le"
+    feature_exclusion: str | None = None
+
+    def __post_init__(self):
+        if not isinstance(self.raw_bytes, bytes):
+            raise TypeError("Instruction bytes must be immutable bytes.")
+        validate_range(self.address, self.size, "invalid_encoding")
+        if self.source_line is not None and self.source_line < 1:
+            raise DomainError("invalid_input", "Source lines are one-based.")
+
+    @property
+    def size(self) -> int:
+        return len(self.raw_bytes)
+
+
+def instruction_conflicts(instructions: tuple[Instruction, ...]) -> tuple[Diagnostic, ...]:
+    diagnostics = []
+    previous = None
+    starts = {}
+    for instruction in sorted(instructions, key=lambda entry: entry.address):
+        duplicate = starts.get(instruction.address)
+        conflict = duplicate or (previous if previous and
+                                  instruction.address < previous.address + previous.size else None)
+        if conflict:
+            diagnostics.append(Diagnostic(
+                "error", "duplicate_instruction_address" if duplicate else "overlapping_instructions",
+                "Instruction ranges conflict.", instruction.source_line, instruction.source_text,
+                tuple(line for line in (conflict.source_line, instruction.source_line) if line is not None)))
+        starts.setdefault(instruction.address, instruction)
+        if previous is None or instruction.address + instruction.size > previous.address + previous.size:
+            previous = instruction
+    return tuple(diagnostics)
+
+
+@dataclass(frozen=True, slots=True)
+class ProgramImage:
+    instructions: tuple[Instruction, ...]
+    mode: Mode
+    source_text: str
+    format: str
+    profile: str = "armv7-a-le"
+    address_index: Mapping[int, Instruction] = field(init=False, repr=False, compare=False)
+
+    def __post_init__(self):
+        ordered = tuple(sorted(self.instructions, key=lambda instruction: instruction.address))
+        if not ordered:
+            raise DomainError("empty_program", "A program needs at least one instruction.")
+        if len(ordered) > MAX_INSTRUCTIONS:
+            raise DomainError("input_limit", "Too many instructions.", limit=MAX_INSTRUCTIONS)
+        if self.mode not in ("arm", "thumb") or any(
+                instruction.mode != self.mode or instruction.profile != self.profile for instruction in ordered):
+            raise DomainError("invalid_input", "Instructions must share the program profile and mode.")
+        conflicts = instruction_conflicts(ordered)
+        if conflicts:
+            raise DomainError(conflicts[0].code, conflicts[0].message,
+                              related_lines=conflicts[0].related_lines)
+        object.__setattr__(self, "instructions", ordered)
+        object.__setattr__(self, "address_index", MappingProxyType({i.address: i for i in ordered}))
+
+    @property
+    def start_pc(self) -> int:
+        return self.instructions[0].address
+
+
+@dataclass(frozen=True, slots=True)
+class ParseResult:
+    program: ProgramImage | None
+    records: tuple[Instruction, ...]
+    diagnostics: tuple[Diagnostic, ...]
+    selected_format: str
+
+    def __post_init__(self):
+        object.__setattr__(self, "records", tuple(self.records))
+        object.__setattr__(self, "diagnostics", tuple(self.diagnostics))
+
+    @property
+    def record_count(self) -> int:
+        return len(self.records)
+
+    @property
+    def load_success(self) -> bool:
+        return self.program is not None
+
+    @property
+    def ignored_lines(self) -> tuple[int, ...]:
+        return tuple(d.line for d in self.diagnostics if d.code == "ignored_line" and d.line is not None)
+
+    @property
+    def ignored_line_count(self) -> int:
+        return len(self.ignored_lines)

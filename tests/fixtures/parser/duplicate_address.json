@@ -1,0 +1,47 @@
+{
+  "id": "PF-08",
+  "input": "duplicate_address.txt",
+  "mode": "arm",
+  "format": "generic",
+  "encoding": "auto",
+  "provenance": {
+    "kind": "synthetic",
+    "source": "docs/SRS.md Section 7.4; exact contract seed, not a native tool capture"
+  },
+  "expected": {
+    "load_success": false,
+    "records": [
+      {
+        "source_line": 1,
+        "address": 134217984,
+        "bytes": "0500a0e3",
+        "size": 4,
+        "assembly": "mov r0,#5"
+      },
+      {
+        "source_line": 2,
+        "address": 134217984,
+        "bytes": "0600a0e3",
+        "size": 4,
+        "assembly": "mov r0,#6"
+      }
+    ],
+    "ignored_lines": [],
+    "ignored_line_count": 0,
+    "diagnostics": [
+      {
+        "severity": "error",
+        "code": "duplicate_instruction_address",
+        "line": 2,
+        "related_lines": [
+          1,
+          2
+        ],
+        "source_text": "0x08000100: E3A00006 MOV r0,#6"
+      }
+    ],
+    "existing_session": "unchanged",
+    "selected_format": "generic",
+    "record_count": 2
+  }
+}

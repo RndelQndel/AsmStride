@@ -1,0 +1,70 @@
+{
+  "id": "PF-03",
+  "input": "objdump_arm.txt",
+  "mode": "arm",
+  "format": "objdump",
+  "encoding": "auto",
+  "provenance": {
+    "kind": "tool_capture_extract",
+    "tool": "GNU objdump (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 2.41.0.20231009",
+    "command": "arm-none-eabi-objdump -d gnu.elf",
+    "raw_capture": "../../provenance/objdump_arm.txt",
+    "raw_source_lines": [
+      2,
+      5,
+      7,
+      8,
+      9
+    ],
+    "assembly": "../../provenance/objdump_arm.s",
+    "capture_sha256": "ddc168f113fd0b248911ed820029b31315ba944829c959059052e107e06d8d23"
+  },
+  "expected": {
+    "load_success": true,
+    "records": [
+      {
+        "source_line": 4,
+        "address": 134217984,
+        "bytes": "0500a0e3",
+        "size": 4,
+        "assembly": "mov r0,#5"
+      },
+      {
+        "source_line": 5,
+        "address": 134217988,
+        "bytes": "fdffffea",
+        "size": 4,
+        "assembly": "b .-4"
+      }
+    ],
+    "ignored_lines": [
+      1,
+      2,
+      3
+    ],
+    "ignored_line_count": 3,
+    "diagnostics": [
+      {
+        "severity": "info",
+        "code": "ignored_line",
+        "line": 1,
+        "source_text": "gnu.elf:     file format elf32-littlearm"
+      },
+      {
+        "severity": "info",
+        "code": "ignored_line",
+        "line": 2,
+        "source_text": "Disassembly of section .text:"
+      },
+      {
+        "severity": "info",
+        "code": "ignored_line",
+        "line": 3,
+        "source_text": "08000100 <_start>:"
+      }
+    ],
+    "existing_session": "replaced",
+    "selected_format": "objdump",
+    "record_count": 2
+  }
+}

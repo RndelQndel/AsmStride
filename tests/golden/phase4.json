@@ -1,0 +1,2468 @@
+[
+  {
+    "id": "P4-mov-pc",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "mov pc,r3",
+        "size": 4,
+        "bytes": "03f0a0e1",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r3": 36864
+    },
+    "memory": [],
+    "expected": {
+      "pc": 36864
+    },
+    "branch": {
+      "kind": "pc_write",
+      "condition": null,
+      "taken": true,
+      "target": 36864,
+      "fallthrough": 4100
+    },
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-add-pc-shift",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "add pc,r3,r2,lsl #2",
+        "size": 4,
+        "bytes": "02f183e0",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r3": 32768,
+      "r2": 1024
+    },
+    "memory": [],
+    "expected": {
+      "pc": 36864
+    },
+    "branch": {
+      "kind": "pc_write",
+      "condition": null,
+      "taken": true,
+      "target": 36864,
+      "fallthrough": 4100
+    },
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-add-pc-pipeline",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "add pc,pc,r2,lsl #2",
+        "size": 4,
+        "bytes": "02f18fe0",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r2": 8190
+    },
+    "memory": [],
+    "expected": {
+      "pc": 36864
+    },
+    "branch": {
+      "kind": "pc_write",
+      "condition": null,
+      "taken": true,
+      "target": 36864,
+      "fallthrough": 4100
+    },
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-sub-pc",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "sub pc,r3,#4",
+        "size": 4,
+        "bytes": "04f043e2",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r3": 36868
+    },
+    "memory": [],
+    "expected": {
+      "pc": 36864
+    },
+    "branch": {
+      "kind": "pc_write",
+      "condition": null,
+      "taken": true,
+      "target": 36864,
+      "fallthrough": 4100
+    },
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-add-pc-lsr",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "add pc,r3,r2,lsr #2",
+        "size": 4,
+        "bytes": "22f183e0",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r3": 32768,
+      "r2": 16384
+    },
+    "memory": [],
+    "expected": {
+      "pc": 36864
+    },
+    "branch": {
+      "kind": "pc_write",
+      "condition": null,
+      "taken": true,
+      "target": 36864,
+      "fallthrough": 4100
+    },
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-add-pc-asr",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "add pc,r3,r2,asr #2",
+        "size": 4,
+        "bytes": "42f183e0",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r3": 40960,
+      "r2": 4294950912
+    },
+    "memory": [],
+    "expected": {
+      "pc": 36864
+    },
+    "branch": {
+      "kind": "pc_write",
+      "condition": null,
+      "taken": true,
+      "target": 36864,
+      "fallthrough": 4100
+    },
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-add-pc-ror",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "add pc,r3,r2,ror #4",
+        "size": 4,
+        "bytes": "62f283e0",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r3": 32768,
+      "r2": 65536
+    },
+    "memory": [],
+    "expected": {
+      "pc": 36864
+    },
+    "branch": {
+      "kind": "pc_write",
+      "condition": null,
+      "taken": true,
+      "target": 36864,
+      "fallthrough": 4100
+    },
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-add-pc-rrx",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "add pc,r3,r2,rrx",
+        "size": 4,
+        "bytes": "62f083e0",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r3": 32768,
+      "r2": 8192
+    },
+    "memory": [],
+    "expected": {
+      "pc": 36864
+    },
+    "branch": {
+      "kind": "pc_write",
+      "condition": null,
+      "taken": true,
+      "target": 36864,
+      "fallthrough": 4100
+    },
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-add-pc-wrap",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "add pc,r3,#4",
+        "size": 4,
+        "bytes": "04f083e2",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r3": 4294967292
+    },
+    "memory": [],
+    "expected": {
+      "pc": 0
+    },
+    "branch": {
+      "kind": "pc_write",
+      "condition": null,
+      "taken": true,
+      "target": 0,
+      "fallthrough": 4100
+    },
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-mov-pc",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "mov pc,r3",
+        "size": 2,
+        "bytes": "9f46",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r3": 36864
+    },
+    "memory": [],
+    "expected": {
+      "pc": 36864
+    },
+    "branch": {
+      "kind": "pc_write",
+      "condition": null,
+      "taken": true,
+      "target": 36864,
+      "fallthrough": 4098
+    },
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-add-pc",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "add pc,r3",
+        "size": 2,
+        "bytes": "9f44",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r3": 32764
+    },
+    "memory": [],
+    "expected": {
+      "pc": 36864
+    },
+    "branch": {
+      "kind": "pc_write",
+      "condition": null,
+      "taken": true,
+      "target": 36864,
+      "fallthrough": 4098
+    },
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-tbb",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "tbb [r4,r2]",
+        "size": 4,
+        "bytes": "d4e802f0",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r4": 10240,
+      "r2": 3
+    },
+    "memory": [
+      {
+        "address": 10243,
+        "bytes": "80"
+      }
+    ],
+    "expected": {
+      "pc": 4356
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": null,
+      "taken": true,
+      "target": 4356,
+      "fallthrough": 4100
+    },
+    "condition_passed": null,
+    "reads": [
+      {
+        "address": 10243,
+        "size": 1,
+        "bytes": "80"
+      }
+    ]
+  },
+  {
+    "id": "P4-tbh",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "tbh [r4,r2,lsl #1]",
+        "size": 4,
+        "bytes": "d4e812f0",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r4": 10240,
+      "r2": 3
+    },
+    "memory": [
+      {
+        "address": 10246,
+        "bytes": "fe3f"
+      }
+    ],
+    "expected": {
+      "pc": 36864
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": null,
+      "taken": true,
+      "target": 36864,
+      "fallthrough": 4100
+    },
+    "condition_passed": null,
+    "reads": [
+      {
+        "address": 10246,
+        "size": 2,
+        "bytes": "fe3f"
+      }
+    ]
+  },
+  {
+    "id": "P4-tbb-external",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 8176,
+        "assembly": "tbb [r4,r2]",
+        "size": 4,
+        "bytes": "d4e802f0",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r4": 10240,
+      "r2": 0
+    },
+    "memory": [
+      {
+        "address": 10240,
+        "bytes": "80"
+      }
+    ],
+    "expected": {
+      "pc": 8436
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": null,
+      "taken": true,
+      "target": 8436,
+      "fallthrough": 8180
+    },
+    "condition_passed": null,
+    "reads": [
+      {
+        "address": 10240,
+        "size": 1,
+        "bytes": "80"
+      }
+    ]
+  },
+  {
+    "id": "P4-tbb-pc",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "tbb [pc,r2]",
+        "size": 4,
+        "bytes": "dfe802f0",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r2": 0
+    },
+    "memory": [
+      {
+        "address": 4100,
+        "bytes": "80"
+      }
+    ],
+    "expected": {
+      "pc": 4356
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": null,
+      "taken": true,
+      "target": 4356,
+      "fallthrough": 4100
+    },
+    "condition_passed": null,
+    "reads": [
+      {
+        "address": 4100,
+        "size": 1,
+        "bytes": "80"
+      }
+    ]
+  },
+  {
+    "id": "P4-add-pc-rrx-carry",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "add pc,r3,r2,rrx",
+        "size": 4,
+        "bytes": "62f083e0",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r3": 2147516416,
+      "r2": 8192,
+      "cpsr": 536870928
+    },
+    "memory": [],
+    "expected": {
+      "pc": 36864
+    },
+    "branch": {
+      "kind": "pc_write",
+      "condition": null,
+      "taken": true,
+      "target": 36864,
+      "fallthrough": 4100
+    },
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-literal",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4098,
+        "assembly": "ldr r0,[pc,#0]",
+        "size": 2,
+        "bytes": "0048",
+        "source_line": 1
+      }
+    ],
+    "initial": {},
+    "memory": [
+      {
+        "address": 4100,
+        "bytes": "11223344"
+      }
+    ],
+    "expected": {
+      "r0": 1144201745,
+      "pc": 4100
+    },
+    "branch": null,
+    "condition_passed": null,
+    "reads": [
+      {
+        "address": 4100,
+        "size": 4,
+        "bytes": "11223344"
+      }
+    ]
+  },
+  {
+    "id": "P4-thumb-multiply",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "muls r0,r1,r0",
+        "size": 2,
+        "bytes": "4843",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r0": 7,
+      "r1": 9
+    },
+    "memory": [],
+    "expected": {
+      "r0": 63,
+      "pc": 4098
+    },
+    "branch": null,
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-multiply",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "mul r0,r1,r2",
+        "size": 4,
+        "bytes": "910200e0",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r1": 7,
+      "r2": 9
+    },
+    "memory": [],
+    "expected": {
+      "r0": 63,
+      "pc": 4100
+    },
+    "branch": null,
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-eor",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "eor.w r0,r1,r2",
+        "size": 4,
+        "bytes": "81ea0200",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r1": 65280,
+      "r2": 4080
+    },
+    "memory": [],
+    "expected": {
+      "r0": 61680,
+      "pc": 4100
+    },
+    "branch": null,
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-overflow",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "adds r0,r1,#1",
+        "size": 4,
+        "bytes": "010091e2",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r1": 2147483647
+    },
+    "memory": [],
+    "expected": {
+      "r0": 2147483648,
+      "cpsr": 2415919120,
+      "pc": 4100
+    },
+    "branch": null,
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-carry",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "adds r0,r1,#1",
+        "size": 4,
+        "bytes": "010091e2",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r1": 4294967295
+    },
+    "memory": [],
+    "expected": {
+      "r0": 0,
+      "cpsr": 1610612752,
+      "pc": 4100
+    },
+    "branch": null,
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-overflow",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "adds r0,r1,#1",
+        "size": 2,
+        "bytes": "481c",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r1": 2147483647
+    },
+    "memory": [],
+    "expected": {
+      "r0": 2147483648,
+      "cpsr": 2415919152,
+      "pc": 4098
+    },
+    "branch": null,
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-carry",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "adds r0,r1,#1",
+        "size": 2,
+        "bytes": "481c",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r1": 4294967295
+    },
+    "memory": [],
+    "expected": {
+      "r0": 0,
+      "cpsr": 1610612784,
+      "pc": 4098
+    },
+    "branch": null,
+    "condition_passed": null,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-eq-True",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "beq .+4",
+        "size": 4,
+        "bytes": "ffffff0a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 1073741840
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "eq",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-eq-False",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "beq .+4",
+        "size": 4,
+        "bytes": "ffffff0a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 16
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "eq",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-eq-True",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbeq destination",
+        "size": 2,
+        "bytes": "00d0",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 1073741872
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "eq",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-eq-False",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbeq destination",
+        "size": 2,
+        "bytes": "00d0",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 48
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "eq",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-ne-True",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bne .+4",
+        "size": 4,
+        "bytes": "ffffff1a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 16
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "ne",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-ne-False",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bne .+4",
+        "size": 4,
+        "bytes": "ffffff1a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 1073741840
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "ne",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-ne-True",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbne destination",
+        "size": 2,
+        "bytes": "00d1",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 48
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "ne",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-ne-False",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbne destination",
+        "size": 2,
+        "bytes": "00d1",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 1073741872
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "ne",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-hs-True",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bhs .+4",
+        "size": 4,
+        "bytes": "ffffff2a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 536870928
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "hs",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-hs-False",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bhs .+4",
+        "size": 4,
+        "bytes": "ffffff2a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 16
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "hs",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-hs-True",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbhs destination",
+        "size": 2,
+        "bytes": "00d2",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 536870960
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "hs",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-hs-False",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbhs destination",
+        "size": 2,
+        "bytes": "00d2",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 48
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "hs",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-lo-True",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "blo .+4",
+        "size": 4,
+        "bytes": "ffffff3a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 16
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "lo",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-lo-False",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "blo .+4",
+        "size": 4,
+        "bytes": "ffffff3a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 536870928
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "lo",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-lo-True",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nblo destination",
+        "size": 2,
+        "bytes": "00d3",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 48
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "lo",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-lo-False",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nblo destination",
+        "size": 2,
+        "bytes": "00d3",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 536870960
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "lo",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-mi-True",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bmi .+4",
+        "size": 4,
+        "bytes": "ffffff4a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2147483664
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "mi",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-mi-False",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bmi .+4",
+        "size": 4,
+        "bytes": "ffffff4a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 16
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "mi",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-mi-True",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbmi destination",
+        "size": 2,
+        "bytes": "00d4",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2147483696
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "mi",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-mi-False",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbmi destination",
+        "size": 2,
+        "bytes": "00d4",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 48
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "mi",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-pl-True",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bpl .+4",
+        "size": 4,
+        "bytes": "ffffff5a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 16
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "pl",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-pl-False",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bpl .+4",
+        "size": 4,
+        "bytes": "ffffff5a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2147483664
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "pl",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-pl-True",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbpl destination",
+        "size": 2,
+        "bytes": "00d5",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 48
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "pl",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-pl-False",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbpl destination",
+        "size": 2,
+        "bytes": "00d5",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2147483696
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "pl",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-vs-True",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bvs .+4",
+        "size": 4,
+        "bytes": "ffffff6a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 268435472
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "vs",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-vs-False",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bvs .+4",
+        "size": 4,
+        "bytes": "ffffff6a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 16
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "vs",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-vs-True",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbvs destination",
+        "size": 2,
+        "bytes": "00d6",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 268435504
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "vs",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-vs-False",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbvs destination",
+        "size": 2,
+        "bytes": "00d6",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 48
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "vs",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-vc-True",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bvc .+4",
+        "size": 4,
+        "bytes": "ffffff7a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 16
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "vc",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-vc-False",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bvc .+4",
+        "size": 4,
+        "bytes": "ffffff7a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 268435472
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "vc",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-vc-True",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbvc destination",
+        "size": 2,
+        "bytes": "00d7",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 48
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "vc",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-vc-False",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbvc destination",
+        "size": 2,
+        "bytes": "00d7",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 268435504
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "vc",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-hi-True",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bhi .+4",
+        "size": 4,
+        "bytes": "ffffff8a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 536870928
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "hi",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-hi-False",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bhi .+4",
+        "size": 4,
+        "bytes": "ffffff8a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 1610612752
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "hi",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-hi-True",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbhi destination",
+        "size": 2,
+        "bytes": "00d8",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 536870960
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "hi",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-hi-False",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbhi destination",
+        "size": 2,
+        "bytes": "00d8",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 1610612784
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "hi",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-ls-True",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bls .+4",
+        "size": 4,
+        "bytes": "ffffff9a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 1610612752
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "ls",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-ls-False",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bls .+4",
+        "size": 4,
+        "bytes": "ffffff9a",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 536870928
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "ls",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-ls-True",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbls destination",
+        "size": 2,
+        "bytes": "00d9",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 1610612784
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "ls",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-ls-False",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbls destination",
+        "size": 2,
+        "bytes": "00d9",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 536870960
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "ls",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-ge-True",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bge .+4",
+        "size": 4,
+        "bytes": "ffffffaa",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2415919120
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "ge",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-ge-False",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bge .+4",
+        "size": 4,
+        "bytes": "ffffffaa",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2147483664
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "ge",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-ge-True",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbge destination",
+        "size": 2,
+        "bytes": "00da",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2415919152
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "ge",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-ge-False",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbge destination",
+        "size": 2,
+        "bytes": "00da",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2147483696
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "ge",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-lt-True",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "blt .+4",
+        "size": 4,
+        "bytes": "ffffffba",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2147483664
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "lt",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-lt-False",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "blt .+4",
+        "size": 4,
+        "bytes": "ffffffba",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2415919120
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "lt",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-lt-True",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nblt destination",
+        "size": 2,
+        "bytes": "00db",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2147483696
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "lt",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-lt-False",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nblt destination",
+        "size": 2,
+        "bytes": "00db",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2415919152
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "lt",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-gt-True",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bgt .+4",
+        "size": 4,
+        "bytes": "ffffffca",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2415919120
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "gt",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-gt-False",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "bgt .+4",
+        "size": 4,
+        "bytes": "ffffffca",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 3489660944
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "gt",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-gt-True",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbgt destination",
+        "size": 2,
+        "bytes": "00dc",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2415919152
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "gt",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-gt-False",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nbgt destination",
+        "size": 2,
+        "bytes": "00dc",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 3489660976
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "gt",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-le-True",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "ble .+4",
+        "size": 4,
+        "bytes": "ffffffda",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 3489660944
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "le",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-arm-le-False",
+    "mode": "arm",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": "ble .+4",
+        "size": 4,
+        "bytes": "ffffffda",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2415919120
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "le",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4100
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-le-True",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nble destination",
+        "size": 2,
+        "bytes": "00dd",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 3489660976
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "le",
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-thumb-le-False",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\nble destination",
+        "size": 2,
+        "bytes": "00dd",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "cpsr": 2415919152
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": "le",
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-cbz-0",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\ncbz r0,destination",
+        "size": 2,
+        "bytes": "00b1",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r0": 0
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": null,
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  },
+  {
+    "id": "P4-cbz-1",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\ncbz r0,destination",
+        "size": 2,
+        "bytes": "00b1",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r0": 1
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": null,
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-cbnz-0",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\ncbnz r0,destination",
+        "size": 2,
+        "bytes": "00b9",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r0": 0
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4098
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": null,
+      "taken": false,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": false,
+    "reads": []
+  },
+  {
+    "id": "P4-cbnz-1",
+    "mode": "thumb",
+    "program": [
+      {
+        "address": 4096,
+        "assembly": ".set destination, .+4\ncbnz r0,destination",
+        "size": 2,
+        "bytes": "00b9",
+        "source_line": 1
+      }
+    ],
+    "initial": {
+      "r0": 1
+    },
+    "memory": [],
+    "expected": {
+      "pc": 4100
+    },
+    "branch": {
+      "kind": "branch",
+      "condition": null,
+      "taken": true,
+      "target": 4100,
+      "fallthrough": 4098
+    },
+    "condition_passed": true,
+    "reads": []
+  }
+]

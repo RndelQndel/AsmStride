@@ -1,0 +1,7683 @@
+{
+  "environment": {
+    "python": "3.14.7",
+    "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
+    "unicorn_binding": "2.1.4",
+    "unicorn_native": [
+      2,
+      1,
+      33621247
+    ],
+    "capstone": "5.0.7",
+    "cpu": "UC_CPU_ARM_CORTEX_A15",
+    "timeout_microseconds": 1000000,
+    "instruction_count": 1
+  },
+  "cases": [
+    {
+      "input": {
+        "id": "arm_condition_true",
+        "code": [
+          [
+            4096,
+            "0100a0030200a0e3"
+          ]
+        ],
+        "registers": {
+          "cpsr": 1073741840
+        },
+        "expected": {
+          "r0": 1,
+          "pc": 4100
+        }
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "0100a003",
+          "text": "moveq r0, #1"
+        },
+        {
+          "address": 4100,
+          "size": 4,
+          "bytes": "0200a0e3",
+          "text": "mov r0, #2"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 1073741840
+          },
+          "page_sha256": {
+            "0x1000": "321fb88ba01a6387d22dc8d64081d3a5b18ccd71d3754e4f2638c443f26691bb"
+          },
+          "region_bytes": {
+            "0x1000": "0100a0030200a0e3"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 1073741840
+          },
+          "page_sha256": {
+            "0x1000": "321fb88ba01a6387d22dc8d64081d3a5b18ccd71d3754e4f2638c443f26691bb"
+          },
+          "region_bytes": {
+            "0x1000": "0100a0030200a0e3"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "stop": null,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "arm_condition_false",
+        "code": [
+          [
+            4096,
+            "0100a0030200a0e3"
+          ]
+        ],
+        "expected": {
+          "pc": 4100
+        }
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "0100a003",
+          "text": "moveq r0, #1"
+        },
+        {
+          "address": 4100,
+          "size": 4,
+          "bytes": "0200a0e3",
+          "text": "mov r0, #2"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "321fb88ba01a6387d22dc8d64081d3a5b18ccd71d3754e4f2638c443f26691bb"
+          },
+          "region_bytes": {
+            "0x1000": "0100a0030200a0e3"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "321fb88ba01a6387d22dc8d64081d3a5b18ccd71d3754e4f2638c443f26691bb"
+          },
+          "region_bytes": {
+            "0x1000": "0100a0030200a0e3"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "stop": null,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "thumb16",
+        "thumb": true,
+        "code": [
+          [
+            4096,
+            "012001f10201"
+          ]
+        ],
+        "expected": {
+          "r0": 1,
+          "pc": 4098
+        }
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 2,
+          "bytes": "0120",
+          "text": "movs r0, #1"
+        },
+        {
+          "address": 4098,
+          "size": 4,
+          "bytes": "01f10201",
+          "text": "add.w r1, r1, #2"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "0251af36d43dbb852358f1bec1ece4f73a82cdc06c0c9a01c10c6342cc2a207c"
+          },
+          "region_bytes": {
+            "0x1000": "012001f10201"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4098,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "0251af36d43dbb852358f1bec1ece4f73a82cdc06c0c9a01c10c6342cc2a207c"
+          },
+          "region_bytes": {
+            "0x1000": "012001f10201"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "stop": null,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "thumb32",
+        "thumb": true,
+        "pc": 4098,
+        "code": [
+          [
+            4096,
+            "012001f10201"
+          ]
+        ],
+        "expected": {
+          "r1": 2,
+          "pc": 4102
+        }
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 2,
+          "bytes": "0120",
+          "text": "movs r0, #1"
+        },
+        {
+          "address": 4098,
+          "size": 4,
+          "bytes": "01f10201",
+          "text": "add.w r1, r1, #2"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4098,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "0251af36d43dbb852358f1bec1ece4f73a82cdc06c0c9a01c10c6342cc2a207c"
+          },
+          "region_bytes": {
+            "0x1000": "012001f10201"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 0,
+            "r1": 2,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4102,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "0251af36d43dbb852358f1bec1ece4f73a82cdc06c0c9a01c10c6342cc2a207c"
+          },
+          "region_bytes": {
+            "0x1000": "012001f10201"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4098,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "stop": "pc_not_loaded",
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "arm_self_branch",
+        "code": [
+          [
+            4096,
+            "feffffea"
+          ]
+        ],
+        "expected": {}
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "feffffea",
+          "text": "b #0x1000"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "96142e3c4efc036e7431f16052776384e081c6f4b4d058fc9814c489db044960"
+          },
+          "region_bytes": {
+            "0x1000": "feffffea"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "96142e3c4efc036e7431f16052776384e081c6f4b4d058fc9814c489db044960"
+          },
+          "region_bytes": {
+            "0x1000": "feffffea"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "stop": null,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "thumb_self_branch",
+        "thumb": true,
+        "code": [
+          [
+            4096,
+            "fee7"
+          ]
+        ],
+        "expected": {}
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 2,
+          "bytes": "fee7",
+          "text": "b #0x1000"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "a1a2b0465310b4419153349ed728558ee84e17b5b0ec260a3fa1304f3bb607de"
+          },
+          "region_bytes": {
+            "0x1000": "fee7"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "a1a2b0465310b4419153349ed728558ee84e17b5b0ec260a3fa1304f3bb607de"
+          },
+          "region_bytes": {
+            "0x1000": "fee7"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "stop": null,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "arm_external_bx",
+        "code": [
+          [
+            4096,
+            "13ff2fe1"
+          ]
+        ],
+        "registers": {
+          "r3": 36864
+        },
+        "expected": {
+          "pc": 36864
+        }
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "13ff2fe1",
+          "text": "bx r3"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 36864,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "574cb04600ea5b02c28ebcdff37e1dda6db35be42d9f829ef44d4598b02a0bfd"
+          },
+          "region_bytes": {
+            "0x1000": "13ff2fe1"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 36864,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 36864,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "574cb04600ea5b02c28ebcdff37e1dda6db35be42d9f829ef44d4598b02a0bfd"
+          },
+          "region_bytes": {
+            "0x1000": "13ff2fe1"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_FETCH_UNMAPPED",
+            "address": 36864,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 8,
+          "message": "Invalid memory fetch (UC_ERR_FETCH_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "retirement_evidence": {
+          "decoded_target": 36864,
+          "same_mode": true
+        }
+      },
+      "stop": "pc_not_loaded",
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "thumb_external_bx",
+        "thumb": true,
+        "code": [
+          [
+            4096,
+            "1847"
+          ]
+        ],
+        "registers": {
+          "r3": 36865
+        },
+        "expected": {
+          "pc": 36864
+        }
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 2,
+          "bytes": "1847",
+          "text": "bx r3"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 36865,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "b58f6e636b1e9d0ce27f420a6b102703bba24ae065581b13975abf356270b4ba"
+          },
+          "region_bytes": {
+            "0x1000": "1847"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 36865,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 36864,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "b58f6e636b1e9d0ce27f420a6b102703bba24ae065581b13975abf356270b4ba"
+          },
+          "region_bytes": {
+            "0x1000": "1847"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_FETCH_UNMAPPED",
+            "address": 36864,
+            "size": 2
+          }
+        ],
+        "native_error": {
+          "number": 8,
+          "message": "Invalid memory fetch (UC_ERR_FETCH_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "retirement_evidence": {
+          "decoded_target": 36864,
+          "same_mode": true
+        }
+      },
+      "stop": "pc_not_loaded",
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "arm_bl",
+        "code": [
+          [
+            4096,
+            "000000eb"
+          ],
+          [
+            4104,
+            "1eff2fe1"
+          ]
+        ],
+        "expected": {
+          "pc": 4104,
+          "lr": 4100
+        }
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "000000eb",
+          "text": "bl #0x1008"
+        },
+        {
+          "address": 4104,
+          "size": 4,
+          "bytes": "1eff2fe1",
+          "text": "bx lr"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "787f2ca6a9c4934230b5f0ca091d2761ac4180ad9afe13b89889abd73ba9507b"
+          },
+          "region_bytes": {
+            "0x1000": "000000eb",
+            "0x1008": "1eff2fe1"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 4100,
+            "pc": 4104,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "787f2ca6a9c4934230b5f0ca091d2761ac4180ad9afe13b89889abd73ba9507b"
+          },
+          "region_bytes": {
+            "0x1000": "000000eb",
+            "0x1008": "1eff2fe1"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "stop": null,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "arm_return",
+        "pc": 4104,
+        "code": [
+          [
+            4096,
+            "000000eb"
+          ],
+          [
+            4104,
+            "1eff2fe1"
+          ]
+        ],
+        "registers": {
+          "lr": 4100
+        },
+        "expected": {
+          "pc": 4100
+        }
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "000000eb",
+          "text": "bl #0x1008"
+        },
+        {
+          "address": 4104,
+          "size": 4,
+          "bytes": "1eff2fe1",
+          "text": "bx lr"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 4100,
+            "pc": 4104,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "787f2ca6a9c4934230b5f0ca091d2761ac4180ad9afe13b89889abd73ba9507b"
+          },
+          "region_bytes": {
+            "0x1000": "000000eb",
+            "0x1008": "1eff2fe1"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 4100,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "787f2ca6a9c4934230b5f0ca091d2761ac4180ad9afe13b89889abd73ba9507b"
+          },
+          "region_bytes": {
+            "0x1000": "000000eb",
+            "0x1008": "1eff2fe1"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4104,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "stop": "pc_not_loaded",
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "arm_external_bl",
+        "code": [
+          [
+            4096,
+            "fe1f00eb"
+          ]
+        ],
+        "expected": {
+          "pc": 36864,
+          "lr": 4100
+        }
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "fe1f00eb",
+          "text": "bl #0x9000"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "1859111c064706e11fc7919b034008daf5a513e49c8e3ad8563190c58ccd6da5"
+          },
+          "region_bytes": {
+            "0x1000": "fe1f00eb"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 4100,
+            "pc": 36864,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "1859111c064706e11fc7919b034008daf5a513e49c8e3ad8563190c58ccd6da5"
+          },
+          "region_bytes": {
+            "0x1000": "fe1f00eb"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_FETCH_UNMAPPED",
+            "address": 36864,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 8,
+          "message": "Invalid memory fetch (UC_ERR_FETCH_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "retirement_evidence": {
+          "decoded_target": 36864,
+          "same_mode": true
+        }
+      },
+      "stop": "pc_not_loaded",
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "sequential_page_end",
+        "code": [
+          [
+            8188,
+            "0100a0e3"
+          ]
+        ],
+        "expected": {
+          "r0": 1,
+          "pc": 8192
+        }
+      },
+      "decoded": [
+        {
+          "address": 8188,
+          "size": 4,
+          "bytes": "0100a0e3",
+          "text": "mov r0, #1"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 8188,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "579f94cf7c638f5f2ef0d3a8a9978cb9d2f36e3afe29d65c83beff1525dd0889"
+          },
+          "region_bytes": {
+            "0x1ffc": "0100a0e3"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 8192,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "579f94cf7c638f5f2ef0d3a8a9978cb9d2f36e3afe29d65c83beff1525dd0889"
+          },
+          "region_bytes": {
+            "0x1ffc": "0100a0e3"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 8188,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_FETCH_UNMAPPED",
+            "address": 8192,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 8,
+          "message": "Invalid memory fetch (UC_ERR_FETCH_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "retirement_evidence": {
+          "decoded_target": 8192,
+          "same_mode": true
+        }
+      },
+      "stop": "pc_not_loaded",
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "thumb_interior_target",
+        "thumb": true,
+        "code": [
+          [
+            4096,
+            "184701f10201"
+          ]
+        ],
+        "registers": {
+          "r3": 4101
+        },
+        "expected": {
+          "pc": 4100
+        }
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 2,
+          "bytes": "1847",
+          "text": "bx r3"
+        },
+        {
+          "address": 4098,
+          "size": 4,
+          "bytes": "01f10201",
+          "text": "add.w r1, r1, #2"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 4101,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "78887c1a3bf27e07d6dee3c3f2d2f7b25a88710b2ba4eca77d0ff84489e745d0"
+          },
+          "region_bytes": {
+            "0x1000": "184701f10201"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 4101,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "78887c1a3bf27e07d6dee3c3f2d2f7b25a88710b2ba4eca77d0ff84489e745d0"
+          },
+          "region_bytes": {
+            "0x1000": "184701f10201"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "stop": "pc_not_loaded",
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "initial_fetch_unmapped",
+        "pc": 36864,
+        "code": [
+          [
+            4096,
+            "0100a0e3"
+          ]
+        ],
+        "failure": true
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "0100a0e3",
+          "text": "mov r0, #1"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 36864,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "8bffbe4f11d83f42778164e0cc45a1b588727d67c3f3f4ac736cf455340d0612"
+          },
+          "region_bytes": {
+            "0x1000": "0100a0e3"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 36864,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "8bffbe4f11d83f42778164e0cc45a1b588727d67c3f3f4ac736cf455340d0612"
+          },
+          "region_bytes": {
+            "0x1000": "0100a0e3"
+          }
+        },
+        "events": [
+          {
+            "kind": "UC_MEM_FETCH_UNMAPPED",
+            "address": 36864,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 8,
+          "message": "Invalid memory fetch (UC_ERR_FETCH_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 0
+      },
+      "restored": {
+        "registers": {
+          "r0": 0,
+          "r1": 0,
+          "r2": 0,
+          "r3": 0,
+          "r4": 0,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 0,
+          "lr": 0,
+          "pc": 36864,
+          "cpsr": 16
+        },
+        "page_sha256": {
+          "0x1000": "8bffbe4f11d83f42778164e0cc45a1b588727d67c3f3f4ac736cf455340d0612"
+        },
+        "region_bytes": {
+          "0x1000": "0100a0e3"
+        }
+      },
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "invalid_instruction",
+        "code": [
+          [
+            4096,
+            "f000f0e7"
+          ]
+        ],
+        "failure": true
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "f000f0e7",
+          "text": "udf #0"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "987679796443032f7946f3722a7e1dad3b8004bb302055f9ed4381659ccc5bb2"
+          },
+          "region_bytes": {
+            "0x1000": "f000f0e7"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "987679796443032f7946f3722a7e1dad3b8004bb302055f9ed4381659ccc5bb2"
+          },
+          "region_bytes": {
+            "0x1000": "f000f0e7"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 10,
+          "message": "Invalid instruction (UC_ERR_INSN_INVALID)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "restored": {
+        "registers": {
+          "r0": 0,
+          "r1": 0,
+          "r2": 0,
+          "r3": 0,
+          "r4": 0,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 0,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 16
+        },
+        "page_sha256": {
+          "0x1000": "987679796443032f7946f3722a7e1dad3b8004bb302055f9ed4381659ccc5bb2"
+        },
+        "region_bytes": {
+          "0x1000": "f000f0e7"
+        }
+      },
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "code_write",
+        "code": [
+          [
+            4096,
+            "000084e5"
+          ]
+        ],
+        "registers": {
+          "r4": 4096,
+          "r0": 4660
+        },
+        "failure": true
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "000084e5",
+          "text": "str r0, [r4]"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 4660,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 4096,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "2b4ce7a60e14e76d094842b1135fe5078c2ecf3c30344b1484fbadc0c3280a8d"
+          },
+          "region_bytes": {
+            "0x1000": "000084e5"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 4660,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 4096,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "7ad36782cf38c73d4f6ffe4e22283f40057e52aff911347da0b629c2ab464f5f"
+          },
+          "region_bytes": {
+            "0x1000": "34120000"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 4096,
+            "size": 4,
+            "value": 4660
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 4096,
+            "size": 4,
+            "value": 4660
+          }
+        ],
+        "code_hook_count": 1
+      },
+      "restored": {
+        "registers": {
+          "r0": 4660,
+          "r1": 0,
+          "r2": 0,
+          "r3": 0,
+          "r4": 4096,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 0,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 16
+        },
+        "page_sha256": {
+          "0x1000": "2b4ce7a60e14e76d094842b1135fe5078c2ecf3c30344b1484fbadc0c3280a8d"
+        },
+        "region_bytes": {
+          "0x1000": "000084e5"
+        }
+      },
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "arm_pop_external_pc",
+        "code": [
+          [
+            4096,
+            "0180bde8"
+          ]
+        ],
+        "registers": {
+          "sp": 10240
+        },
+        "memory": [
+          [
+            10240,
+            "1122334400900000"
+          ]
+        ],
+        "expected": {
+          "r0": 1144201745,
+          "pc": 36864,
+          "sp": 10248
+        }
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "0180bde8",
+          "text": "pop {r0, pc}"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "dfd9137857fcd17cc34acd60cc85624fc3f40b492a498b134e8415a44287c4ac",
+            "0x2000": "9d4f430871276490a6a90ce5305a57c46b17341323cb5b3ba10eb453cb417193"
+          },
+          "region_bytes": {
+            "0x1000": "0180bde8",
+            "0x2800": "1122334400900000"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 36864,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "dfd9137857fcd17cc34acd60cc85624fc3f40b492a498b134e8415a44287c4ac",
+            "0x2000": "9d4f430871276490a6a90ce5305a57c46b17341323cb5b3ba10eb453cb417193"
+          },
+          "region_bytes": {
+            "0x1000": "0180bde8",
+            "0x2800": "1122334400900000"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10240,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_FETCH_UNMAPPED",
+            "address": 36864,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 8,
+          "message": "Invalid memory fetch (UC_ERR_FETCH_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "retirement_evidence": {
+          "decoded_target": 36864,
+          "same_mode": true
+        }
+      },
+      "stop": "pc_not_loaded",
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "thumb_pop_external_pc",
+        "thumb": true,
+        "code": [
+          [
+            4096,
+            "01bd"
+          ]
+        ],
+        "registers": {
+          "sp": 10240
+        },
+        "memory": [
+          [
+            10240,
+            "1122334401900000"
+          ]
+        ],
+        "expected": {
+          "r0": 1144201745,
+          "pc": 36864,
+          "sp": 10248
+        }
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 2,
+          "bytes": "01bd",
+          "text": "pop {r0, pc}"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "ee589673be1218db9ff4979282f325bcb598133a508a1fd38c6fb9c565ec56a7",
+            "0x2000": "476e72f6dae848cac13d5e9505ecef00a4a1ad1d459b7eb088794c5d09d8f1a2"
+          },
+          "region_bytes": {
+            "0x1000": "01bd",
+            "0x2800": "1122334401900000"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 36864,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "ee589673be1218db9ff4979282f325bcb598133a508a1fd38c6fb9c565ec56a7",
+            "0x2000": "476e72f6dae848cac13d5e9505ecef00a4a1ad1d459b7eb088794c5d09d8f1a2"
+          },
+          "region_bytes": {
+            "0x1000": "01bd",
+            "0x2800": "1122334401900000"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10240,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_FETCH_UNMAPPED",
+            "address": 36864,
+            "size": 2
+          }
+        ],
+        "native_error": {
+          "number": 8,
+          "message": "Invalid memory fetch (UC_ERR_FETCH_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "retirement_evidence": {
+          "decoded_target": 36864,
+          "same_mode": true
+        }
+      },
+      "stop": "pc_not_loaded",
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "ldm_mapped_hole",
+        "thumb": false,
+        "code": [
+          [
+            4096,
+            "0300b4e8"
+          ]
+        ],
+        "registers": {
+          "r4": 10240,
+          "r0": 2864434397,
+          "r1": 4009689105
+        },
+        "memory": [
+          [
+            10240,
+            "11223344"
+          ]
+        ],
+        "repair": [
+          [
+            10244,
+            "55667788"
+          ]
+        ],
+        "expected": {
+          "pc": 4100,
+          "r4": 10248,
+          "r0": 1144201745,
+          "r1": 2289526357
+        },
+        "writes": []
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "0300b4e8",
+          "text": "ldm r4!, {r0, r1}"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10240,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2800": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10240,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2800": "11223344"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10240,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          }
+        ],
+        "code_hook_count": 1
+      },
+      "restored": {
+        "registers": {
+          "r0": 2864434397,
+          "r1": 4009689105,
+          "r2": 0,
+          "r3": 0,
+          "r4": 10240,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 0,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 16
+        },
+        "page_sha256": {
+          "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+          "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+        },
+        "region_bytes": {
+          "0x1000": "0300b4e8",
+          "0x2800": "11223344"
+        }
+      },
+      "retry": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10240,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 2289526357,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10248,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10240,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "clean": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10240,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 2289526357,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10248,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10240,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "retry_matches_clean": true,
+      "unguarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10240,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2800": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10248,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2800": "11223344"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10240,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "context_only_restores_memory": true
+      },
+      "unguarded_rollback_verified": true,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "stm_mapped_hole",
+        "thumb": false,
+        "code": [
+          [
+            4096,
+            "0300a4e8"
+          ]
+        ],
+        "registers": {
+          "r4": 10240,
+          "r0": 2864434397,
+          "r1": 4009689105
+        },
+        "memory": [
+          [
+            10240,
+            "11223344"
+          ]
+        ],
+        "repair": [
+          [
+            10244,
+            "55667788"
+          ]
+        ],
+        "expected": {
+          "pc": 4100,
+          "r4": 10248
+        },
+        "writes": [
+          [
+            10240,
+            "ddccbbaa1100ffee"
+          ]
+        ]
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "0300a4e8",
+          "text": "stm r4!, {r0, r1}"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10240,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2800": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10240,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "a5ba33cb86e60a4844b560a8dfb73f58bfdeeec90b0e6bc992a44a8c331d5056"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2800": "ddccbbaa"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10240,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10244,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10244,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "code_hook_count": 1
+      },
+      "restored": {
+        "registers": {
+          "r0": 2864434397,
+          "r1": 4009689105,
+          "r2": 0,
+          "r3": 0,
+          "r4": 10240,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 0,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 16
+        },
+        "page_sha256": {
+          "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+          "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+        },
+        "region_bytes": {
+          "0x1000": "0300a4e8",
+          "0x2800": "11223344"
+        }
+      },
+      "retry": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10240,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10248,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "a5ba33cb86e60a4844b560a8dfb73f58bfdeeec90b0e6bc992a44a8c331d5056"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2800": "ddccbbaa",
+            "0x2804": "1100ffee"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10240,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10244,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "clean": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10240,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10248,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "a5ba33cb86e60a4844b560a8dfb73f58bfdeeec90b0e6bc992a44a8c331d5056"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2800": "ddccbbaa",
+            "0x2804": "1100ffee"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10240,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10244,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "retry_matches_clean": true,
+      "unguarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10240,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2800": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 10248,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "a5ba33cb86e60a4844b560a8dfb73f58bfdeeec90b0e6bc992a44a8c331d5056"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2800": "ddccbbaa"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10240,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10244,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "context_only_restores_memory": false
+      },
+      "unguarded_rollback_verified": true,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "push_mapped_hole",
+        "thumb": false,
+        "code": [
+          [
+            4096,
+            "03002de9"
+          ]
+        ],
+        "registers": {
+          "sp": 10248,
+          "r0": 2864434397,
+          "r1": 4009689105
+        },
+        "memory": [
+          [
+            10240,
+            "11223344"
+          ]
+        ],
+        "repair": [
+          [
+            10244,
+            "55667788"
+          ]
+        ],
+        "expected": {
+          "pc": 4100,
+          "sp": 10240
+        },
+        "writes": [
+          [
+            10240,
+            "ddccbbaa1100ffee"
+          ]
+        ]
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "03002de9",
+          "text": "push {r0, r1}"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2800": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "a5ba33cb86e60a4844b560a8dfb73f58bfdeeec90b0e6bc992a44a8c331d5056"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2800": "ddccbbaa"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10240,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10244,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10244,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "code_hook_count": 1
+      },
+      "restored": {
+        "registers": {
+          "r0": 2864434397,
+          "r1": 4009689105,
+          "r2": 0,
+          "r3": 0,
+          "r4": 0,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 10248,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 16
+        },
+        "page_sha256": {
+          "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+          "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+        },
+        "region_bytes": {
+          "0x1000": "03002de9",
+          "0x2800": "11223344"
+        }
+      },
+      "retry": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "a5ba33cb86e60a4844b560a8dfb73f58bfdeeec90b0e6bc992a44a8c331d5056"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2800": "ddccbbaa",
+            "0x2804": "1100ffee"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10240,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10244,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "clean": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "a5ba33cb86e60a4844b560a8dfb73f58bfdeeec90b0e6bc992a44a8c331d5056"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2800": "ddccbbaa",
+            "0x2804": "1100ffee"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10240,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10244,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "retry_matches_clean": true,
+      "unguarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2800": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "a5ba33cb86e60a4844b560a8dfb73f58bfdeeec90b0e6bc992a44a8c331d5056"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2800": "ddccbbaa"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10240,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10244,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "context_only_restores_memory": false
+      },
+      "unguarded_rollback_verified": true,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "pop_mapped_hole",
+        "thumb": false,
+        "code": [
+          [
+            4096,
+            "0300bde8"
+          ]
+        ],
+        "registers": {
+          "sp": 10240,
+          "r0": 2864434397,
+          "r1": 4009689105
+        },
+        "memory": [
+          [
+            10240,
+            "11223344"
+          ]
+        ],
+        "repair": [
+          [
+            10244,
+            "55667788"
+          ]
+        ],
+        "expected": {
+          "pc": 4100,
+          "sp": 10248,
+          "r0": 1144201745,
+          "r1": 2289526357
+        },
+        "writes": []
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "0300bde8",
+          "text": "pop {r0, r1}"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2800": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2800": "11223344"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10240,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          }
+        ],
+        "code_hook_count": 1
+      },
+      "restored": {
+        "registers": {
+          "r0": 2864434397,
+          "r1": 4009689105,
+          "r2": 0,
+          "r3": 0,
+          "r4": 0,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 10240,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 16
+        },
+        "page_sha256": {
+          "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+          "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+        },
+        "region_bytes": {
+          "0x1000": "0300bde8",
+          "0x2800": "11223344"
+        }
+      },
+      "retry": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 2289526357,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10240,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "clean": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 2289526357,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10240,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "retry_matches_clean": true,
+      "unguarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2800": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2800": "11223344"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10240,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "context_only_restores_memory": true
+      },
+      "unguarded_rollback_verified": true,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "thumb_push_mapped_hole",
+        "thumb": true,
+        "code": [
+          [
+            4096,
+            "03b4"
+          ]
+        ],
+        "registers": {
+          "sp": 10248,
+          "r0": 2864434397,
+          "r1": 4009689105
+        },
+        "memory": [
+          [
+            10240,
+            "11223344"
+          ]
+        ],
+        "repair": [
+          [
+            10244,
+            "55667788"
+          ]
+        ],
+        "expected": {
+          "pc": 4098,
+          "sp": 10240
+        },
+        "writes": [
+          [
+            10240,
+            "ddccbbaa1100ffee"
+          ]
+        ]
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 2,
+          "bytes": "03b4",
+          "text": "push {r0, r1}"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2800": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "a5ba33cb86e60a4844b560a8dfb73f58bfdeeec90b0e6bc992a44a8c331d5056"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2800": "ddccbbaa"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10240,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10244,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10244,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "code_hook_count": 1
+      },
+      "restored": {
+        "registers": {
+          "r0": 2864434397,
+          "r1": 4009689105,
+          "r2": 0,
+          "r3": 0,
+          "r4": 0,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 10248,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 48
+        },
+        "page_sha256": {
+          "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+          "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+        },
+        "region_bytes": {
+          "0x1000": "03b4",
+          "0x2800": "11223344"
+        }
+      },
+      "retry": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4098,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "a5ba33cb86e60a4844b560a8dfb73f58bfdeeec90b0e6bc992a44a8c331d5056"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2800": "ddccbbaa",
+            "0x2804": "1100ffee"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10240,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10244,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "clean": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4098,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "a5ba33cb86e60a4844b560a8dfb73f58bfdeeec90b0e6bc992a44a8c331d5056"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2800": "ddccbbaa",
+            "0x2804": "1100ffee"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10240,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10244,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "retry_matches_clean": true,
+      "unguarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2800": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4098,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "a5ba33cb86e60a4844b560a8dfb73f58bfdeeec90b0e6bc992a44a8c331d5056"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2800": "ddccbbaa"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10240,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 10244,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "context_only_restores_memory": false
+      },
+      "unguarded_rollback_verified": true,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "thumb_pop_mapped_hole",
+        "thumb": true,
+        "code": [
+          [
+            4096,
+            "03bc"
+          ]
+        ],
+        "registers": {
+          "sp": 10240,
+          "r0": 2864434397,
+          "r1": 4009689105
+        },
+        "memory": [
+          [
+            10240,
+            "11223344"
+          ]
+        ],
+        "repair": [
+          [
+            10244,
+            "55667788"
+          ]
+        ],
+        "expected": {
+          "pc": 4098,
+          "sp": 10248,
+          "r0": 1144201745,
+          "r1": 2289526357
+        },
+        "writes": []
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 2,
+          "bytes": "03bc",
+          "text": "pop {r0, r1}"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2800": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2800": "11223344"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10240,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          }
+        ],
+        "code_hook_count": 1
+      },
+      "restored": {
+        "registers": {
+          "r0": 2864434397,
+          "r1": 4009689105,
+          "r2": 0,
+          "r3": 0,
+          "r4": 0,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 10240,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 48
+        },
+        "page_sha256": {
+          "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+          "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+        },
+        "region_bytes": {
+          "0x1000": "03bc",
+          "0x2800": "11223344"
+        }
+      },
+      "retry": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 2289526357,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4098,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10240,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "clean": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 2289526357,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4098,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "430e3efaafcffec99046bf2685d0be9bd7e5149c93f8ea135e7659bdf443f6df"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2800": "11223344",
+            "0x2804": "55667788"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10240,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "retry_matches_clean": true,
+      "unguarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10240,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2800": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 10248,
+            "lr": 0,
+            "pc": 4098,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "d4903f350a2aecef755cfea47155d132c7f78c1ae5d9aa590310e3973a5a5ba2"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2800": "11223344"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10240,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 10244,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "context_only_restores_memory": true
+      },
+      "unguarded_rollback_verified": true,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "ldm_unmapped_page",
+        "thumb": false,
+        "code": [
+          [
+            4096,
+            "0300b4e8"
+          ]
+        ],
+        "registers": {
+          "r4": 12284,
+          "r0": 2864434397,
+          "r1": 4009689105
+        },
+        "memory": [
+          [
+            12284,
+            "11223344"
+          ]
+        ],
+        "repair": [
+          [
+            12288,
+            "55667788"
+          ]
+        ],
+        "expected": {
+          "pc": 4100,
+          "r4": 12292,
+          "r0": 1144201745,
+          "r1": 2289526357
+        },
+        "writes": []
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "0300b4e8",
+          "text": "ldm r4!, {r0, r1}"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12284,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2ffc": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12284,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2ffc": "11223344"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12284,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ_UNMAPPED",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 6,
+          "message": "Invalid memory read (UC_ERR_READ_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "restored": {
+        "registers": {
+          "r0": 2864434397,
+          "r1": 4009689105,
+          "r2": 0,
+          "r3": 0,
+          "r4": 12284,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 0,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 16
+        },
+        "page_sha256": {
+          "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+          "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+        },
+        "region_bytes": {
+          "0x1000": "0300b4e8",
+          "0x2ffc": "11223344"
+        }
+      },
+      "retry": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12284,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 2289526357,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12292,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12284,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "clean": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12284,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 2289526357,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12292,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12284,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "retry_matches_clean": true,
+      "unguarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12284,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2ffc": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12284,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "233ec115dd1581aba47706e103095c93001b79ae171aa2dba6c856e3e9063f9c",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "0300b4e8",
+            "0x2ffc": "11223344"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12284,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ_UNMAPPED",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 6,
+          "message": "Invalid memory read (UC_ERR_READ_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "context_only_restores_memory": true
+      },
+      "unguarded_rollback_verified": true,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "stm_unmapped_page",
+        "thumb": false,
+        "code": [
+          [
+            4096,
+            "0300a4e8"
+          ]
+        ],
+        "registers": {
+          "r4": 12284,
+          "r0": 2864434397,
+          "r1": 4009689105
+        },
+        "memory": [
+          [
+            12284,
+            "11223344"
+          ]
+        ],
+        "repair": [
+          [
+            12288,
+            "55667788"
+          ]
+        ],
+        "expected": {
+          "pc": 4100,
+          "r4": 12292
+        },
+        "writes": [
+          [
+            12284,
+            "ddccbbaa1100ffee"
+          ]
+        ]
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "0300a4e8",
+          "text": "stm r4!, {r0, r1}"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12284,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2ffc": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12284,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "63d5a7955f34746707de13649f45015746ef1d33c027b8b144620b2886bef1c1"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2ffc": "ddccbbaa"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12284,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12288,
+            "size": 4,
+            "value": 4009689105
+          },
+          {
+            "kind": "UC_MEM_WRITE_UNMAPPED",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 7,
+          "message": "Invalid memory write (UC_ERR_WRITE_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12288,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "code_hook_count": 1
+      },
+      "restored": {
+        "registers": {
+          "r0": 2864434397,
+          "r1": 4009689105,
+          "r2": 0,
+          "r3": 0,
+          "r4": 12284,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 0,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 16
+        },
+        "page_sha256": {
+          "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+          "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+        },
+        "region_bytes": {
+          "0x1000": "0300a4e8",
+          "0x2ffc": "11223344"
+        }
+      },
+      "retry": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12284,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12292,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "63d5a7955f34746707de13649f45015746ef1d33c027b8b144620b2886bef1c1",
+            "0x3000": "6b31ff1062d7b1a830e04eed381f563e35683c826ff5e3430b447447f8ca943f"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2ffc": "ddccbbaa",
+            "0x3000": "1100ffee"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12284,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12288,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "clean": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12284,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12292,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "63d5a7955f34746707de13649f45015746ef1d33c027b8b144620b2886bef1c1",
+            "0x3000": "6b31ff1062d7b1a830e04eed381f563e35683c826ff5e3430b447447f8ca943f"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2ffc": "ddccbbaa",
+            "0x3000": "1100ffee"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12284,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12288,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "retry_matches_clean": true,
+      "unguarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12284,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2ffc": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 12284,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+            "0x2000": "63d5a7955f34746707de13649f45015746ef1d33c027b8b144620b2886bef1c1"
+          },
+          "region_bytes": {
+            "0x1000": "0300a4e8",
+            "0x2ffc": "ddccbbaa"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12284,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12288,
+            "size": 4,
+            "value": 4009689105
+          },
+          {
+            "kind": "UC_MEM_WRITE_UNMAPPED",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 7,
+          "message": "Invalid memory write (UC_ERR_WRITE_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "context_only_restores_memory": false
+      },
+      "unguarded_rollback_verified": true,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "push_unmapped_page",
+        "thumb": false,
+        "code": [
+          [
+            4096,
+            "03002de9"
+          ]
+        ],
+        "registers": {
+          "sp": 12292,
+          "r0": 2864434397,
+          "r1": 4009689105
+        },
+        "memory": [
+          [
+            12284,
+            "11223344"
+          ]
+        ],
+        "repair": [
+          [
+            12288,
+            "55667788"
+          ]
+        ],
+        "expected": {
+          "pc": 4100,
+          "sp": 12284
+        },
+        "writes": [
+          [
+            12284,
+            "ddccbbaa1100ffee"
+          ]
+        ]
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "03002de9",
+          "text": "push {r0, r1}"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2ffc": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "63d5a7955f34746707de13649f45015746ef1d33c027b8b144620b2886bef1c1"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2ffc": "ddccbbaa"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12284,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12288,
+            "size": 4,
+            "value": 4009689105
+          },
+          {
+            "kind": "UC_MEM_WRITE_UNMAPPED",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 7,
+          "message": "Invalid memory write (UC_ERR_WRITE_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12288,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "code_hook_count": 1
+      },
+      "restored": {
+        "registers": {
+          "r0": 2864434397,
+          "r1": 4009689105,
+          "r2": 0,
+          "r3": 0,
+          "r4": 0,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 12292,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 16
+        },
+        "page_sha256": {
+          "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+          "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+        },
+        "region_bytes": {
+          "0x1000": "03002de9",
+          "0x2ffc": "11223344"
+        }
+      },
+      "retry": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "63d5a7955f34746707de13649f45015746ef1d33c027b8b144620b2886bef1c1",
+            "0x3000": "6b31ff1062d7b1a830e04eed381f563e35683c826ff5e3430b447447f8ca943f"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2ffc": "ddccbbaa",
+            "0x3000": "1100ffee"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12284,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12288,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "clean": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "63d5a7955f34746707de13649f45015746ef1d33c027b8b144620b2886bef1c1",
+            "0x3000": "6b31ff1062d7b1a830e04eed381f563e35683c826ff5e3430b447447f8ca943f"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2ffc": "ddccbbaa",
+            "0x3000": "1100ffee"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12284,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12288,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "retry_matches_clean": true,
+      "unguarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2ffc": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "b99a2432e561ab5c52cee522324b1d053c055c0bc5e017effdd6c2a4cd2046e4",
+            "0x2000": "63d5a7955f34746707de13649f45015746ef1d33c027b8b144620b2886bef1c1"
+          },
+          "region_bytes": {
+            "0x1000": "03002de9",
+            "0x2ffc": "ddccbbaa"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12284,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12288,
+            "size": 4,
+            "value": 4009689105
+          },
+          {
+            "kind": "UC_MEM_WRITE_UNMAPPED",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 7,
+          "message": "Invalid memory write (UC_ERR_WRITE_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "context_only_restores_memory": false
+      },
+      "unguarded_rollback_verified": true,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "pop_unmapped_page",
+        "thumb": false,
+        "code": [
+          [
+            4096,
+            "0300bde8"
+          ]
+        ],
+        "registers": {
+          "sp": 12284,
+          "r0": 2864434397,
+          "r1": 4009689105
+        },
+        "memory": [
+          [
+            12284,
+            "11223344"
+          ]
+        ],
+        "repair": [
+          [
+            12288,
+            "55667788"
+          ]
+        ],
+        "expected": {
+          "pc": 4100,
+          "sp": 12292,
+          "r0": 1144201745,
+          "r1": 2289526357
+        },
+        "writes": []
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 4,
+          "bytes": "0300bde8",
+          "text": "pop {r0, r1}"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2ffc": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2ffc": "11223344"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12284,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ_UNMAPPED",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 6,
+          "message": "Invalid memory read (UC_ERR_READ_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "restored": {
+        "registers": {
+          "r0": 2864434397,
+          "r1": 4009689105,
+          "r2": 0,
+          "r3": 0,
+          "r4": 0,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 12284,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 16
+        },
+        "page_sha256": {
+          "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+          "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+        },
+        "region_bytes": {
+          "0x1000": "0300bde8",
+          "0x2ffc": "11223344"
+        }
+      },
+      "retry": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 2289526357,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12284,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "clean": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 2289526357,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12284,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "retry_matches_clean": true,
+      "unguarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2ffc": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "c04fe64ce556f65646956ecbdbe489aa29e31718186498e8ac5de08eb255d798",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "0300bde8",
+            "0x2ffc": "11223344"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12284,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ_UNMAPPED",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 6,
+          "message": "Invalid memory read (UC_ERR_READ_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "context_only_restores_memory": true
+      },
+      "unguarded_rollback_verified": true,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "thumb_push_unmapped_page",
+        "thumb": true,
+        "code": [
+          [
+            4096,
+            "03b4"
+          ]
+        ],
+        "registers": {
+          "sp": 12292,
+          "r0": 2864434397,
+          "r1": 4009689105
+        },
+        "memory": [
+          [
+            12284,
+            "11223344"
+          ]
+        ],
+        "repair": [
+          [
+            12288,
+            "55667788"
+          ]
+        ],
+        "expected": {
+          "pc": 4098,
+          "sp": 12284
+        },
+        "writes": [
+          [
+            12284,
+            "ddccbbaa1100ffee"
+          ]
+        ]
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 2,
+          "bytes": "03b4",
+          "text": "push {r0, r1}"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2ffc": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "63d5a7955f34746707de13649f45015746ef1d33c027b8b144620b2886bef1c1"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2ffc": "ddccbbaa"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12284,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12288,
+            "size": 4,
+            "value": 4009689105
+          },
+          {
+            "kind": "UC_MEM_WRITE_UNMAPPED",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 7,
+          "message": "Invalid memory write (UC_ERR_WRITE_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12288,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "code_hook_count": 1
+      },
+      "restored": {
+        "registers": {
+          "r0": 2864434397,
+          "r1": 4009689105,
+          "r2": 0,
+          "r3": 0,
+          "r4": 0,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 12292,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 48
+        },
+        "page_sha256": {
+          "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+          "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+        },
+        "region_bytes": {
+          "0x1000": "03b4",
+          "0x2ffc": "11223344"
+        }
+      },
+      "retry": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4098,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "63d5a7955f34746707de13649f45015746ef1d33c027b8b144620b2886bef1c1",
+            "0x3000": "6b31ff1062d7b1a830e04eed381f563e35683c826ff5e3430b447447f8ca943f"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2ffc": "ddccbbaa",
+            "0x3000": "1100ffee"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12284,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12288,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "clean": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4098,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "63d5a7955f34746707de13649f45015746ef1d33c027b8b144620b2886bef1c1",
+            "0x3000": "6b31ff1062d7b1a830e04eed381f563e35683c826ff5e3430b447447f8ca943f"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2ffc": "ddccbbaa",
+            "0x3000": "1100ffee"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12284,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12288,
+            "size": 4,
+            "value": 4009689105
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "retry_matches_clean": true,
+      "unguarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2ffc": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "59b93f72c993550a8b2254862e362dae88a944d232faa1e04d019664ad4a602f",
+            "0x2000": "63d5a7955f34746707de13649f45015746ef1d33c027b8b144620b2886bef1c1"
+          },
+          "region_bytes": {
+            "0x1000": "03b4",
+            "0x2ffc": "ddccbbaa"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12284,
+            "size": 4,
+            "value": 2864434397
+          },
+          {
+            "kind": "UC_MEM_WRITE",
+            "address": 12288,
+            "size": 4,
+            "value": 4009689105
+          },
+          {
+            "kind": "UC_MEM_WRITE_UNMAPPED",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 7,
+          "message": "Invalid memory write (UC_ERR_WRITE_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "context_only_restores_memory": false
+      },
+      "unguarded_rollback_verified": true,
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "thumb_pop_unmapped_page",
+        "thumb": true,
+        "code": [
+          [
+            4096,
+            "03bc"
+          ]
+        ],
+        "registers": {
+          "sp": 12284,
+          "r0": 2864434397,
+          "r1": 4009689105
+        },
+        "memory": [
+          [
+            12284,
+            "11223344"
+          ]
+        ],
+        "repair": [
+          [
+            12288,
+            "55667788"
+          ]
+        ],
+        "expected": {
+          "pc": 4098,
+          "sp": 12292,
+          "r0": 1144201745,
+          "r1": 2289526357
+        },
+        "writes": []
+      },
+      "decoded": [
+        {
+          "address": 4096,
+          "size": 2,
+          "bytes": "03bc",
+          "text": "pop {r0, r1}"
+        }
+      ],
+      "guarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2ffc": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2ffc": "11223344"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12284,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ_UNMAPPED",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 6,
+          "message": "Invalid memory read (UC_ERR_READ_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "restored": {
+        "registers": {
+          "r0": 2864434397,
+          "r1": 4009689105,
+          "r2": 0,
+          "r3": 0,
+          "r4": 0,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 12284,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 48
+        },
+        "page_sha256": {
+          "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+          "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+        },
+        "region_bytes": {
+          "0x1000": "03bc",
+          "0x2ffc": "11223344"
+        }
+      },
+      "retry": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 2289526357,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4098,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12284,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "clean": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 2289526357,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12292,
+            "lr": 0,
+            "pc": 4098,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b",
+            "0x3000": "17d3228df4141bfdb0464846f37232dd931ae84ce2fdd17133bc02275d8cd86c"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2ffc": "11223344",
+            "0x3000": "55667788"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12284,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1
+      },
+      "retry_matches_clean": true,
+      "unguarded": {
+        "before": {
+          "registers": {
+            "r0": 2864434397,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2ffc": "11223344"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1144201745,
+            "r1": 4009689105,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 12284,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 48
+          },
+          "page_sha256": {
+            "0x1000": "d21baeca754ea97264abf088d8040e7da8dd871bde039e599facdf731f3a9cb7",
+            "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+          },
+          "region_bytes": {
+            "0x1000": "03bc",
+            "0x2ffc": "11223344"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 2
+          },
+          {
+            "kind": "UC_MEM_READ",
+            "address": 12284,
+            "size": 4
+          },
+          {
+            "kind": "UC_MEM_READ_UNMAPPED",
+            "address": 12288,
+            "size": 4
+          }
+        ],
+        "native_error": {
+          "number": 6,
+          "message": "Invalid memory read (UC_ERR_READ_UNMAPPED)"
+        },
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 1,
+        "context_only_restores_memory": true
+      },
+      "unguarded_rollback_verified": true,
+      "passed": true
+    }
+  ],
+  "boundary_checks": [
+    {
+      "id": "consecutive_thumb16",
+      "steps": [
+        {
+          "before": {
+            "registers": {
+              "r0": 0,
+              "r1": 0,
+              "r2": 0,
+              "r3": 0,
+              "r4": 0,
+              "r5": 0,
+              "r6": 0,
+              "r7": 0,
+              "r8": 0,
+              "r9": 0,
+              "r10": 0,
+              "r11": 0,
+              "r12": 0,
+              "sp": 0,
+              "lr": 0,
+              "pc": 4096,
+              "cpsr": 48
+            },
+            "page_sha256": {
+              "0x1000": "0251af36d43dbb852358f1bec1ece4f73a82cdc06c0c9a01c10c6342cc2a207c"
+            },
+            "region_bytes": {
+              "0x1000": "012001f10201"
+            }
+          },
+          "raw_after": {
+            "registers": {
+              "r0": 1,
+              "r1": 0,
+              "r2": 0,
+              "r3": 0,
+              "r4": 0,
+              "r5": 0,
+              "r6": 0,
+              "r7": 0,
+              "r8": 0,
+              "r9": 0,
+              "r10": 0,
+              "r11": 0,
+              "r12": 0,
+              "sp": 0,
+              "lr": 0,
+              "pc": 4098,
+              "cpsr": 48
+            },
+            "page_sha256": {
+              "0x1000": "0251af36d43dbb852358f1bec1ece4f73a82cdc06c0c9a01c10c6342cc2a207c"
+            },
+            "region_bytes": {
+              "0x1000": "012001f10201"
+            }
+          },
+          "events": [
+            {
+              "kind": "code",
+              "address": 4096,
+              "size": 2
+            }
+          ],
+          "native_error": null,
+          "timeout": false,
+          "logical_rejections": [],
+          "code_hook_count": 1
+        },
+        {
+          "before": {
+            "registers": {
+              "r0": 1,
+              "r1": 0,
+              "r2": 0,
+              "r3": 0,
+              "r4": 0,
+              "r5": 0,
+              "r6": 0,
+              "r7": 0,
+              "r8": 0,
+              "r9": 0,
+              "r10": 0,
+              "r11": 0,
+              "r12": 0,
+              "sp": 0,
+              "lr": 0,
+              "pc": 4098,
+              "cpsr": 48
+            },
+            "page_sha256": {
+              "0x1000": "0251af36d43dbb852358f1bec1ece4f73a82cdc06c0c9a01c10c6342cc2a207c"
+            },
+            "region_bytes": {
+              "0x1000": "012001f10201"
+            }
+          },
+          "raw_after": {
+            "registers": {
+              "r0": 1,
+              "r1": 2,
+              "r2": 0,
+              "r3": 0,
+              "r4": 0,
+              "r5": 0,
+              "r6": 0,
+              "r7": 0,
+              "r8": 0,
+              "r9": 0,
+              "r10": 0,
+              "r11": 0,
+              "r12": 0,
+              "sp": 0,
+              "lr": 0,
+              "pc": 4102,
+              "cpsr": 48
+            },
+            "page_sha256": {
+              "0x1000": "0251af36d43dbb852358f1bec1ece4f73a82cdc06c0c9a01c10c6342cc2a207c"
+            },
+            "region_bytes": {
+              "0x1000": "012001f10201"
+            }
+          },
+          "events": [
+            {
+              "kind": "code",
+              "address": 4098,
+              "size": 4
+            }
+          ],
+          "native_error": null,
+          "timeout": false,
+          "logical_rejections": [],
+          "code_hook_count": 1
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "consecutive_arm_bl",
+      "steps": [
+        {
+          "before": {
+            "registers": {
+              "r0": 0,
+              "r1": 0,
+              "r2": 0,
+              "r3": 0,
+              "r4": 0,
+              "r5": 0,
+              "r6": 0,
+              "r7": 0,
+              "r8": 0,
+              "r9": 0,
+              "r10": 0,
+              "r11": 0,
+              "r12": 0,
+              "sp": 0,
+              "lr": 0,
+              "pc": 4096,
+              "cpsr": 16
+            },
+            "page_sha256": {
+              "0x1000": "787f2ca6a9c4934230b5f0ca091d2761ac4180ad9afe13b89889abd73ba9507b"
+            },
+            "region_bytes": {
+              "0x1000": "000000eb",
+              "0x1008": "1eff2fe1"
+            }
+          },
+          "raw_after": {
+            "registers": {
+              "r0": 0,
+              "r1": 0,
+              "r2": 0,
+              "r3": 0,
+              "r4": 0,
+              "r5": 0,
+              "r6": 0,
+              "r7": 0,
+              "r8": 0,
+              "r9": 0,
+              "r10": 0,
+              "r11": 0,
+              "r12": 0,
+              "sp": 0,
+              "lr": 4100,
+              "pc": 4104,
+              "cpsr": 16
+            },
+            "page_sha256": {
+              "0x1000": "787f2ca6a9c4934230b5f0ca091d2761ac4180ad9afe13b89889abd73ba9507b"
+            },
+            "region_bytes": {
+              "0x1000": "000000eb",
+              "0x1008": "1eff2fe1"
+            }
+          },
+          "events": [
+            {
+              "kind": "code",
+              "address": 4096,
+              "size": 4
+            }
+          ],
+          "native_error": null,
+          "timeout": false,
+          "logical_rejections": [],
+          "code_hook_count": 1
+        },
+        {
+          "before": {
+            "registers": {
+              "r0": 0,
+              "r1": 0,
+              "r2": 0,
+              "r3": 0,
+              "r4": 0,
+              "r5": 0,
+              "r6": 0,
+              "r7": 0,
+              "r8": 0,
+              "r9": 0,
+              "r10": 0,
+              "r11": 0,
+              "r12": 0,
+              "sp": 0,
+              "lr": 4100,
+              "pc": 4104,
+              "cpsr": 16
+            },
+            "page_sha256": {
+              "0x1000": "787f2ca6a9c4934230b5f0ca091d2761ac4180ad9afe13b89889abd73ba9507b"
+            },
+            "region_bytes": {
+              "0x1000": "000000eb",
+              "0x1008": "1eff2fe1"
+            }
+          },
+          "raw_after": {
+            "registers": {
+              "r0": 0,
+              "r1": 0,
+              "r2": 0,
+              "r3": 0,
+              "r4": 0,
+              "r5": 0,
+              "r6": 0,
+              "r7": 0,
+              "r8": 0,
+              "r9": 0,
+              "r10": 0,
+              "r11": 0,
+              "r12": 0,
+              "sp": 0,
+              "lr": 4100,
+              "pc": 4100,
+              "cpsr": 16
+            },
+            "page_sha256": {
+              "0x1000": "787f2ca6a9c4934230b5f0ca091d2761ac4180ad9afe13b89889abd73ba9507b"
+            },
+            "region_bytes": {
+              "0x1000": "000000eb",
+              "0x1008": "1eff2fe1"
+            }
+          },
+          "events": [
+            {
+              "kind": "code",
+              "address": 4104,
+              "size": 4
+            }
+          ],
+          "native_error": null,
+          "timeout": false,
+          "logical_rejections": [],
+          "code_hook_count": 1
+        }
+      ],
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "second_code_hook_guard",
+        "code": [
+          [
+            4096,
+            "0100a0e30200a0e3"
+          ]
+        ]
+      },
+      "count": 0,
+      "observation": {
+        "before": {
+          "registers": {
+            "r0": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "8994420468207892e8228796294dbd1f3c400afe97020ea91c8c84e93eda0e0b"
+          },
+          "region_bytes": {
+            "0x1000": "0100a0e30200a0e3"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 1,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4100,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "8994420468207892e8228796294dbd1f3c400afe97020ea91c8c84e93eda0e0b"
+          },
+          "region_bytes": {
+            "0x1000": "0100a0e30200a0e3"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4100,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": false,
+        "logical_rejections": [],
+        "code_hook_count": 2
+      },
+      "passed": true
+    },
+    {
+      "input": {
+        "id": "native_timeout_rollback",
+        "code": [
+          [
+            4096,
+            "010090e2fdffffea"
+          ]
+        ],
+        "registers": {
+          "r0": 4294967295,
+          "cpsr": 4026531856
+        }
+      },
+      "synthetic": "Disable count/guard to exercise native timeout",
+      "count": 0,
+      "timeout_microseconds": 1000,
+      "observation": {
+        "before": {
+          "registers": {
+            "r0": 4294967295,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 4026531856
+          },
+          "page_sha256": {
+            "0x1000": "a0c34a13b87580621195348cdc4287ca7024b637dcbb434d4d45438ae8e9d78c"
+          },
+          "region_bytes": {
+            "0x1000": "010090e2fdffffea"
+          }
+        },
+        "raw_after": {
+          "registers": {
+            "r0": 893,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0,
+            "r6": 0,
+            "r7": 0,
+            "r8": 0,
+            "r9": 0,
+            "r10": 0,
+            "r11": 0,
+            "r12": 0,
+            "sp": 0,
+            "lr": 0,
+            "pc": 4096,
+            "cpsr": 16
+          },
+          "page_sha256": {
+            "0x1000": "a0c34a13b87580621195348cdc4287ca7024b637dcbb434d4d45438ae8e9d78c"
+          },
+          "region_bytes": {
+            "0x1000": "010090e2fdffffea"
+          }
+        },
+        "events": [
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4100,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4100,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4100,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4100,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4100,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4100,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4100,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4100,
+            "size": 4
+          },
+          {
+            "kind": "code",
+            "address": 4096,
+            "size": 4
+          }
+        ],
+        "native_error": null,
+        "timeout": true,
+        "logical_rejections": [],
+        "code_hook_count": 1789,
+        "event_count": 1789,
+        "event_capture": "First and last eight events; timeout iteration count varies by host"
+      },
+      "restored": {
+        "registers": {
+          "r0": 4294967295,
+          "r1": 0,
+          "r2": 0,
+          "r3": 0,
+          "r4": 0,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 0,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 4026531856
+        },
+        "page_sha256": {
+          "0x1000": "a0c34a13b87580621195348cdc4287ca7024b637dcbb434d4d45438ae8e9d78c"
+        },
+        "region_bytes": {
+          "0x1000": "010090e2fdffffea"
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mapping_rollback",
+      "synthetic": "Inject an allocation and state mutation",
+      "before": {
+        "registers": {
+          "r0": 2864434397,
+          "r1": 4009689105,
+          "r2": 0,
+          "r3": 0,
+          "r4": 12284,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 0,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 16
+        },
+        "page_sha256": {
+          "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+          "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+        },
+        "region_bytes": {
+          "0x1000": "0300a4e8",
+          "0x2ffc": "11223344"
+        }
+      },
+      "mutated": {
+        "registers": {
+          "r0": 99,
+          "r1": 4009689105,
+          "r2": 0,
+          "r3": 0,
+          "r4": 12284,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 0,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 16
+        },
+        "page_sha256": {
+          "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+          "0x2000": "e36f972f45438a25c47a5fecde5fece4f398762e58031cfd2fda435aa51b31ec",
+          "0x9000": "c8d2b8e500e36b319ac1056bd9d9b377951b53e7776169165cd071d8c29f7bf3"
+        },
+        "region_bytes": {
+          "0x1000": "0300a4e8",
+          "0x2ffc": "65646974"
+        }
+      },
+      "restored": {
+        "registers": {
+          "r0": 2864434397,
+          "r1": 4009689105,
+          "r2": 0,
+          "r3": 0,
+          "r4": 12284,
+          "r5": 0,
+          "r6": 0,
+          "r7": 0,
+          "r8": 0,
+          "r9": 0,
+          "r10": 0,
+          "r11": 0,
+          "r12": 0,
+          "sp": 0,
+          "lr": 0,
+          "pc": 4096,
+          "cpsr": 16
+        },
+        "page_sha256": {
+          "0x1000": "bf3dce04c5bf92cd6d6c51f76d56c0f3d04f1deb638ae80929536fa320f1f14b",
+          "0x2000": "074b49b673d124e961049653f550788af768be572e7f6bb0b0bc9d32f858c68b"
+        },
+        "region_bytes": {
+          "0x1000": "0300a4e8",
+          "0x2ffc": "11223344"
+        }
+      },
+      "passed": true
+    }
+  ]
+}

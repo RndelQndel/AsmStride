@@ -1,0 +1,42 @@
+{
+  "id": "PF-09",
+  "input": "fromelf_published.txt",
+  "mode": "arm",
+  "format": "fromelf",
+  "encoding": "words",
+  "provenance": {
+    "kind": "vendor_published_extract",
+    "source": "https://documentation-service.arm.com/static/63e677168e13d11599a91eca",
+    "document": "DUI1093_e_en, Arm Compiler User Guide, Version 6.6",
+    "page": 20,
+    "tool_command_in_document": "fromelf --text -c a.out",
+    "pdf_sha256": "da170950678e823bb07d34438a9c109161d4c30da1d9235010b010fc330a5c19",
+    "extraction": "pypdf layout text, two instruction lines unchanged; PDF spaces are not claimed as original terminal bytes",
+    "limitation": "No local licensed fromelf executable; PF-01/02 remain synthetic"
+  },
+  "expected": {
+    "load_success": true,
+    "records": [
+      {
+        "source_line": 1,
+        "address": 33184,
+        "bytes": "00482de9",
+        "size": 4,
+        "assembly": "push {r11,lr}"
+      },
+      {
+        "source_line": 2,
+        "address": 33188,
+        "bytes": "0db0a0e1",
+        "size": 4,
+        "assembly": "mov r11,sp"
+      }
+    ],
+    "ignored_lines": [],
+    "ignored_line_count": 0,
+    "diagnostics": [],
+    "existing_session": "replaced",
+    "selected_format": "fromelf",
+    "record_count": 2
+  }
+}

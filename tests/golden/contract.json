@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "profile": "armv7-a-le",
+  "scratch_stack": {"base": 537853952, "size": 65536, "fill": 0},
+  "initial_state": "All 17 exposed registers are explicit. Memory is exactly program bytes, zero-filled scratch stack, and initial.memory patches; every other byte is unknown. Initial baseline equals initial runtime. Initial registers/memory represent accepted pre-Step manual evidence.",
+  "delta_semantics": "Every omitted register and memory byte is unchanged, including code and scratch stack. Each listed before/after is exact. Decimal memory map keys are byte addresses; null means unknown. Changes must not include equal values. Baseline deltas are independent from runtime deltas.",
+  "result_semantics": "Step result fields are exact. Empty memory events on failure mean no committed accesses; backend-specific attempted accesses may appear only as extra error diagnostics. Human error messages are not matched. Error code, restored, and listed context values must match; unrelated native diagnostic context may be added.",
+  "manual_operations": "set_register, set_pc, set_flags, patch_memory apply arguments to runtime and baseline independently; reset copies baseline into runtime. None increments step_seq. Manual actions and reset clear the last Step result.",
+  "instruction_origin": "program source_line is the one-based synthetic source order, not a pasted parser record. Assembly is an independent verification input; bytes are authoritative for later execution tests.",
+  "origins": "Origin-label UI behavior is outside these numeric golden cases and requires later core tests; omitted numeric state is never a wildcard.",
+  "scope": "Phase 1 contracts and independent encoding verification. The consistency checker does not emulate instructions and does not claim product tests have passed."
+}

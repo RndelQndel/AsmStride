@@ -1,0 +1,11 @@
+** Section #1 '.text' (SHT_PROGBITS) [SHF_ALLOC + SHF_EXECINSTR]
+    Size   : 20 bytes
+    Address: 0x08000100
+
+    $a.0
+    calc_sum
+        0x08000100:    e3a00000    ....    MOV      r0,#0
+        0x08000104:    e3a01005    ....    MOV      r1,#5
+        0x08000108:    e0800001    ....    ADD      r0,r0,r1
+        0x0800010c:    e2511001    ....    SUBS     r1,r1,#1
+        0x08000110:    1afffffc    ....    BNE      0x08000108

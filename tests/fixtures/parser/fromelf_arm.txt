@@ -1,0 +1,4 @@
+** Section #1 '.text' (SHT_PROGBITS) [SHF_ALLOC + SHF_EXECINSTR]
+    $a.0
+    example
+        0x08000100:    e3a00005    ....    MOV r0,#5

@@ -1,0 +1,54 @@
+{
+  "id": "PF-04",
+  "input": "objdump_thumb.txt",
+  "mode": "thumb",
+  "format": "objdump",
+  "encoding": "auto",
+  "provenance": {
+    "kind": "tool_capture_extract",
+    "tool": "GNU objdump (Arm GNU Toolchain 13.2.rel1 (Build arm-13.7)) 2.41.0.20231009",
+    "command": "arm-none-eabi-objdump -d gnu.elf",
+    "raw_capture": "../../provenance/objdump_thumb.txt",
+    "raw_source_lines": [
+      7,
+      8,
+      9
+    ],
+    "assembly": "../../provenance/objdump_thumb.s",
+    "capture_sha256": "fef4031af9709421cf553436b7cd803e2ea7df766b1809a43f2ffc293be88922"
+  },
+  "expected": {
+    "load_success": true,
+    "records": [
+      {
+        "source_line": 2,
+        "address": 134217984,
+        "bytes": "0520",
+        "size": 2,
+        "assembly": "movs r0,#5"
+      },
+      {
+        "source_line": 3,
+        "address": 134217986,
+        "bytes": "40f20801",
+        "size": 4,
+        "assembly": "movw r1,#8"
+      }
+    ],
+    "ignored_lines": [
+      1
+    ],
+    "ignored_line_count": 1,
+    "diagnostics": [
+      {
+        "severity": "info",
+        "code": "ignored_line",
+        "line": 1,
+        "source_text": "08000100 <_start>:"
+      }
+    ],
+    "existing_session": "replaced",
+    "selected_format": "objdump",
+    "record_count": 2
+  }
+}

@@ -1,0 +1,9 @@
+
+gnu.elf:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+08000100 <_start>:
+ 8000100:	2005      	movs	r0, #5
+ 8000102:	f240 0108 	movw	r1, #8

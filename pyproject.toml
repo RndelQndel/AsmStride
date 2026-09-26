@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling==1.32.4"]
+build-backend = "hatchling.build"
+
+[project]
+name = "armstride"
+version = "0.1.0"
+description = "A local debugger for incomplete ARM machine state"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "capstone==5.0.7",
+    "fastapi==0.141.1",
+    "keystone-engine==0.9.2",
+    "pydantic==2.13.5",
+    "unicorn==2.1.4",
+    "uvicorn==0.54.0",
+]
+
+[project.scripts]
+armstride = "armstride.cli:main"
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.13.1",
+    "pytest>=8.3,<10",
+]
+
+[tool.hatch.build]
+artifacts = ["src/armstride/static/**"]
+
+[tool.hatch.build.hooks.custom]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/armstride"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/src/armstride", "/pyproject.toml", "/uv.lock", "/README.md", "/hatch_build.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/parser", "tests/simulation", "tests/assembly", "tests/api"]
+addopts = "--import-mode=importlib"
+
+markers = ["native: requires native Unicorn execution on the host"]
+
+# Keystone's sdist needs pre-4 CMake and distutils-compatible build tooling.
+[tool.uv.extra-build-dependencies]
+keystone-engine = ["cmake==3.31.10", "setuptools==80.9.0"]
