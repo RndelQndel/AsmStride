@@ -25,16 +25,26 @@ test.describe('Generate documentation screenshots', () => {
   });
 
   test('capture 2. Disassembly Import Workflow', async ({ page }) => {
-    await page.setViewportSize({ width: 1380, height: 860 });
+    await page.setViewportSize({ width: 1360, height: 1050 });
     await page.goto('/');
     await page.locator('main[aria-busy="false"]').waitFor();
 
     await page.getByRole('combobox', { name: 'Input', exact: true }).selectOption('disassembly');
-    const disasm = `1000: E3A0002A  MOV  r0, #42
-1004: E2801008  ADD  r1, r0, #8
-1008: E58D1000  STR  r1, [sp]
-100C: E59D2000  LDR  r2, [sp]`;
-    await page.getByLabel('Disassembly text', { exact: true }).fill(disasm);
+    await page.getByRole('combobox', { name: 'Format', exact: true }).selectOption('fromelf');
+
+    const fromelfDisasm = `** Section #1 '.text' (SHT_PROGBITS) [SHF_ALLOC + SHF_EXECINSTR]
+    Size   : 20 bytes
+    Address: 0x08000100
+
+    $a.0
+    calc_sum
+        0x08000100:    e3a00000    ....    MOV      r0,#0
+        0x08000104:    e3a01005    ....    MOV      r1,#5
+        0x08000108:    e0800001    ....    ADD      r0,r0,r1
+        0x0800010c:    e2511001    ....    SUBS     r1,r1,#1
+        0x08000110:    1afffffc    ....    BNE      0x08000108`;
+
+    await page.getByLabel('Disassembly text', { exact: true }).fill(fromelfDisasm);
     await page.getByRole('button', { name: 'Load', exact: true }).click();
     await page.locator('main[aria-busy="false"]').waitFor();
 
@@ -46,29 +56,32 @@ test.describe('Generate documentation screenshots', () => {
 
     await page.screenshot({
       path: path.join(ASSETS_DIR, 'feature_disassembly.png'),
+      fullPage: true,
     });
   });
 
   test('capture 3. Memory Fault & Deterministic Rollback', async ({ page }) => {
-    await page.setViewportSize({ width: 1380, height: 1240 });
+    await page.setViewportSize({ width: 1360, height: 1050 });
     await page.goto('/');
     await page.locator('main[aria-busy="false"]').waitFor();
 
-    const faultCode = `mov r1, #0x50000000
-ldr r0, [r1]`;
+    const faultCode = `mov r1, #0x20000000
+ldr r0, [r1, #4]`;
     await page.getByLabel('Assembly source', { exact: true }).fill(faultCode);
     await page.getByRole('button', { name: 'Load', exact: true }).click();
     await page.locator('main[aria-busy="false"]').waitFor();
 
     const stepBtn = page.getByRole('button', { name: 'Step', exact: true });
+    // Step 1: mov r1, #0x20000000
     await stepBtn.click();
     await page.locator('main[aria-busy="false"]').waitFor();
-    // Second step attempts to read unmapped 0x50000000
+    // Step 2: ldr r0, [r1, #4] -> triggers unmapped memory fault at 0x20000004
     await stepBtn.click();
     await page.locator('main[aria-busy="false"]').waitFor();
 
     await page.screenshot({
       path: path.join(ASSETS_DIR, 'feature_fault_rollback.png'),
+      fullPage: true,
     });
   });
 });
