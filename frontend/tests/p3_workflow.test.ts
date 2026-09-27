@@ -44,7 +44,7 @@ describe('Stage P3 Frontend Features', () => {
     });
 
     // Check header
-    expect(screen.getByText('RV32I')).toBeTruthy();
+    expect(screen.getByText('Registers')).toBeTruthy();
 
     // Flags bar and CPSR must be suppressed
     expect(screen.queryByText('Flags')).toBeNull();

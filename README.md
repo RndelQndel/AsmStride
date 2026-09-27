@@ -48,7 +48,7 @@ Setting up a complete QEMU machine, full firmware image, target hardware, or GDB
 | 🔄 **Runtime Interworking** | Full interworking via CPSR T-bit inspection (`BX`, `BLX`, `POP {pc}`, etc.) with canonical PC. |
 | 🎯 **Thumb-2 IT Blocks** | Conditional block execution (`IT`, `ITT`, `ITE`) with `ITSTATE` tracking and skip reporting. |
 | 🛑 **Breakpoints & Bounded Run** | Pre-execution breakpoints with 1-step resume bypass; bounded Run loop with concurrent Stop. |
-| 📊 **Profile-Driven UI Grid** | Adaptive register panels: 32-register grid with ABI names for RISC-V; R0–R15 + CPSR for ARM. |
+| 📊 **Light Workbench UI** | Central Source/Disassembly tabs, input sidebar, compact architecture-aware debugger rows, bottom tool tabs, and persistent machine status. |
 | 🧠 **Strict Memory Virtualization** | Distinguishes code, synthetic stack, and unmapped `??` bytes. Unmapped access halts safely. |
 | ⌨️ **Keyboard Navigation** | `F5` to Run, `F7` / `F8` to Step, `F9` to Reset. |
 
@@ -56,25 +56,29 @@ Setting up a complete QEMU machine, full firmware image, target hardware, or GDB
 
 ## 📸 Visual Walkthrough
 
-### 1. Interactive Step & Live Register Tracking
-Step through instructions one by one. The active instruction pointer updates in real time, and modified registers (such as `R2`, `SP`, `PC`) are highlighted immediately with orange borders.
+The **ArmStride workbench UI** uses a Light theme by default. Input configuration lives in the left sidebar; Source, Disassembly, and Split views occupy the center; Run and Debug state lives on the right. Problems, Output, Memory, Stack, and Execution share a bounded bottom panel. The status bar keeps profile, live mode, PC, session state, step sequence, and history visible.
 
-<img src="docs/assets/hero_workspace.png" alt="Interactive Step" width="100%" />
+Use the Activity Bar to switch Input, Debug configuration (run limits), and Memory tools. The Debug and Panel toolbar buttons toggle their panes. Editor and bottom tabs support arrow keys and Home/End. Each pane scrolls independently; desktop debugging does not require scrolling the browser page. Register edits retain Enter/Apply semantics.
+
+### 1. Light Workbench & Live Register Tracking
+Choose architecture and input settings in the left **IN** sidebar, edit text in the central **Source** tab, then click **Load** to open **Disassembly**. Use **Split** to see both. Step through instructions one by one. The active instruction pointer updates in real time, and modified registers (such as `R2`, `SP`, `PC`) are highlighted immediately with a subtle amber background.
+
+<img src="docs/assets/workbench-overview.png" alt="Interactive Step" width="100%" />
 
 ### 2. Disassembly Import (`objdump` & `fromelf`)
-Paste crash log disassembly or compiler dumps. ArmStride automatically extracts addresses, raw hex opcodes, and mnemonics, mapping them to the execution view.
+Select **Disassembly import** in the left sidebar, then paste crash log disassembly or compiler dumps into **Source**. ArmStride automatically extracts addresses, raw hex opcodes, and mnemonics, mapping them to the execution view.
 
-<img src="docs/assets/feature_disassembly.png" alt="Disassembly Import" width="100%" />
+<img src="docs/assets/workbench-disassembly.png" alt="Disassembly Import" width="100%" />
 
 ### 3. Safe Memory Faults & Atomic Rollback
-Accessing unmapped memory (`??`) immediately pauses simulation and reports the exact missing byte ranges. The system safely rolls back to the pre-fault state without crashing.
+Accessing unmapped memory (`??`) immediately pauses simulation and reports the exact missing byte ranges. The system safely rolls back to the pre-fault state without crashing. Read the details in the bottom **Execution** tab, patch known bytes in **Memory**, and retry without navigating away from the editor.
 
-<img src="docs/assets/feature_fault_rollback.png" alt="Memory Fault and Rollback" width="100%" />
+<img src="docs/assets/workbench-fault-rollback.png" alt="Memory Fault and Rollback" width="100%" />
 
 ### 4. RISC-V (RV32I) Multi-ISA Workspace
-Switch architecture to **RISC-V (RV32I)** to debug 32-bit integer RISC-V snippets. The UI automatically renders the full 32-register grid (`x0`–`x31`) with standard ABI names (`zero`, `ra`, `sp`, `a0`–`a7`, `t0`–`t6`, `s0`–`s11`), locks immutable `x0 (zero)` to 0, and hides ARM-specific status bars (CPSR and NZCV flags).
+Switch architecture to **RISC-V (RV32I)** to debug 32-bit integer RISC-V snippets. The UI automatically renders the compact 32-register table (`x0`–`x31`) with standard ABI names (`zero`, `ra`, `sp`, `a0`–`a7`, `t0`–`t6`, `s0`–`s11`), locks immutable `x0 (zero)` to 0, and hides ARM-specific processor-state controls (CPSR and NZCV flags).
 
-<img src="docs/assets/feature_riscv.png" alt="RISC-V RV32I Workspace" width="100%" />
+<img src="docs/assets/workbench-rv32i.png" alt="RISC-V RV32I Workspace" width="100%" />
 
 ---
 
@@ -101,6 +105,17 @@ npm --prefix frontend run build
 uv run --locked armstride --port 8000
 ```
 Open **[http://127.0.0.1:8000](http://127.0.0.1:8000)** in your browser.
+
+### 3. First debugging session
+
+1. In the left **IN** sidebar, keep `ARMv7-A`, `Assembly source`, and `ARM` selected.
+2. Edit the central **Source** tab or use the starter snippet, then click **Load**.
+3. Press **F7/F8** to Step; inspect changed registers on the right and the live PC in the status bar.
+4. Click a circle in the disassembly gutter to add a breakpoint, then press **F5** to Run. **DB** in the Activity Bar opens Run limits.
+5. Switch between **Execution**, **Memory**, and **Stack** in the bottom panel while keeping code visible.
+6. Use **Step Back** to undo an execution step or **Reset** to restore the baseline. Register edits use Enter/Apply and update that baseline.
+
+For ELF import, watchpoints, memory repair, RV32I, and session recovery, follow the [Workbench Walkthrough](docs/VISUAL_GUIDE.md).
 
 ---
 
@@ -152,7 +167,7 @@ finally:
 
 ## 🧪 Testing & Quality Assurance
 
-ArmStride maintains 100% regression-free test coverage across unit, simulation, integration, frontend, and browser end-to-end layers (500+ automated tests passing):
+Regression suites cover parsers, simulation, APIs, native integration, frontend components, and browser workflows. Workbench validation passed 470 Python tests, 32 frontend unit tests, 16 Playwright E2E tests, and four documentation captures; these counts describe the validated refactor, not a coverage percentage.
 
 ```sh
 # Run Python unit & simulation tests (API, parsers, RV32I engine, logical memory)
@@ -160,6 +175,10 @@ uv run --locked pytest
 
 # Run integration tests with native Unicorn & Keystone backends
 uv run --locked pytest tests
+
+# Check and build frontend assets before browser tests
+npm --prefix frontend run check
+npm --prefix frontend run build
 
 # Run Vitest frontend unit tests
 npm --prefix frontend test

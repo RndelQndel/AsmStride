@@ -4,20 +4,21 @@
   import type { StepResult } from './api';
   import { byteChanged, word } from './memory';
   import type { MemoryWindow } from './memory';
-  let { window, step, sp = null }: { window: MemoryWindow; step: StepResult | null; sp?: number | null } = $props();
+  let { window, step, sp = null, active = true }: { window: MemoryWindow; step: StepResult | null; sp?: number | null; active?: boolean } = $props();
   let viewport: HTMLDivElement;
   $effect(() => {
     // Center the SP row inside the scroll pane without moving the whole page.
     window; sp;
-    let active = true;
+    if (!active) return;
+    let mounted = true;
     void tick().then(() => {
-      if (!active || !viewport) return;
+      if (!mounted || !viewport) return;
       const marker = viewport.querySelector<HTMLElement>('tr.current');
       viewport.scrollTop = marker
         ? viewport.scrollTop + marker.getBoundingClientRect().top - viewport.getBoundingClientRect().top - viewport.clientHeight / 2
         : 0;
     });
-    return () => { active = false; };
+    return () => { mounted = false; };
   });
   const rows = $derived(Array.from({ length: Math.ceil((window.address % 4 + window.length) / 4) }, (_, i) => {
     const address = window.address - window.address % 4 + i * 4;

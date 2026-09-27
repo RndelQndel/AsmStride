@@ -347,9 +347,9 @@ it('renders CodeView with breakpoint gutter, marker combinations, and data rows'
   };
   render(CodeView, { program: mixedProgram, state: testState, disabled: false, select, onToggleBreakpoint: toggleBp });
 
-  // 0x1000 has both PC and BP -> button shows ▶●
+  // PC and breakpoint use distinct gutter markers.
   const pcBtn0 = screen.getByRole('button', { name: 'Select PC 0x00001000' });
-  expect(pcBtn0.textContent).toContain('▶●');
+  expect(pcBtn0.textContent).toContain('▶');
 
   // Toggle breakpoint button for 0x1000 is present and clickable
   const bpBtn0 = screen.getByRole('button', { name: 'Toggle breakpoint at 0x00001000' });
@@ -378,4 +378,11 @@ it('renders StatusPanel with IT block condition details and conditional skip', (
   expect(screen.getByText(/IT Block \[2\/2\]/)).toBeDefined();
   expect(screen.getByText(/not passed \(conditionally skipped\)/)).toBeDefined();
   expect(screen.getByText(/Instruction conditionally skipped/)).toBeDefined();
+});
+
+it('resolves the architecture-specific stack pointer without ARM aliases on RV32I', async () => {
+  const { stackPointer } = await import('../src/api');
+  expect(stackPointer(state())).toBe(0x20100000);
+  expect(stackPointer({ ...state(), profile: 'rv32i-le', registers: { x2: { value: 0x3000, origin: 'user' } } })).toBe(0x3000);
+  expect(stackPointer(null)).toBeNull();
 });

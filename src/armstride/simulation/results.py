@@ -28,7 +28,7 @@ class MemoryWrite(TypedDict):
 
 
 class BranchResult(TypedDict):
-    kind: Literal['branch', 'call', 'return', 'pc_write']
+    kind: Literal['branch', 'call', 'return', 'pc_write', 'trap']
     condition: str | None
     taken: bool
     target: int | None
@@ -80,6 +80,6 @@ class StepResult(TypedDict):
                          'memory_fault', 'unsupported_mode_transition', 'mode_mismatch',
                          'non_executable_target', 'invalid_it_block_entry',
                          'breakpoint', 'watchpoint', 'user_stop', 'step_limit', 'time_limit',
-                         'execution_error', 'backend_unavailable'] | None
+                         'execution_error', 'backend_unavailable', 'environment_call', 'breakpoint_trap'] | None
     error: StepError | None
 

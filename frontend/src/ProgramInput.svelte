@@ -1,12 +1,20 @@
 <script lang="ts">
   import { uint32 } from './api';
   import type { LoadRequest, Mode, Profile } from './api';
-  let { disabled, load }: { disabled: boolean; load: (request: LoadRequest) => Promise<string | null> } = $props();
+  let {
+    disabled, load,
+    source = $bindable('mov r0, #5\nadd r1, r0, #3\ncmp r1, #8'),
+    imported = $bindable('0x1000: E3A00005 MOV r0,#5\n0x1004: E2801003 ADD r1,r0,#3'),
+    kind = $bindable('assembly'),
+  }: {
+    disabled: boolean;
+    load: (request: LoadRequest) => Promise<string | null>;
+    source?: string;
+    imported?: string;
+    kind?: 'assembly' | 'disassembly' | 'elf';
+  } = $props();
   let profile = $state<Profile>('armv7-a-le');
-  let kind = $state<'assembly' | 'disassembly' | 'elf'>('assembly');
   let mode = $state<Mode>('arm');
-  let source = $state('mov r0, #5\nadd r1, r0, #3\ncmp r1, #8');
-  let imported = $state('0x1000: E3A00005 MOV r0,#5\n0x1004: E2801003 ADD r1,r0,#3');
   let elfBase64 = $state('');
   let elfFileName = $state('');
   let base = $state('0x1000');
@@ -60,8 +68,8 @@
     finally { reading = false; }
   }
 
-  async function submit(event: SubmitEvent) {
-    event.preventDefault();
+  async function submit(event?: SubmitEvent) {
+    event?.preventDefault();
     if (disabled || reading) return;
     try {
       if (kind === 'elf') {
@@ -125,21 +133,58 @@
       base = '0x1000';
       source = 'mov r0, #5\nadd r1, r0, #3\ncmp r1, #8';
     }
-    const text = kind === 'assembly' ? source : imported;
-    const common = { text, mode, profile, ...(customStack ? { stack: { base: uint32(stackBase), size: uint32(stackSize) } } : {}) };
-    const request: LoadRequest = kind === 'assembly'
-      ? { ...common, input_kind: kind, base_address: uint32(base) }
-      : { ...common, input_kind: kind, format, encoding };
-    error = (await load(request)) ?? '';
+    await submit();
   }
 </script>
-<section aria-labelledby="input-title">
-  <div class="panel-header">
-    <h2 id="input-title">Program input</h2>
-    <span class="muted">Assemble ARM/Thumb/RISC-V snippet or import disassembly</span>
-  </div>
-  <div class="presets-bar" aria-label="Example presets">
-    <span class="presets-label">⚡ Quick Presets:</span>
+<section aria-label="Program configuration">
+  <h2 id="input-title">Input</h2>
+  <form onsubmit={submit}>
+    <fieldset disabled={disabled || reading}>
+      <div class="fields-grid">
+        <label>Architecture<select bind:value={profile} onchange={onProfileChange}>
+          <option value="armv7-a-le">ARMv7-A</option>
+          <option value="rv32i-le">RISC-V (RV32I)</option>
+        </select></label>
+        <label>Input<select bind:value={kind}>
+          <option value="assembly">Assembly source</option>
+          <option value="disassembly">Disassembly import</option>
+          <option value="elf">ELF32 Binary (.elf)</option>
+        </select></label>
+        {#if kind !== 'elf'}
+          <label>Mode<select bind:value={mode}>
+            {#if profile === 'rv32i-le'}
+              <option value="riscv32">RV32I</option>
+            {:else}
+              <option value="arm">ARM</option>
+              <option value="thumb">Thumb / Thumb-2</option>
+            {/if}
+          </select></label>
+        {/if}
+        {#if kind === 'assembly'}
+          <label>Base address<input bind:value={base} spellcheck="false" /></label>
+        {:else if kind === 'disassembly'}
+          <label>Format<select bind:value={format}>{#each ['auto', 'fromelf', 'objdump', 'generic'] as option}<option>{option}</option>{/each}</select></label>
+          <label>Encoding<select bind:value={encoding}>{#each ['auto', 'words', 'bytes'] as option}<option>{option}</option>{/each}</select></label>
+        {/if}
+      </div>
+      <div class="file-load-row">
+        {#if kind === 'elf'}
+          <label class="file-label">Select ELF binary<input type="file" accept=".elf,.axf,.o,application/octet-stream" onchange={readFile} /></label>
+        {:else}
+          <label class="file-label">Read local text file<input type="file" accept="text/*,.s,.asm,.lst,.log" onchange={readFile} /></label>
+        {/if}
+        <button type="submit" class="primary load-btn">Load</button>
+      </div>
+      <details class="stack-setup"><summary>Scratch stack setup</summary>
+        <label class="inline"><input type="checkbox" bind:checked={customStack} />Use custom scratch stack</label>
+        {#if customStack}<div class="fields" style="margin-top: 6px;"><label>Stack base<input bind:value={stackBase} /></label><label>Stack size (bytes)<input bind:value={stackSize} /></label></div>{/if}
+        <p class="muted" style="margin: 4px 0 0;">Default: 64 KiB initialized zero at 0x200f0000. SP starts at top (0x20100000).</p>
+      </details>
+      {#if kind === 'elf'}<p class="muted">{elfFileName || 'Choose an ELF32-LE file (max 10 MiB).'}</p>{/if}
+    </fieldset>
+    {#if error}<p class="error" role="alert">{error}</p>{/if}
+  </form>
+  <details class="presets-bar"><summary>Example presets</summary>
     <button type="button" class="preset-pill" disabled={disabled || reading} onclick={() => applyPreset('rv32-loop')}>RV32I Loop</button>
     <button type="button" class="preset-pill" disabled={disabled || reading} onclick={() => applyPreset('rv32-mem')}>RV32I Load/Store</button>
     <button type="button" class="preset-pill" disabled={disabled || reading} onclick={() => applyPreset('mixed-thumb-arm')}>Mixed (Thumb ➔ ARM + Data)</button>
@@ -147,71 +192,7 @@
     <button type="button" class="preset-pill" disabled={disabled || reading} onclick={() => applyPreset('thumb-it')}>Thumb-2 IT Blocks</button>
     <button type="button" class="preset-pill" disabled={disabled || reading} onclick={() => applyPreset('thumb-loop')}>Thumb Loop & Run</button>
     <button type="button" class="preset-pill" disabled={disabled || reading} onclick={() => applyPreset('arm-basic')}>ARM Basic</button>
-  </div>
-  <form onsubmit={submit}>
-    <fieldset disabled={disabled || reading}>
-      <div class="input-layout">
-        <div class="input-config">
-          <div class="fields-grid">
-            <label>Architecture<select bind:value={profile} onchange={onProfileChange}>
-              <option value="armv7-a-le">ARMv7-A</option>
-              <option value="rv32i-le">RISC-V (RV32I)</option>
-            </select></label>
-            <label>Input<select bind:value={kind}>
-              <option value="assembly">Assembly source</option>
-              <option value="disassembly">Disassembly import</option>
-              <option value="elf">ELF32 Binary (.elf)</option>
-            </select></label>
-            {#if kind !== 'elf'}
-              <label>Mode<select bind:value={mode}>
-                {#if profile === 'rv32i-le'}
-                  <option value="riscv32">RV32I</option>
-                {:else}
-                  <option value="arm">ARM</option>
-                  <option value="thumb">Thumb / Thumb-2</option>
-                {/if}
-              </select></label>
-            {/if}
-            {#if kind === 'assembly'}
-              <label>Base address<input bind:value={base} spellcheck="false" /></label>
-            {:else if kind === 'disassembly'}
-              <label>Format<select bind:value={format}>{#each ['auto', 'fromelf', 'objdump', 'generic'] as option}<option>{option}</option>{/each}</select></label>
-              <label>Encoding<select bind:value={encoding}>{#each ['auto', 'words', 'bytes'] as option}<option>{option}</option>{/each}</select></label>
-            {/if}
-          </div>
-          <div class="file-load-row">
-            {#if kind === 'elf'}
-              <label class="file-label">Select ELF binary<input type="file" accept=".elf,.axf,.o,application/octet-stream" onchange={readFile} /></label>
-            {:else}
-              <label class="file-label">Read local text file<input type="file" accept="text/*,.s,.asm,.lst,.log" onchange={readFile} /></label>
-            {/if}
-            <button type="submit" class="primary load-btn">Load</button>
-          </div>
-        </div>
-        <div class="input-editor">
-          {#if kind === 'assembly'}
-            <label>Assembly source<textarea bind:value={source} rows="4" spellcheck="false"></textarea></label>
-          {:else if kind === 'disassembly'}
-            <label>Disassembly text<textarea bind:value={imported} rows="4" spellcheck="false"></textarea></label>
-          {:else}
-            <div class="elf-upload-status" style="padding: 1rem; border: 1px dashed #555; border-radius: 4px;">
-              {#if elfFileName}
-                <p>Selected ELF: <strong>{elfFileName}</strong></p>
-                <p class="muted">Ready to load into simulator.</p>
-              {:else}
-                <p class="muted">Choose an ARM ELF32-LE executable file (max 10 MiB) above.</p>
-              {/if}
-            </div>
-          {/if}
-          <details class="stack-setup"><summary>Scratch stack setup</summary>
-            <label class="inline"><input type="checkbox" bind:checked={customStack} />Use custom scratch stack</label>
-            {#if customStack}<div class="fields" style="margin-top: 6px;"><label>Stack base<input bind:value={stackBase} /></label><label>Stack size (bytes)<input bind:value={stackSize} /></label></div>{/if}
-            <p class="muted" style="margin: 4px 0 0;">Default: 64 KiB initialized zero at 0x200f0000. SP starts at top (0x20100000).</p>
-          </details>
-        </div>
-      </div>
-    </fieldset>
-    {#if error}<p class="error" role="alert">{error}</p>{/if}
-  </form>
-  <p class="muted info-footer">Load replaces the experiment with fresh defaults. Files are read as text in this browser.</p>
+
+  </details>
+  <p class="muted">Load replaces the experiment with fresh defaults.</p>
 </section>

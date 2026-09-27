@@ -180,3 +180,24 @@ def test_p3_api_step_back_and_reset():
         assert rst_resp.status_code == 200
         assert rst_resp.json()["registers"]["x10"]["value"] == 5
         assert rst_resp.json()["pc"] == 0x1000
+
+
+def test_p3_trap_results_serialize_for_step_run_and_state():
+    """Public schemas must accept trap values already emitted by the simulator."""
+    with TestClient(create_app(), base_url="http://127.0.0.1") as client:
+        for instruction, reason in [("ecall", "environment_call"), ("ebreak", "breakpoint_trap")]:
+            for action in ["step", "run"]:
+                session_id = client.post("/api/sessions", json={}).json()["session_id"]
+                path = f"/api/sessions/{session_id}"
+                loaded = client.post(path + "/program", json={
+                    "input_kind": "assembly", "text": instruction, "profile": "rv32i-le",
+                    "mode": "riscv32", "base_address": 0x1000,
+                })
+                assert loaded.status_code == 200
+                response = client.post(path + f"/{action}", json={})
+                assert response.status_code == 200, response.text
+                assert response.json()["state"]["last_step"]["stop_reason"] == reason
+                state = client.get(path + "/state")
+                assert state.status_code == 200
+                assert state.json()["last_step"]["branch"]["kind"] == "trap"
+                client.delete(path)

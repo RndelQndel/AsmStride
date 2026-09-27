@@ -1,116 +1,162 @@
-# ArmStride Visual Guide & Workflow Tour
+# ArmStride Workbench Walkthrough
 
-Welcome to the visual guide for **ArmStride** — a lightweight, local interactive ARMv7-A assembly and disassembly simulator.
+ArmStride is a local ARMv7-A, Thumb, and RISC-V RV32I debugging workbench. Its default appearance is **Light**: near-white editors, neutral pane separators, restrained blue accents, and compact machine-state tables.
 
-This guide walks through the primary user interfaces, workflow steps, and diagnostics.
+This walkthrough follows the current UI. Start the application using the [README quickstart](../README.md#-quickstart).
 
----
+## 1. Find your tools
 
-## 1. Main Workspace Overview
+![ArmStride Light workbench with disassembly, registers, execution details, and status bar](assets/workbench-overview.png)
 
-The ArmStride workspace is organized into a clean, focused, light-themed debugging interface designed to eliminate clutter and display all critical CPU state without vertical scrolling.
+| Area | Purpose |
+| --- | --- |
+| Command bar — top | Run, Step, Step Back, Stop, Reset; toggle the Debug sidebar or bottom Panel. |
+| Activity Bar — far left | `IN`: input configuration; `DB`: Run limits; `MEM`: shortcuts to memory and stack tools. Click the active tool again to close its sidebar. |
+| Primary Sidebar — left | Architecture, input type, mode, base address, file import, Load, scratch-stack settings, and example presets. |
+| Editor group — center | Source, Disassembly, and Split tabs. Source holds editable input; Disassembly shows the loaded, decoded program. |
+| Run and Debug — right | Manual PC editing and collapsible Registers, ARM Flags / Processor state, Breakpoints, and Watchpoints. |
+| Bottom panel | Problems, Output, Memory, Stack, and Execution tabs. |
+| Status bar — bottom edge | Loaded architecture, live ARM/Thumb mode where applicable, byte order, session state, PC, step sequence, and history depth. |
 
-![Main Workspace](../docs/assets/hero_workspace.png)
+The editor, sidebars, and bottom panel scroll independently. Normal desktop debugging does not require scrolling the whole browser page. For more code space, close the Primary Sidebar, toggle **Debug**, or close **Panel**. Tabs and source drafts remain available when you reopen their panes.
 
-### Key Interface Sections:
-1. **Execution Toolbar (Top)**:
-   - **`Step` (F7/F8)**: Executes the instruction at the current Program Counter (PC).
-   - **`Reset` (F9)**: Restores CPU registers, flags, and memory back to the initial baseline state.
-   - **`Start / current PC` & `Go`**: Jump or set an arbitrary entry point.
-   - **Status Badge (`READY` / `STOPPED`) & Step Sequence Counter**: Displays current engine state and total committed step count.
+The Activity Bar's **DB** button opens Run configuration on the left. The command bar's **Debug** button toggles machine state on the right.
 
-2. **Program Input (Top-Left)**:
-   - Architecture selector: **ARMv7-A** (32-bit LE) or **RISC-V (RV32I)**.
-   - Input format selector: **Assembly source**, **Disassembly import**, or **ELF32 Binary (.elf)**.
-   - Mode: **ARM**, **Thumb / Thumb-2**, or **RV32I**.
-   - Base address configuration (default: `0x1000`).
-   - File loader (`.s`, `.txt`, `.elf`) or direct multi-line text input.
-   - Quick presets for mixed ARM/Thumb, IT blocks, loops, and RV32I arithmetic & stack operations.
-   - Optional **Custom Scratch Stack setup** (Base address & size).
+## 2. Load and step through your first program
 
-3. **Instructions View (Middle-Left)**:
-   - Synchronized instruction table showing:
-     - Step indicator (`▶` arrow pointer on current PC).
-     - Instruction Hex Address.
-     - Raw Opcode Bytes in hex (e.g. `2a 00 a0 e3` or `13 05 a0 02`).
-     - Decoded instruction mnemonic and operands.
-     - Source line and DWARF/symbol cross-references.
+1. Select **IN** in the Activity Bar.
+2. Set **Architecture** to `ARMv7-A`, **Input** to `Assembly source`, **Mode** to `ARM`, and **Base address** to `0x1000`.
+3. Open the central **Source** tab and enter:
 
-4. **Registers & Flags (Right Column)**:
-   - **Profile-Driven Register Grid**:
-     - **ARMv7-A**: 2-column layout (`R0`–`R7` and `R8`–`R12`, `SP`, `LR`, `PC`), flags bar (`N`, `Z`, `C`, `V`), and CPSR editor.
-     - **RISC-V (RV32I)**: Full 32-register grid (`x0`–`x31` + `PC`) annotated with standard ABI aliases (`zero`, `ra`, `sp`, `gp`, `tp`, `t0`–`t6`, `s0`–`s11`, `a0`–`a7`). CPSR and condition flags are cleanly suppressed. `x0 (zero)` is locked to 0 and immutable.
-   - **Delta Highlighting**: Registers modified during the latest step are highlighted with an orange border.
-   - **In-place Value Editing**: Modify any register at any time; changes update the baseline for Reset.
+   ```asm
+   mov r0, #5
+   add r1, r0, #3
+   cmp r1, #8
+   ```
 
-5. **Memory & Synthetic Stack Panels (Bottom)**:
-   - **Memory Hex Grid**: Address, 4-byte grouped hex view, and 32-bit little-endian word representation.
-   - **Synthetic Scratch Stack**: Follows `SP` automatically, marks known stack bytes vs unallocated memory (`??`), and flags write operations with a yellow delta (`Δ`) symbol.
+4. Click **Load** in the Primary Sidebar. The editor switches to **Disassembly** and the right sidebar displays the loaded registers.
+5. Click **Step** or press **F7/F8**. R0 becomes `0x00000005`; the blue current-PC marker advances. Changed registers use an amber highlight.
+6. Step again to set R1 to `0x00000008`. Open **Execution** in the bottom panel to inspect the latest instruction result.
+7. Click **Step Back** to restore the previous execution state. The status bar shows the remaining history depth.
+8. Click **Reset** to restore the experiment's baseline.
 
----
+Switch back to **Source** to edit the draft, or choose **Split** to see the draft and decoded listing together. Editing source does not change the loaded program until you click **Load** again. Loading replaces the experiment with fresh defaults.
 
-## 2. Disassembly Import Workflow
+For Thumb assembly, select **Thumb / Thumb-2** before loading. For ready-made examples, expand **Example presets** in the Primary Sidebar; clicking a preset loads it immediately.
 
-When analyzing firmware crash dumps or compiler outputs, you often don't have the original source files. ArmStride can parse raw disassembly output from tools like GNU `objdump` and ARM `fromelf`.
+### Edit registers or select a PC
 
-![Disassembly Import](../docs/assets/feature_disassembly.png)
+Enter a decimal or `0x` hexadecimal value in a register row, then press **Enter** or click its **Apply** button. Manual edits update the Reset baseline. On ARM, the processor-state section exposes CPSR and N/Z/C/V flag controls; only the supported flag bits are editable.
 
-### Workflow:
-1. Switch **Input** to `Disassembly import`.
-2. Paste disassembly lines containing addresses, opcodes, and instructions:
+Click a PC marker in the disassembly gutter to fill **Start / current PC**. This does not execute or jump yet. Press **Enter** in that field or click **Go** to apply the address.
+
+## 3. Import disassembly or ELF
+
+![Imported disassembly in the central editor](assets/workbench-disassembly.png)
+
+### Text disassembly
+
+1. In **IN**, choose **Disassembly import** and the appropriate architecture and mode.
+2. Choose **Format** and **Encoding**, or leave them on `auto`.
+3. Open **Source** and paste the listing, or use **Read local text file**:
+
    ```text
    1000: E3A0002A  MOV  r0, #42
    1004: E2801008  ADD  r1, r0, #8
    1008: E58D1000  STR  r1, [sp]
    100C: E59D2000  LDR  r2, [sp]
    ```
-3. Click **`Load`**: ArmStride parses the addresses, extracts opcode bytes directly, verifies alignment, and binds the starting PC.
-4. Step through the disassembly with full register and stack tracking.
 
----
+4. Click **Load**. Inspect decoded bytes and instructions in **Disassembly**.
+5. Use **Problems** for parser/load diagnostics and rejected-import previews. A rejected replacement leaves the previously installed program available.
 
-## 3. Memory Fault Detection & Atomic Rollback
+Mixed ARM/Thumb listings retain `$a`, `$t`, and `$d` sections. Data rows are non-executable and cannot hold breakpoints. The listing retains input/source metadata, unsupported-instruction diagnostics, and automatic scrolling to the current PC.
 
-ArmStride enforces **strict memory safety**. Access to uninitialized or unmapped memory does not silently succeed with garbage values or cause a hard crash. Instead, it triggers an atomic rollback.
+### ELF files
 
-![Memory Fault and Rollback](../docs/assets/feature_fault_rollback.png)
+Choose **ELF32 Binary (.elf)** and use **Select ELF binary**, then click **Load**. Supported ARM/Thumb ELF files open in Disassembly, with symbols and DWARF file/line metadata when present. The Source tab displays an unavailable message because this workflow does not provide editable source text. ELF uploads are limited to 10 MiB.
 
-### Safe Fault Mechanics:
-1. In the example above, an instruction attempts to load from unmapped address `0x50000000` (`ldr r0, [r1]`).
-2. The simulation engine detects an **`unmapped_memory_access`** violation.
-3. The engine **aborts the step** and **rolls back** all CPU registers, flags, and memory to the state immediately preceding the faulty instruction.
-4. The **Status & Diagnostics** panel displays:
-   - Fault address and access type (`read` / `write`).
-   - Exact missing address range.
-   - Clear diagnostic message: *"Previous state restored; baseline preserved"*.
-5. You can patch the required memory using the **Memory Patch** tool and retry execution safely.
+## 4. Run with breakpoints and watchpoints
 
-## 4. RISC-V (RV32I) Multi-ISA Workspace
+1. In **Disassembly**, click the circle beside an instruction to add a breakpoint. The red breakpoint dot remains distinct from the blue current-PC arrow.
+2. Open the right sidebar's **Breakpoints** section to review or remove addresses.
+3. Click **Run** or press **F5**. Execution stops at a breakpoint, watchpoint, configured limit, or another debugger stop condition. Use **Stop** to interrupt an active run.
+4. Open **Execution** to inspect the Run result, committed steps, elapsed time, and stop reason.
+5. To change run limits, click **DB** in the Activity Bar and set **Limit steps** and **Time limit (ms)**.
 
-When switching the architecture to **RISC-V (RV32I)**, ArmStride automatically adapts its entire workspace according to the architecture profile:
+For memory access stops, expand **Watchpoints** on the right. Enter an address, access kind, and byte length, then click **Add**. A matching access reports its triggering PC and address in the watchpoint section. Remove a watchpoint using its row's remove button.
 
-![RISC-V RV32I Workspace](../docs/assets/feature_riscv.png)
+## 5. Inspect memory and repair a fault
 
-### Key RV32I Features in UI:
-1. **Dynamic Architecture & Mode Adapters**:
-   - Choosing `RISC-V (RV32I)` locks the execution mode to `RV32I`.
-   - Dedicated quick presets are available: **`RV32I Loop`** and **`RV32I Load/Store`**.
-   - Top banner displays the active profile badge (`RV32I`).
-2. **32 Integer Registers Grid (`x0`–`x31` + `PC`)**:
-   - Each register is clearly annotated with its standard RISC-V ABI alias (e.g. `X0 (ZERO)`, `X1 (RA)`, `X2 (SP)`, `X10 (A0)`–`X17 (A7)`, `X5 (T0)`–`X7 (T2)`, `X28 (T3)`–`X31 (T6)`).
-   - **`x0` (zero) Immutability**: Register `x0` is locked and disabled for user editing. Instruction writes to `x0` produce no state modifications or delta events.
-3. **Suppression of ARM Status Bars**:
-   - CPSR and condition flags (`N`, `Z`, `C`, `V`) are cleanly hidden from both the UI and API response envelopes.
-4. **Clean Environment Traps**:
-   - `ECALL` and `EBREAK` stop execution cleanly with informative stop reasons (`environment_call` or `breakpoint_trap`) without native engine crashes.
+![Execution tab reporting a memory fault and restored state](assets/workbench-fault-rollback.png)
 
----
+In the screenshot, `ldr r0, [r1, #4]` reads unknown memory at `0x20000004`. The instruction fails and its partial effects are rolled back. The **Execution** tab reports the error context and **Previous state restored**.
 
-## 5. Useful Keyboard Shortcuts
+To inspect or repair memory without leaving the editor:
 
-| Shortcut | Action | Description |
-| :--- | :--- | :--- |
-| **`F5`** | **Run** | Run instructions until breakpoint, stop, or step limit |
-| **`F7`** or **`F8`** | **Step** | Advance simulation by one instruction |
-| **`F9`** | **Reset** | Reset registers and memory to baseline |
-| **`Enter`** | **Apply** | Commit edited register or memory value |
+1. Open the bottom **Memory** tab.
+2. Enter **Memory address** and **Inspection bytes**, then click **Inspect memory**. `??` denotes unknown bytes; inspection does not allocate memory.
+3. Set **Patch address**, select **Patch type**, and enter hex bytes, a little-endian word, or a zero-fill length.
+4. Click **Apply memory patch** or **Zero-fill memory**, then retry the instruction using **Step**.
+
+Manual patches update the Reset baseline. Code is read-only. Inspection supports up to 4096 bytes per request; patches are limited to 64 KiB.
+
+### Follow the stack
+
+Open **Stack** in the bottom panel. The SP row identifies the current stack pointer, and changed bytes are marked with `Δ`. Use **Lower addresses**, **Higher addresses**, or **Follow SP** to navigate. ARM uses SP; RV32I uses `x2 (sp)`.
+
+To configure a new experiment's scratch stack, expand **Scratch stack setup** in **IN**, enable **Use custom scratch stack**, and set the base and size before loading. The default stack is 64 KiB at `0x200f0000`, with SP initially at `0x20100000`.
+
+### Choose the right bottom tab
+
+| Tab | Contents |
+| --- | --- |
+| Problems | Parser/load diagnostics, API errors, and rejected-import previews. |
+| Output | General operation and recovery messages. |
+| Memory | Memory inspection and patch tools. |
+| Stack | Stack window, SP marker, and navigation. |
+| Execution | Latest Step/Run result, branches, IT conditions, memory accesses, and stop reasons. |
+
+Click **×** to close the panel; use the command bar's **Panel** button to reopen it.
+
+## 6. Debug RV32I
+
+![RV32I workbench with ABI register aliases and no ARM flags](assets/workbench-rv32i.png)
+
+1. In **IN**, set **Architecture** to `RISC-V (RV32I)`. Mode becomes `RV32I`.
+2. Enter RV32I assembly in **Source**, import a disassembly listing, or expand **Example presets** and choose **RV32I Loop** or **RV32I Load/Store**.
+3. After loading, inspect `x0`–`x31` and PC in the right sidebar. ABI aliases such as `ra`, `sp`, and `a0` appear beside register names. Scroll the sidebar to reach additional rows.
+4. Step, Run, inspect memory, and use Step Back as in the ARM workflow.
+
+`x0 (zero)` remains immutable. ARM CPSR/NZCV controls are absent, and the status bar identifies RV32I without an ARM mode. `ECALL` and `EBREAK` report `environment_call` and `breakpoint_trap` stop reasons in Execution.
+
+## 7. Shortcuts and session state
+
+| Shortcut | Action |
+| --- | --- |
+| F5 | Run. |
+| F7 / F8 | Step, including while the source editor has focus. |
+| F9 | Reset to baseline. |
+| Enter in a register field | Apply that register edit. |
+| Enter in Start / current PC | Apply the PC edit. |
+| Left / Right on a tab | Select the previous / next tab in that group. |
+| Home / End on a tab | Select the first / last tab in that group. |
+
+Each page owns its session. Refresh starts a new experiment; idle sessions expire after 30 minutes. Running and pending requests disable conflicting controls.
+
+If an operation's outcome is uncertain or machine state becomes unavailable, follow the recovery notice: Reset or reload as directed. An uncertain program replacement requires another Load. An expired session requires a page refresh. **Output** contains recovery messages; the status bar keeps the current session state visible.
+
+## Current layout limits
+
+The workbench targets desktop and laptop widths. At narrow widths, sidebars use toggleable overlays. Pane dragging, saved layouts, syntax highlighting, and an optional dark theme are not implemented. The default theme remains Light.
+
+## Refreshing screenshots
+
+With the Python environment and frontend dependencies installed, run from `frontend`:
+
+```sh
+npm run build
+npx playwright test --config playwright-screenshots.config.ts
+```
+
+The capture suite writes the four workbench screenshots used by this guide and the README to `docs/assets`.

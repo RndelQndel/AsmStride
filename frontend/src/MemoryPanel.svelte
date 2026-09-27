@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { hex } from './api';
+  import { hex, stackPointer } from './api';
   import { patch, range, STACK_WINDOW_BYTES } from './memory';
   import type { PageSession } from './session.svelte';
   import MemoryTable from './MemoryTable.svelte';
-  let { session }: { session: PageSession } = $props();
+  let { session, view = 'all' }: { session: PageSession; view?: 'all' | 'memory' | 'stack' } = $props();
   let address = $state('0x20000000');
   let length = $state('64');
   let patchAddress = $state('0x20000000');
@@ -26,7 +26,7 @@
     catch (cause) { error = (cause as Error).message; }
   }
   function move(distance: number) {
-    const sp = session.state?.registers.sp?.value ?? 0;
+    const sp = stackPointer(session.state) ?? 0;
     return scroll((session.stackMemory?.address ?? 0) + distance - sp + STACK_WINDOW_BYTES / 2);
   }
   function scroll(offset: number) {
@@ -34,7 +34,7 @@
   }
 </script>
 <div class="memory-workspace">
-  <section aria-labelledby="memory-title">
+  <section aria-labelledby="memory-title" hidden={view === 'stack'}>
     <div class="panel-header">
       <h2 id="memory-title">Memory</h2>
       <span class="muted">Hex bytes &amp; words</span>
@@ -58,19 +58,19 @@
     {#if error}<p class="error" role="alert">{error}</p>{/if}
     <p class="muted" style="margin-top: 6px;">Manual edits update the reset baseline. Patches limited to 64 KiB; code is read-only.</p>
   </section>
-  <section aria-labelledby="stack-title">
+  <section aria-labelledby="stack-title" hidden={view === 'memory'}>
     <div class="panel-header">
       <h2 id="stack-title">Stack</h2>
       <span class="muted">Scratch stack &amp; SP</span>
     </div>
     <p style="margin: 0 0 6px;">Synthetic scratch stack: <code>{hex(session.state?.stack?.base ?? null)}</code> – <code>{hex(session.state?.stack ? session.state.stack.base + session.state.stack.size : null)}</code> (exclusive top)</p>
-    <p style="margin: 0 0 8px;">SP: <code>{hex(session.state?.registers.sp?.value ?? null)}</code> <span class="muted">· Editing SP does not allocate memory.</span></p>
+    <p style="margin: 0 0 8px;">SP: <code>{hex(stackPointer(session.state))}</code> <span class="muted">· Editing SP does not allocate memory.</span></p>
     <div class="fields" style="margin-bottom: 8px;">
       <button disabled={!session.editable || !session.stackMemory || session.stackMemory.address === 0} onclick={() => move(-STACK_WINDOW_BYTES)}>Lower addresses</button>
       <button disabled={!session.editable} onclick={() => scroll(0)}>Follow SP</button>
       <button disabled={!session.editable || !session.stackMemory || session.stackMemory.address + STACK_WINDOW_BYTES >= 0x100000000} onclick={() => move(STACK_WINDOW_BYTES)}>Higher addresses</button>
     </div>
-    {#if session.stackMemory}<MemoryTable window={session.stackMemory} {step} sp={session.state?.registers.sp?.value ?? null} />{:else}<p class="muted">Stack view unavailable.</p>{/if}
+    {#if session.stackMemory}<MemoryTable active={view !== 'memory'} window={session.stackMemory} {step} sp={stackPointer(session.state)} />{:else}<p class="muted">Stack view unavailable.</p>{/if}
   </section>
 </div>
 {#if session.memoryError}<p class="error" role="alert">{session.memoryError} Use Inspect memory to retry.</p>{/if}

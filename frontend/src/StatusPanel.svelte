@@ -3,12 +3,14 @@
   import type { Diagnostic, ErrorEnvelope, RunResult, StepResult } from './api';
 
   let {
+    view = 'all',
     diagnostics,
     error,
     step,
     message,
     runResult = null
   }: {
+    view?: 'all' | 'problems' | 'output' | 'execution';
     diagnostics: Diagnostic[];
     error: ErrorEnvelope | null;
     step: StepResult | null;
@@ -17,15 +19,19 @@
   } = $props();
 </script>
 
-<section aria-labelledby="status-title">
+<section aria-label={view === 'all' ? 'Status & diagnostics' : view}>
   <div class="panel-header">
-    <h2 id="status-title">Status &amp; diagnostics</h2>
+    <h2>{view === 'all' ? 'Status & diagnostics' : view}</h2>
     <span class="muted">Execution log</span>
   </div>
   <div aria-live="polite">
-    {#if message}<p class="notice">{message}</p>{/if}
+    {#if view === 'problems' && !error && diagnostics.length === 0}<p class="muted">No problems reported.</p>{/if}
+    {#if view === 'output' && !message}<p class="muted">No operation messages.</p>{/if}
+    {#if view === 'execution' && !step && !runResult}<p class="muted">Step or Run a loaded program to inspect execution.</p>{/if}
+    {#if (view === 'all' || view === 'output') && message}<p class="notice">{message}</p>{/if}
+    {#if view === 'all' || view === 'problems'}
     {#if error}
-      <div class="error-card" style="padding: 8px 12px; background: var(--error-bg); border: 1px solid var(--error-border); border-radius: 6px; margin-bottom: 8px;">
+      <div role="alert" class="error-card" style="padding: 8px 12px; background: var(--error-bg); border: 1px solid var(--error-border); border-radius: 0; margin-bottom: 8px;">
         <p class="error" style="margin: 0 0 4px;">{error.error.code}: {error.error.message}</p>
         <pre style="margin: 0;">{JSON.stringify(error.error.context, null, 2)}</pre>
       </div>
@@ -41,8 +47,10 @@
         {#each error.preview as instruction}<pre style="margin: 2px 0;">{hex(instruction.address)} {instruction.bytes} {instruction.decoded_text}</pre>{/each}
       </details>
     {/if}
+    {/if}
+    {#if view === 'all' || view === 'execution'}
     {#if runResult}
-      <div class="run-summary-card" style="padding: 8px 12px; background: var(--bg-subtle); border: 1px solid var(--border-light); border-radius: 6px; margin-top: 6px;">
+      <div class="execution-summary">
         <p style="margin: 0 0 4px;">
           <strong>Run result:</strong> Stop reason: <span class="badge">{runResult.stop_reason}</span>
           · {runResult.steps_committed} steps committed
@@ -54,7 +62,7 @@
       </div>
     {/if}
     {#if step}
-      <div style="padding: 8px 12px; background: var(--bg-subtle); border: 1px solid var(--border-light); border-radius: 6px; margin-top: 6px;">
+      <div class="execution-summary">
         <p style="margin: 0 0 4px;"><strong>{step.status}</strong> · <code>{hex(step.pc_before)}</code> → <code>{hex(step.pc_after)}</code> · step_seq {step.step_seq}</p>
         {#if step.it_context}
           <p class="it-context" style="margin: 2px 0;">
@@ -82,6 +90,7 @@
           </details>
         {/if}
       </div>
+    {/if}
     {/if}
   </div>
 </section>

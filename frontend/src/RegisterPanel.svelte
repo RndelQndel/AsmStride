@@ -19,20 +19,9 @@
   const flags: Flag[] = ['n', 'z', 'c', 'v'];
   const masks: Record<Flag, number> = { n: 0x80000000, z: 0x40000000, c: 0x20000000, v: 0x10000000 };
 
-  const armLeftKeys = ['r0', 'r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7'];
-  const armRightKeys = ['r8', 'r9', 'r10', 'r11', 'r12', 'sp', 'lr', 'pc'];
-
-  const riscvLeftKeys = [
-    'x0', 'x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7',
-    'x8', 'x9', 'x10', 'x11', 'x12', 'x13', 'x14', 'x15', 'pc'
-  ];
-  const riscvRightKeys = [
-    'x16', 'x17', 'x18', 'x19', 'x20', 'x21', 'x22', 'x23',
-    'x24', 'x25', 'x26', 'x27', 'x28', 'x29', 'x30', 'x31'
-  ];
-
-  const leftKeys = $derived(isRiscv ? riscvLeftKeys : armLeftKeys);
-  const rightKeys = $derived(isRiscv ? riscvRightKeys : armRightKeys);
+  const keys = $derived(isRiscv
+    ? [...Array.from({ length: 32 }, (_, index) => `x${index}`), 'pc']
+    : [...Array.from({ length: 13 }, (_, index) => `r${index}`), 'sp', 'lr', 'pc']);
 
   function getLabel(name: string): string {
     if (isRiscv) {
@@ -43,10 +32,19 @@
   }
 </script>
 <section aria-labelledby="register-title" class="register-sidebar-panel">
-  <div class="panel-header">
-    <h2 id="register-title">Registers</h2>
-    <span class="muted">{isRiscv ? 'RV32I' : 'ARMv7-A'}</span>
+  <details open><summary id="register-title">Registers</summary>
+  <div class="compact-reg-table">
+    {#each keys as name (name)}
+      {@const reg = state.registers[name]}
+      {#if reg}
+        <div class="register" class:changed={!!state.last_step?.register_changes[name]}>
+          <ValueEditor label={getLabel(name)} value={reg.value} disabled={disabled || (isRiscv && name === 'x0')} save={(value) => edit(name, value)} />
+        </div>
+      {/if}
+    {/each}
   </div>
+  </details>
+  {#if !isRiscv}<details open><summary>Flags / Processor state</summary>
   {#if !isRiscv && state.flags}
     <div class="flags-bar">
       <span class="flags-label">Flags</span>
@@ -60,34 +58,13 @@
       </div>
     </div>
   {/if}
-  <div class="compact-reg-table">
-    <div class="reg-column">
-      {#each leftKeys as name (name)}
-        {@const reg = state.registers[name]}
-        {#if reg}
-          <div class="register" class:changed={!!state.last_step?.register_changes[name]}>
-            <ValueEditor label={getLabel(name)} value={reg.value} disabled={disabled || (isRiscv && name === 'x0')} save={(value) => edit(name, value)} />
-          </div>
-        {/if}
-      {/each}
-    </div>
-    <div class="reg-column">
-      {#each rightKeys as name (name)}
-        {@const reg = state.registers[name]}
-        {#if reg}
-          <div class="register" class:changed={!!state.last_step?.register_changes[name]}>
-            <ValueEditor label={getLabel(name)} value={reg.value} disabled={disabled || (isRiscv && name === 'x0')} save={(value) => edit(name, value)} />
-          </div>
-        {/if}
-      {/each}
-    </div>
-  </div>
   {#if !isRiscv && state.cpsr}
     <div class="register cpsr-register" class:changed={!!state.last_step?.cpsr_change}>
       <ValueEditor label="CPSR" value={state.cpsr.value} {disabled} save={(value) => edit('cpsr', value)} />
     </div>
     <p class="muted sidebar-hint">Only N/Z/C/V editable in CPSR. Mode/privilege protected.</p>
   {/if}
+  </details>{/if}
   {#if isRiscv}
     <p class="muted sidebar-hint">x0 (zero) is hardwired to 0 and immutable.</p>
   {/if}

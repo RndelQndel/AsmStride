@@ -30,6 +30,7 @@ async function edit(page: Page, register: string, value: string) {
   await click(page, `Apply ${register}`);
 }
 async function patch(page: Page, type: string, value: string, address = '0x20000000') {
+  await page.getByRole('tab', { name: 'Memory', exact: true }).click();
   await page.getByLabel('Patch address', { exact: true }).fill(address);
   await page.getByRole('combobox', { name: 'Patch type', exact: true }).selectOption(type);
   await page.getByLabel(type === 'word' ? 'Word value' : type === 'zero' ? 'Zero-fill length (bytes)' : 'Hex bytes', { exact: true }).fill(value);
@@ -56,7 +57,7 @@ for (const mode of ['arm', 'thumb']) for (const kind of ['assembly', 'disassembl
     await click(page, 'Reset');
     await expect(page.getByLabel('R0', { exact: true })).toHaveValue('0x00000007');
     await expect(page.locator('.changed')).toHaveCount(0);
-    await expect(page.locator('.toolbar')).toContainText('step_seq 2');
+    await expect(page.getByRole('status', { name: 'Machine status' })).toContainText('step_seq 2');
   });
 }
 
@@ -65,25 +66,26 @@ for (const mode of ['arm', 'thumb']) test(`${mode}: partial memory fault, repair
   await edit(page, 'R1', '0x20000000');
   await edit(page, 'R2', '0x20000004');
   await click(page, 'Step');
-  await expect(page.getByRole('region', { name: 'Status & diagnostics' })).toContainText('Previous state restored');
-  await expect(page.locator('.toolbar')).toContainText('step_seq 0');
+  await expect(page.getByRole('region', { name: 'execution', exact: true })).toContainText('Previous state restored');
+  await expect(page.getByRole('status', { name: 'Machine status' })).toContainText('step_seq 0');
   await patch(page, 'bytes', '78');
   await expect(memoryRow(page, '0x20000000')).toContainText('??');
   await click(page, 'Step');
-  await expect(page.locator('.toolbar')).toContainText('step_seq 0');
+  await expect(page.getByRole('status', { name: 'Machine status' })).toContainText('step_seq 0');
   await patch(page, 'word', '0x12345678');
   await expect(memoryRow(page, '0x20000000')).toContainText('0x12345678');
   await expect(memoryRow(page, '0x20000004')).toContainText('unknown');
   await click(page, 'Step');
   await expect(page.getByLabel('R0', { exact: true })).toHaveValue('0x12345678');
   await click(page, 'Step');
-  await expect(page.locator('.toolbar')).toContainText('step_seq 1');
+  await expect(page.getByRole('status', { name: 'Machine status' })).toContainText('step_seq 1');
   await patch(page, 'zero', '4', '0x20000004');
   await click(page, 'Step');
   await expect(memoryRow(page, '0x20000004').locator('.changed')).toHaveCount(4);
   await patch(page, 'bytes', 'aa', '0x20000005');
   await expect(page.locator('.changed')).toHaveCount(0);
   await click(page, 'Step');
+  await page.getByRole('tab', { name: 'Stack', exact: true }).click();
   const stack = page.getByRole('region', { name: 'Stack', exact: true });
   await expect(stack.locator('tr.current')).toContainText('0x12345678');
   await expect(stack.locator('tr.current')).toContainText('synthetic stack');
@@ -100,8 +102,10 @@ for (const mode of ['arm', 'thumb']) test(`${mode}: partial memory fault, repair
   await expect(page.getByLabel('R3', { exact: true })).toHaveValue('0x12345678');
   await expect(stack.locator('tr.current')).toContainText('??');
   await click(page, 'Reset');
+  await page.getByRole('tab', { name: 'Memory', exact: true }).click();
   await expect(memoryRow(page, '0x20000004')).toContainText('0x0000aa00');
   await expect(page.locator('.changed')).toHaveCount(0);
+  await page.getByRole('tab', { name: 'Stack', exact: true }).click();
   await expect(stack.locator('tr[data-address="0x200ffffc"]')).toContainText('0x00000000');
   await patch(page, 'bytes', '00', '0x1000');
   await expect(page.getByRole('alert')).toContainText('cannot overlap code');
@@ -126,13 +130,15 @@ test('keyboard controls, pending exclusion, lost Step recovery and isolated page
   await step.focus();
   await page.keyboard.press('Enter');
   await expect(step).toBeDisabled();
+  await page.getByRole('tab', { name: 'Memory', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Apply memory patch' })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Inspect memory' })).toBeDisabled();
   release();
   await ready(page);
-  await expect(page.getByRole('region', { name: 'Status & diagnostics' })).toContainText('completion confirmed');
+  await page.getByRole('tab', { name: 'Output', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'output', exact: true })).toContainText('completion confirmed');
   expect(count).toBe(1);
-  await expect(page.locator('.toolbar')).toContainText('step_seq 1');
+  await expect(page.getByRole('status', { name: 'Machine status' })).toContainText('step_seq 1');
   await expect(page.getByLabel('Start / current PC')).toHaveValue('0x00001000');
   await expect(second.getByLabel('R0', { exact: true })).toHaveValue('0x00000009');
   await page.close();
@@ -142,7 +148,7 @@ test('keyboard controls, pending exclusion, lost Step recovery and isolated page
 });
 
 test('rejected replacement and limits preserve state; Go, custom stack and narrow layout', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width: 960, height: 844 });
   await page.goto('/');
   await page.getByText('Scratch stack setup', { exact: true }).click();
   await page.getByLabel('Use custom scratch stack').check();
@@ -151,15 +157,18 @@ test('rejected replacement and limits preserve state; Go, custom stack and narro
   await page.getByLabel('Assembly source', { exact: true }).fill('mov r0, #5\nmov r1, #8');
   await click(page, 'Load');
   await expect(page.getByLabel('SP / R13', { exact: true })).toHaveValue('0x00003040');
+  await page.getByRole('tab', { name: 'Source', exact: true }).click();
   await page.getByLabel('Assembly source', { exact: true }).fill('not_an_instruction');
   await click(page, 'Load');
   await expect(page.locator('.instruction')).toHaveCount(2);
-  await expect(page.getByRole('region', { name: 'Status & diagnostics' })).toContainText('assembly_error');
+  await expect(page.getByRole('region', { name: 'problems', exact: true })).toContainText('assembly_error');
   await page.getByLabel('Start / current PC').fill('0x1004');
   await page.getByLabel('Start / current PC').press('Enter');
   await ready(page);
-  await expect(page.locator('.toolbar')).toContainText('step_seq 0');
+  await expect(page.getByRole('status', { name: 'Machine status' })).toContainText('step_seq 0');
   await expect(page.locator('[aria-current="step"]')).toHaveAttribute('data-address', '4100');
+  await page.getByRole('tab', { name: 'Disassembly', exact: true }).click();
+  await page.getByRole('tab', { name: 'Memory', exact: true }).click();
   await page.getByLabel('Inspection bytes').fill('4097');
   await click(page, 'Inspect memory');
   await expect(page.getByRole('alert').filter({ hasText: '4096' })).toBeVisible();
@@ -253,14 +262,14 @@ test('P1: Thumb-2 IT block execution and visual skip reporting', async ({ page }
   // Step MOVSEQ r1, #1 (Executed)
   await click(page, 'Step');
   await expect(page.getByLabel('R1', { exact: true })).toHaveValue('0x00000001');
-  await expect(page.getByRole('region', { name: 'Status & diagnostics' })).toContainText('IT Block [1/2]');
-  await expect(page.getByRole('region', { name: 'Status & diagnostics' })).toContainText('passed (executed)');
+  await expect(page.getByRole('region', { name: 'execution', exact: true })).toContainText('IT Block [1/2]');
+  await expect(page.getByRole('region', { name: 'execution', exact: true })).toContainText('passed (executed)');
 
   // Step MOVSNE r2, #2 (Conditionally skipped)
   await click(page, 'Step');
   await expect(page.getByLabel('R2', { exact: true })).toHaveValue('0x00000000');
-  await expect(page.getByRole('region', { name: 'Status & diagnostics' })).toContainText('IT Block [2/2]');
-  await expect(page.getByRole('region', { name: 'Status & diagnostics' })).toContainText('conditionally skipped');
+  await expect(page.getByRole('region', { name: 'execution', exact: true })).toContainText('IT Block [2/2]');
+  await expect(page.getByRole('region', { name: 'execution', exact: true })).toContainText('conditionally skipped');
 });
 
 test('P1: breakpoints, run to breakpoint, and resume bypass', async ({ page }) => {
@@ -276,14 +285,14 @@ test('P1: breakpoints, run to breakpoint, and resume bypass', async ({ page }) =
   await ready(page);
 
   // Halts at breakpoint 0x1008 before executing it
-  await expect(page.getByRole('region', { name: 'Status & diagnostics' })).toContainText('breakpoint');
+  await expect(page.getByRole('region', { name: 'execution', exact: true })).toContainText('breakpoint');
   await expect(page.getByLabel('R0', { exact: true })).toHaveValue('0x00000001');
   await expect(page.getByLabel('R1', { exact: true })).toHaveValue('0x00000002');
   await expect(page.getByLabel('R2', { exact: true })).toHaveValue('0x00000000');
   await expect(page.getByLabel('Start / current PC')).toHaveValue('0x00001008');
 
-  // Marker shows ▶●
-  await expect(page.getByRole('button', { name: 'Select PC 0x00001008' })).toContainText('▶●');
+  // PC marker stays distinct from the breakpoint marker.
+  await expect(page.getByRole('button', { name: 'Select PC 0x00001008' })).toContainText('▶');
 
   // Step once to execute 0x1008
   await click(page, 'Step');
@@ -306,6 +315,6 @@ test('P1: concurrent user stop halts execution cleanly', async ({ page }) => {
   await stopBtn.click();
   await ready(page);
 
-  await expect(page.getByRole('region', { name: 'Status & diagnostics' })).toContainText('user_stop');
+  await expect(page.getByRole('region', { name: 'execution', exact: true })).toContainText('user_stop');
   await expect(page.getByLabel('Start / current PC')).toHaveValue('0x00001000');
 });

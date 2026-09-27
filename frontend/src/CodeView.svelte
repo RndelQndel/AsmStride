@@ -1,14 +1,17 @@
 <script lang="ts">
+  import { tick } from 'svelte';
   import { hex } from './api';
   import type { DataRegion, Instruction, Mode, Program, State } from './api';
 
   let {
+    active = true,
     program,
     state,
     disabled,
     select,
     onToggleBreakpoint
   }: {
+    active?: boolean;
     program: Program | null;
     state: State | null;
     disabled: boolean;
@@ -55,8 +58,8 @@
 
   const symbolsByAddress = $derived.by<Record<number, string[]>>(() => {
     const map: Record<number, string[]> = {};
-    if (program?.metadata?.symbols) {
-      for (const s of program.metadata.symbols) {
+    if (program?.symbols) {
+      for (const s of program.symbols) {
         if (!map[s.address]) map[s.address] = [];
         map[s.address].push(s.name);
       }
@@ -66,9 +69,9 @@
 
   const linesByAddress = $derived.by<Record<number, string>>(() => {
     const map: Record<number, string> = {};
-    if (program?.metadata?.lines) {
-      for (const l of program.metadata.lines) {
-        map[l.address] = `${l.file}:${l.line}`;
+    if (program?.lines) {
+      for (const l of program.lines) {
+        map[l.address] = `${l.file_path}:${l.line_number}`;
       }
     }
     return map;
@@ -91,7 +94,12 @@
     state; // Scroll after every authoritative response, including a self-branch or Reset.
     const current = pc;
     program;
-    if (current !== null) pane?.querySelector(`[data-address="${current}"]`)?.scrollIntoView?.({ block: 'nearest' });
+    if (!active || current === null) return;
+    let cancelled = false;
+    void tick().then(() => {
+      if (!cancelled) pane?.querySelector(`[data-address="${current}"]`)?.scrollIntoView?.({ block: 'nearest' });
+    });
+    return () => { cancelled = true; };
   });
 </script>
 
@@ -104,7 +112,8 @@
       {/if}
     </h2>
   </div>
-  <div class="code-pane" bind:this={pane}>
+  <!-- svelte-ignore a11y_no_noninteractive_tabindex (Allow keyboard scrolling of the listing.) -->
+  <div class="code-pane" bind:this={pane} tabindex="0" role="region" aria-label="Disassembly listing">
     {#if program}
       {#each rows as row, index (row.address)}
         {#if showSectionHeader(index, row.mode)}
@@ -113,7 +122,7 @@
           </div>
         {/if}
         {#if symbolsByAddress[row.address]}
-          <div class="symbol-label">🏷️ {symbolsByAddress[row.address].join(', ')}:</div>
+          <div class="symbol-label">{symbolsByAddress[row.address].join(', ')}:</div>
         {/if}
         {#if row.kind === 'instruction'}
           {@const isCurrent = pc === row.instruction.address}
@@ -125,7 +134,7 @@
                 class="breakpoint-btn"
                 class:has-bp={bpActive}
                 disabled={disabled}
-                onclick={() => onToggleBreakpoint?.(row.instruction.address, row.instruction.mode)}
+                onclick={() => onToggleBreakpoint?.(row.instruction.address, row.instruction.mode ?? program.mode)}
                 aria-label={`Toggle breakpoint at ${hex(row.instruction.address)}`}
                 title={bpActive ? 'Remove breakpoint' : 'Add breakpoint'}
               >
@@ -139,7 +148,7 @@
                 aria-label={`Select PC ${hex(row.instruction.address)}`}
                 title="Fill the PC field without executing"
               >
-                {isCurrent && bpActive ? '▶●' : isCurrent ? '▶' : bpActive ? '●' : '·'}
+                {isCurrent ? '▶' : '·'}
               </button>
             </div>
             {#if isMixed}
@@ -149,7 +158,7 @@
             <span class="bytes">{row.instruction.bytes.match(/../g)?.join(' ')}</span>
             <div class="instruction-content">
               <strong>{row.instruction.decoded_text}</strong>
-              {#if linesByAddress[row.instruction.address]}<small class="dwarf-line">📍 {linesByAddress[row.instruction.address]}</small>{/if}
+              {#if linesByAddress[row.instruction.address]}<small class="dwarf-line">{linesByAddress[row.instruction.address]}</small>{/if}
               {#if row.instruction.display_text !== row.instruction.decoded_text}<small class="diff-input">Input: {row.instruction.display_text}</small>{/if}
               {#if row.instruction.source_line !== null}<small class="source-line">Source line {row.instruction.source_line}</small>{/if}
               {#if row.instruction.feature_exclusion}<small class="error">! Unsupported: {row.instruction.feature_exclusion}</small>{/if}

@@ -1,14 +1,20 @@
-import { test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import * as path from 'path';
 
-const ASSETS_DIR = path.resolve(__dirname, '../docs/assets');
+const ASSETS_DIR = path.resolve(import.meta.dirname, '../../docs/assets');
 
 test.describe('Generate documentation screenshots', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('navigation', { name: 'Activity Bar' })).toBeVisible();
+    await expect(page.getByRole('status', { name: 'Machine status' })).toBeVisible();
+  });
   test('capture 1. Hero Workspace', async ({ page }) => {
     await page.setViewportSize({ width: 1380, height: 860 });
     await page.goto('/');
     await page.locator('main[aria-busy="false"]').waitFor();
 
+    await page.getByText('Example presets', { exact: true }).click();
     // Load Mixed (Thumb -> ARM + Data) preset
     await page.getByRole('button', { name: 'Mixed (Thumb ➔ ARM + Data)', exact: true }).click();
     await page.locator('main[aria-busy="false"]').waitFor();
@@ -20,8 +26,9 @@ test.describe('Generate documentation screenshots', () => {
     await page.locator('main[aria-busy="false"]').waitFor();
 
     await page.screenshot({
-      path: path.join(ASSETS_DIR, 'hero_workspace.png'),
+      path: path.join(ASSETS_DIR, 'workbench-overview.png'),
     });
+    await page.screenshot({ path: path.join(ASSETS_DIR, 'screenshot.png') });
   });
 
   test('capture 2. Disassembly Import Workflow', async ({ page }) => {
@@ -55,7 +62,7 @@ test.describe('Generate documentation screenshots', () => {
     await page.locator('main[aria-busy="false"]').waitFor();
 
     await page.screenshot({
-      path: path.join(ASSETS_DIR, 'feature_disassembly.png'),
+      path: path.join(ASSETS_DIR, 'workbench-disassembly.png'),
       fullPage: true,
     });
   });
@@ -80,7 +87,7 @@ ldr r0, [r1, #4]`;
     await page.locator('main[aria-busy="false"]').waitFor();
 
     await page.screenshot({
-      path: path.join(ASSETS_DIR, 'feature_fault_rollback.png'),
+      path: path.join(ASSETS_DIR, 'workbench-fault-rollback.png'),
       fullPage: true,
     });
   });
@@ -90,6 +97,7 @@ ldr r0, [r1, #4]`;
     await page.goto('/');
     await page.locator('main[aria-busy="false"]').waitFor();
 
+    await page.getByText('Example presets', { exact: true }).click();
     // Load RV32I Loop preset
     await page.getByRole('button', { name: 'RV32I Loop', exact: true }).click();
     await page.locator('main[aria-busy="false"]').waitFor();
@@ -103,7 +111,7 @@ ldr r0, [r1, #4]`;
     await page.locator('main[aria-busy="false"]').waitFor();
 
     await page.screenshot({
-      path: path.join(ASSETS_DIR, 'feature_riscv.png'),
+      path: path.join(ASSETS_DIR, 'workbench-rv32i.png'),
     });
   });
 });

@@ -1,6 +1,6 @@
 import { STACK_WINDOW_BYTES } from './memory';
 import type { MemoryPatch, MemoryWindow } from './memory';
-import { ApiError, request } from './api';
+import { ApiError, request, stackPointer } from './api';
 import type { Breakpoint, ErrorEnvelope, LoadRequest, Mode, Program, RunResponse, RunResult, State, StopResponse, StepBackResponse, SymbolEntry, Watchpoint } from './api';
 
 /** One page owns one session; all operations, including recovery reads, are serialized. */
@@ -33,7 +33,7 @@ export class PageSession {
     this.memoryError = '';
     if (!this.memoryEnabled || !this.program || this.uncertainty || this.expired ||
         this.state?.status === 'unavailable' || this.closed) return;
-    const sp = this.state?.registers.sp?.value ?? 0;
+    const sp = stackPointer(this.state) ?? 0;
     const stackAddress = Math.max(0, Math.min(0x100000000 - STACK_WINDOW_BYTES, sp - STACK_WINDOW_BYTES / 2 + this.stackOffset));
     try {
       const memory = await request<MemoryWindow>(`/${this.id}/memory?address=${this.memoryAddress}&length=${this.memoryLength}`);

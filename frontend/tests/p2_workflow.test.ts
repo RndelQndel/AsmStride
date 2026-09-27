@@ -184,14 +184,12 @@ describe('Stage P2 Frontend Features', () => {
           feature_exclusion: null,
         },
       ],
-      metadata: {
         symbols: [
-          { address: 0x8000, name: 'main', size: 4, type: 'func', binding: 'global' },
+          { address: 0x8000, name: 'main', size: 4, kind: 'func', binding: 'global' },
         ],
         lines: [
-          { address: 0x8000, file: 'main.c', line: 42, column: 0 },
+          { address: 0x8000, file_path: 'main.c', line_number: 42, column: 0 },
         ],
-      },
     };
 
     render(CodeView, {

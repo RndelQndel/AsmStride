@@ -29,19 +29,15 @@ export interface SymbolEntry {
   address: number;
   name: string;
   size: number;
-  type: string;
+  kind: string;
   binding: string;
   section?: string;
 }
 export interface LineEntry {
   address: number;
-  file: string;
-  line: number;
+  file_path: string;
+  line_number: number;
   column: number;
-}
-export interface ProgramMetadata {
-  symbols?: SymbolEntry[];
-  lines?: LineEntry[];
 }
 export interface StepResult {
   status: 'executed' | 'failed'; step_seq: number;
@@ -95,7 +91,8 @@ export interface Program {
   instructions: Instruction[];
   data_regions?: DataRegion[];
   diagnostics: Diagnostic[]; instruction_count: number; ignored_line_count: number;
-  metadata?: ProgramMetadata;
+  symbols?: SymbolEntry[];
+  lines?: LineEntry[];
 }
 export interface RunResult {
   start_step_seq: number;
@@ -155,4 +152,9 @@ export function uint32(text: string): number {
   if (!/^(?:0x[0-9a-f]+|[0-9]+)$/i.test(value) || Number(value) > 0xffffffff)
     throw new Error('Enter an unsigned 32-bit decimal or 0x hexadecimal value.');
   return Number(value);
+}
+
+/** Resolve the stack register from the active architecture's wire representation. */
+export function stackPointer(state: State | null): number | null {
+  return state?.registers[state.profile === 'rv32i-le' ? 'x2' : 'sp']?.value ?? null;
 }

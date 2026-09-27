@@ -30,16 +30,16 @@
 
 <div class="watchpoint-panel" aria-label="Memory Watchpoints">
   <div class="panel-header">
-    <h3>🔍 Watchpoints ({session.watchpoints.length}/32)</h3>
+    <h3>Watchpoints ({session.watchpoints.length}/32)</h3>
   </div>
 
   {#if errorMsg}
     <div class="alert-bar error" role="alert">{errorMsg}</div>
   {/if}
 
-  {#if session.state?.last_step?.watchpoint_hits && session.state.last_step.watchpoint_hits.length > 0}
+  {#if !session.uncertainty && session.state?.last_step?.watchpoint_hits && session.state.last_step.watchpoint_hits.length > 0}
     <div class="watchpoint-hits-notice">
-      <strong>⚡ Watchpoint Hit!</strong>
+      <strong>Watchpoint Hit!</strong>
       <ul>
         {#each session.state.last_step.watchpoint_hits as hit}
           <li>
@@ -53,24 +53,26 @@
   <form class="watchpoint-add-form" onsubmit={handleAdd}>
     <input
       type="text"
+      aria-label="Watchpoint address"
       placeholder="Address (0x20000000)"
       bind:value={addressInput}
-      disabled={session.running || session.pending}
+      disabled={!session.editable}
     />
-    <select bind:value={kindInput} disabled={session.running || session.pending}>
+    <select aria-label="Watchpoint access" bind:value={kindInput} disabled={!session.editable}>
       <option value="read_write">Read / Write</option>
       <option value="read">Read Only</option>
       <option value="write">Write Only</option>
     </select>
     <input
+      aria-label="Watchpoint length"
       type="number"
       min="1"
       max="64"
       bind:value={lengthInput}
       style="width: 50px;"
-      disabled={session.running || session.pending}
+      disabled={!session.editable}
     />
-    <button type="submit" disabled={session.running || session.pending || session.watchpoints.length >= 32}>
+    <button type="submit" disabled={!session.editable || session.watchpoints.length >= 32}>
       Add
     </button>
   </form>
@@ -98,7 +100,8 @@
                 <button
                   type="button"
                   class="btn-delete"
-                  disabled={session.running || session.pending}
+                  aria-label={`Remove watchpoint at ${hex(wp.address)}`}
+                  disabled={!session.editable}
                   onclick={() => handleDelete(wp.address)}
                 >
                   ✕
@@ -118,8 +121,8 @@
     flex-direction: column;
     gap: 8px;
     padding: 12px;
-    background: var(--surface-bg, #1e1e1e);
-    border-radius: 6px;
+    background: var(--bg-subtle);
+    border-radius: 0;
     font-size: 0.85rem;
   }
   .panel-header h3 {
@@ -137,7 +140,8 @@
     padding: 0;
   }
   .watchpoint-add-form {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 62px;
     gap: 6px;
     align-items: center;
   }
