@@ -1,12 +1,12 @@
 # ArmStride Software Requirements Specification
 
-Status: Product P0 baseline is fully verified and accepted as the stable foundation. This specification defines the completed P0 baseline, formal Product P1 requirements and acceptance criteria, and deferred post-P1 scope. See ARCHITECTURE.md and milestones/P1.md for implementation roadmaps.
+Status: Product P0 and Product P1 baselines are fully verified and accepted as the stable foundation. This specification defines the completed P0/P1 baselines, formal Product P2 requirements and acceptance criteria, and deferred post-P2 / research scope. See ARCHITECTURE.md, milestones/P1.md, and milestones/P2.md for implementation roadmaps.
 
 ## 1. Authority and terminology
 
-[concept.md](concept.md) is the primary source of product intent. [README.md](../README.md) is its public summary. This specification resolves their open behavioral questions; [ARCHITECTURE.md](ARCHITECTURE.md) describes how to satisfy it, and [milestones/P1.md](milestones/P1.md) defines the Product P1 milestone. ArmStride remains the working name.
+[concept.md](concept.md) is the primary source of product intent. [README.md](../README.md) is its public summary. This specification resolves their open behavioral questions; [ARCHITECTURE.md](ARCHITECTURE.md) describes how to satisfy it, and [milestones/P2.md](milestones/P2.md) defines the Product P2 milestone. ArmStride remains the working name.
 
-**Shall** denotes an active product requirement. P0 requirements represent the completed and immutable baseline. P1 requirements are prefixed with `P1-` and define the current development milestone. Deferred items are post-P1 obligations. An **instruction address** is the address of its first byte. An **execution location** in P1 is the tuple `(address, mode)` where mode is `arm` or `thumb`. A **snippet** is an ordered set of addressed instructions, possibly with gaps. A **DataRegion** is an addressed sequence of concrete, readable, non-executable data bytes (such as a literal pool). **Known memory** means bytes supplied by the user, loaded as code/data, or explicitly initialized by the tool. **Unknown memory** means no byte value has been established; it does not mean a symbolic value. A **Step** attempts one architectural instruction, including a conditionally skipped instruction. A **Run** is a sequence of atomic Steps bounded by step and wall-clock limits or interrupted by a breakpoint or user stop.
+**Shall** denotes an active product requirement. P0 and P1 requirements represent the completed and immutable baseline. P2 requirements are prefixed with `P2-` and define the current development milestone. Deferred items are post-P2 obligations. An **instruction address** is the address of its first byte. An **execution location** is the tuple `(address, mode)` where mode is `arm` or `thumb`. A **snippet** is an ordered set of addressed instructions, possibly with gaps. A **DataRegion** is an addressed sequence of concrete, readable, non-executable data bytes (such as a literal pool). **Known memory** means bytes supplied by the user, loaded as code/data, or explicitly initialized by the tool. **Unknown memory** means no byte value has been established; it does not mean a symbolic value. A **Step** attempts one architectural instruction, including a conditionally skipped instruction. A **Run** is a sequence of atomic Steps bounded by step and wall-clock limits or interrupted by a breakpoint, watchpoint, or user stop. A **Watchpoint** is a debugger capability identifying an address range and access type (`read`, `write`, `read_write`) that halts execution at a committed Step boundary when actual CPU execution accesses memory in that range. A **Step Back** is a debugger operation that restores Runtime State to the immediately preceding committed Step boundary within a bounded history window without modifying User Baseline State. **ProgramMetadata** encapsulates presentation and debug metadata (symbols, DWARF line mappings) decoupled from execution-truth machine instructions.
 
 ### 1.1 Product P0 baseline assumptions and decisions
 
@@ -23,9 +23,9 @@ These choices established the accepted P0 release:
 | A-07 | Atomic Step remains the required product behavior: a failed attempt restores pre-Step runtime registers, flags, and memory. Its mechanism passed the Phase 0 Unicorn spike before core implementation. | Users can repair missing state and retry without hidden partial effects; engine rollback is not assumed. |
 | A-08 | Sessions are local and ephemeral; browser refresh starts a new session. | Persistence and shared sessions are not product requirements. |
 
-### 1.2 Product P1 assumptions and decisions
+### 1.2 Completed Product P1 baseline assumptions and decisions
 
-These choices formalize the Product P1 milestone:
+These choices formalized the completed and verified Product P1 milestone:
 
 | ID | Decision | Reason |
 | --- | --- | --- |
@@ -37,6 +37,23 @@ These choices formalize the Product P1 milestone:
 | P1-A-06 | Manual entry into the interior of an IT block without executing the preceding IT instruction is prohibited and yields an explicit validation error. | ArmStride executes verified architectural state and will not synthesize arbitrary unestablished ITSTATE. |
 | P1-A-07 | Bounded Run is implemented strictly by composing existing atomic Steps, subject to configurable maximum step and wall-clock execution limits. Correctness and rollback fidelity take precedence over execution speed. | Prevents introducing an unverified high-speed emulation bypass that could compromise strict memory checking, rollback, and `step_seq` isolation. |
 | P1-A-08 | Stop is concurrent and non-blocking via a thread-safe cancellation primitive evaluated between Steps. Breakpoints identify `(address, mode)` locations, halt pre-execution, and support a one-time resume bypass. | Guarantees machine state is always paused at a clean, complete Step boundary without deadlocking active Run requests. |
+
+### 1.3 Product P2 assumptions and decisions
+
+These choices formalize the Product P2 milestone (Debugger and Input Expansion):
+
+| ID | Decision | Reason |
+| --- | --- | --- |
+| P2-A-01 | Direct linked ARM ELF loading serves as a third input producer alongside source assembly and disassembly import, compiling into the unified ProgramImage domain representation. | Enables loading compiled binaries without manually dumping disassembly text, preserving the single execution stack invariant. |
+| P2-A-02 | P2 ELF support is strictly bounded to statically linked ELF32 little-endian ARM executables (`ET_EXEC`) with `PT_LOAD` segments. `ET_DYN` (PIE) is deferred to post-P2 until load-bias and relocation semantics are explicitly designed. Relocations (`ET_REL`), dynamic linking (`PT_INTERP`), and shared libraries are rejected. | Prevents turning ArmStride into an operating-system loader, linker, or dynamic relocation engine. |
+| P2-A-03 | PT_LOAD defines memory placement and permissions. ARM mapping symbols (`$a`, `$t`, `$d`) partition executable segments into ARM code, Thumb code, and non-executable DataRegions (inline literal pools). Ambiguous executable regions without reliable mapping symbols fail closed. BSS expansions (`p_memsz > p_filesz`) become known zero bytes. Mapped padding between sparse segments remains unknown memory (`??`). | Reuses P1 mixed-mode ProgramImage semantics and avoids guessing code/data boundaries or CPU modes. |
+| P2-A-04 | Independent resource bounds govern ELF loading: raw input bytes (10 MiB), total logical memory including BSS (16 MiB), backing pages (64 MiB), decoded instructions (10,000), and segment/section counts (32 segments, 128 sections). All executable segments within bounds are eagerly decoded. | Simple and deterministic; replaces speculative lazy disassembly while enforcing explicit multi-dimensional safety boundaries. |
+| P2-A-05 | ELF symbols and DWARF line table entries are extracted into decoupled `ProgramMetadata`. Symbols and line numbers are presentation aids only and shall never override machine bytes or execution truth. | Keeps execution-domain records lightweight and prevents native ELF/DWARF library objects from leaking into SimulationSession, HTTP schemas, or StepResult. |
+| P2-A-06 | DWARF address-to-line records provide `(file, line)` references. If source files are not provided to ArmStride, display metadata identifiers (e.g. `main.c:42`) without fabricating source text. Host filesystem browsing is excluded. | Avoids guessing source code or creating unrequested file-access requirements from browser sandbox environments. |
+| P2-A-07 | Memory Watchpoints are defined as debugger triggers on address range + access type (`read`, `write`, `read_write`). Watchpoints are observable on both Step (via `watchpoint_hits` list) and Run (halts Run). Ordered multiple hits from multi-access instructions are preserved. | Keeps machine state paused at valid architectural Step boundaries; instructions are not rolled back merely because they hit a watchpoint. |
+| P2-A-08 | Execution stop state is strictly separated from debugger observations: an instruction can simultaneously produce an architectural stop (`pc_not_loaded`) and committed Watchpoint hits without discarding either fact. Pre-execution Breakpoint prevents instruction execution; failed/rolled-back steps never trigger watchpoints; same-value writes trigger write watchpoints. | Eliminates ambiguous stop-reason overwrites and enforces deterministic debugger precedence. |
+| P2-A-09 | Step Back restores Runtime State from a bounded history journal (capturing pre-step registers and lazily capturing pre-write memory bytes, keeping the first pre-value for multiple writes) without mutating User Baseline State. `step_seq` counts committed Steps only and is NEVER incremented or decremented on Step Back. Subsequent forward Steps advance from the monotonic maximum. A separate `state_revision` tracks state mutations. | Provides robust reverse-stepping without corrupting forward sequence counters or conflating step counts with state mutation revisions. |
+| P2-A-10 | Cortex-M support is defined as an isolated feasibility research gate (`P2-R`), not a P2 release commitment. Behavioral MMIO simulation is decoupled from Watchpoints and deferred beyond P2. | Protects P2 delivery velocity from the deep architectural shifts of Cortex-M exception hardware and prevents premature peripheral emulation bloat. |
 
 ## 2. Product definition
 
@@ -57,9 +74,17 @@ A conventional target debugger normally needs a live process, board, or sufficie
 
 ## 4. Non-goals
 
-P0 is not a full-system emulator, ELF/binary loader or analyzer, decompiler, GDB replacement, hardware debugger, or complete reverse-engineering suite. It does not model peripherals, MMIO side effects, interrupts, operating systems, timing, caches, MMUs, or exception handlers.
+ArmStride is not a full-system emulator, OS kernel simulator, decompiler, GDB replacement, hardware debugger, or complete reverse-engineering suite. It does not model peripherals, behavioral MMIO side effects, interrupt controllers (NVIC), operating systems, timing, caches, MMUs, or exception dispatch hardware.
 
-Symbolic registers, symbolic execution, constraint solving, automatic path exploration, branch-target solving, and angr integration are excluded. There is no cloud collaboration, multi-user service, authentication system, database, persistent project storage, or target-board/GDB integration. CFG visualization, watchpoints, advanced breakpoint expressions, and execution history/reverse stepping are excluded. Imported text labels are display information. Source labels and ordinary local branch references are resolved by the selected assembler; ArmStride has no symbol-resolution framework. This is a single-file snippet input path, not a build system: no macros as a product feature, linker scripts, ELF generation, object loading, project/multi-file builds, include paths, or C/C++ compilation. RISC-V is a future extension only after the ARM P0 product is complete; AArch64 and x86/x86-64 are also outside P0.
+Symbolic registers, symbolic execution, constraint solving, automatic path exploration, branch-target solving, and angr integration are excluded. There is no cloud collaboration, multi-user service, authentication system, database, persistent project storage, or target-board/GDB remote protocol integration. CFG visualization, complex conditional breakpoint expressions, and branching reverse-execution trees are excluded.
+
+In Product P2:
+- Direct ELF loading is strictly bounded to already-linked ARM ELF32 executables; it is not a general object linker, dynamic loader, shared-library runtime, or firmware flasher.
+- Symbol support is presentation metadata (`address -> name`); it is not a symbolic execution engine.
+- DWARF support is bounded to address-to-source-line mapping; variable inspection, lexical scopes, type reconstruction, and CFI call-frame unwinding are excluded.
+- Watchpoints are basic memory-range access triggers (`read`, `write`, `read_write`); conditional expressions and script callbacks are excluded.
+- Step Back is bounded linear history restoration; branching time-travel trees and unlimited trace logging are excluded.
+- Cortex-M exception handling, behavioral MMIO, VFP/NEON SIMD, and RISC-V remain explicitly deferred beyond Product P2.
 
 ## 5. User scenarios
 
@@ -115,7 +140,7 @@ For `LDR r0, [r1, #4]`, the user knows R1 but not the addressed word. The Step f
 | FR-023 | Every accepted manual edit shall update only its explicitly addressed register, flag bits, PC, or memory bytes in both User Baseline State and Runtime State. Show that manual edits survive Reset. Never copy unrelated execution changes into the baseline. Rejected edits change neither state. |
 | FR-024 | Expose a session-local `step_seq`, initially zero, increasing by one for each successfully committed Step, including conditional skips and stops at unloaded PC. Failed Steps, manual edits, Reset, and program replacement leave it unchanged. Use it to distinguish completed Steps with identical PC/state; do not promise exactly-once HTTP execution. |
 
-### 6.2 Product P1 functional requirements
+### 6.2 Completed Product P1 baseline requirements
 
 | ID | Product P1 requirement |
 | --- | --- |
@@ -137,6 +162,54 @@ For `LDR r0, [r1, #4]`, the user knows R1 but not the addressed word. The Step f
 | P1-FR-016 | Preserve breakpoints across single-step execution, manual register/flag/memory edits, and session Reset. Clear all breakpoints on a successful replacement Load. New sessions shall start with an empty breakpoint set. |
 | P1-FR-017 | Extend the browser workspace to support Run, Stop, breakpoint gutter toggling, Run stop reason badges, mixed ARM/Thumb/DATA listing rendering, and visual distinction between current PC markers, breakpoints, and combined PC+breakpoint locations. DATA rows shall not expose breakpoint interaction. |
 | P1-FR-018 | Assembly source input workflow shall remain single-mode per snippet in P1 (matching P0). Mixed ARM/Thumb/Data images are supported via the disassembly/import workflow. Arbitrary assembler mode-switching directives remain deferred post-P1. |
+
+### 6.3 Product P2 functional requirements
+
+| ID | Product P2 requirement |
+| --- | --- |
+| P2-FR-001 | Accept statically linked ARM ELF32-LE executables (`ET_EXEC`) as a third `ProgramImage` producer alongside assembly source and disassembly import, without creating a parallel execution stack (`ElfSimulationSession`, `ElfExecutionBackend`, etc.). ELF-derived programs shall share the identical `ProgramImage`, `MachineState`, `MemoryState`, `Step`, `Run`, `Breakpoint`, rollback, `Reset`, and result contracts. |
+| P2-FR-002 | Restrict initial ELF input validation to ELF32 little-endian (`ELFDATA2LSB`), machine architecture `EM_ARM` (code 40), and ELF type `ET_EXEC`. Reject 64-bit ELF (`ELFCLASS64`), big-endian ELF (`ELFDATA2MSB`), non-ARM machine types, `ET_DYN` (PIE, deferred post-P2), relocatable object files (`ET_REL`), core dumps (`ET_CORE`), or images requiring dynamic linking (`PT_INTERP` or unresolved dynamic relocations) atomically with an explicit diagnostic without modifying existing session state. |
+| P2-FR-003 | Map loadable ELF segments (`PT_LOAD`) into explicit known logical memory. Executable segments (`PF_X`) shall be partitioned into ARM code, Thumb code, and non-executable `DataRegion`s (e.g. inline literal pools) using ARM mapping symbols (`$a`, `$t`, `$d`). `$d` ranges inside executable segments shall remain non-executable `DataRegion` records. Ambiguous mixed executable regions lacking reliable mapping symbols shall fail closed with actionable diagnostics. Non-executable readable/writable segments (`PF_R`, `PF_W` without `PF_X`) shall normalize into `DataRegion` records. |
+| P2-FR-004 | Establish explicit zero-initialized memory for PT_LOAD segments where memory size exceeds file size (`p_memsz > p_filesz`). The trailing byte range `[p_vaddr + p_filesz, p_vaddr + p_memsz)` (e.g. `.bss`) shall become known zero bytes in `MemoryState` and be recorded as non-executable `DataRegion` entries. Unmapped gaps between segments and physical page padding shall remain unknown memory (`??`). |
+| P2-FR-005 | Default session initial start PC to the ELF entry point (`e_entry`) if it addresses a valid instruction start in `ProgramImage`. Bit 0 selects Thumb entry (`e_entry & 1 == 1`) with canonicalized PC (`e_entry & ~1`); bit 0 clear selects ARM mode with PC `e_entry`. Entry address `0x00000000` is valid if loaded with an instruction. If `e_entry` does not address a loaded instruction start, default start PC to the lowest loaded instruction address. |
+| P2-FR-006 | Enforce independent operational resource bounds on ELF input: maximum raw file size 10 MiB, maximum 16 MiB logical memory including BSS, maximum 64 MiB backing-page allocation, maximum 10,000 decoded instructions, and maximum 32 PT_LOAD segments and 128 sections. Binary inputs exceeding any limit shall reject atomically with an actionable diagnostic. All executable segments within bounds shall be eagerly decoded during load. |
+| P2-FR-007 | Extract symbol metadata from `.symtab` / `.strtab` (or `.dynsym` / `.dynstr` if `.symtab` is absent), indexing mapping `address -> symbol name` for function (`STT_FUNC`), object (`STT_OBJECT`), and mapping symbols (`$a`, `$t`, `$d`). Store symbol records in decoupled `ProgramMetadata`. Symbols shall serve as display and navigation aids and shall never override machine bytes or become a second source of execution truth. |
+| P2-FR-008 | Support stripped ELF files and files without symbol tables without degradation of execution capabilities. Stripped files shall load, step, run, and halt identically to unstripped equivalents. Symbols without executable code shall be preserved as display labels at their address. Duplicate or local symbols at identical addresses shall resolve deterministically without execution ambiguity. |
+| P2-FR-009 | Extract DWARF `.debug_line` line tables when present, providing bidirectional mapping between instruction addresses and `(source_file, source_line)` pairs. DWARF metadata shall reside in `ProgramMetadata`. Malformed, unsupported, or absent DWARF sections shall be reported as warnings and shall not prevent ELF program installation or execution. |
+| P2-FR-010 | Display source file and line metadata (e.g. `main.c:137`) for instruction lines when DWARF line mapping exists, without requiring the host source file contents or pretending the source text is present. Arbitrary host filesystem access from the browser shall not be required. |
+| P2-FR-011 | Manage memory watchpoints identified by an address range `[start_address, end_address)` and access type (`read`, `write`, `read_write`). Validate that ranges are non-empty and reside within the 32-bit address space. Maximum 32 active watchpoints per session. |
+| P2-FR-012 | Evaluate active watchpoints on both single Step and multi-step Run using actual committed CPU memory events (`memory_reads`, `memory_writes`). Ordered multiple hits from multi-access instructions shall be preserved. On single Step, report `watchpoint_hits` while remaining paused; on multi-step Run, halt execution immediately after committing that Step with stop reason `watchpoint`. The instruction's architectural effects remain committed (no rollback of successful execution). |
+| P2-FR-013 | Strictly separate execution stop state from debugger observations: an instruction that successfully commits may simultaneously have `pc_not_loaded` (if resulting PC is unmapped) and committed `watchpoint_hits` without discarding either fact. Attempted memory accesses from an atomic Step that fails and rolls back shall never trigger a watchpoint hit. Pre-execution Breakpoint halts Run prior to instruction execution and prevents watchpoint evaluation. |
+| P2-FR-014 | Trigger write watchpoints on any committed store access within the watched range, regardless of whether the written byte value equals the pre-existing byte value (`before == after`). Watchpoint triggers are driven strictly by CPU memory access events, not UI highlight deltas. |
+| P2-FR-015 | Maintain watchpoint lifecycle: active watchpoints shall survive single Step, bounded Run, session Reset, and manual register/flag/memory/PC edits. All watchpoints shall be cleared upon a successful replacement Load. New sessions start with an empty watchpoint set. |
+| P2-FR-016 | Provide a bounded Step Back operation that reverts Runtime State to the immediately preceding committed Step boundary within a retained execution history window (default 100 steps). Capture pre-step registers, CPSR (including N/Z/C/V, mode, and ITSTATE), and lazily capture pre-write memory bytes (retaining the first pre-value for multiple writes to the same byte) to restore exact previous machine state. |
+| P2-FR-017 | Isolate User Baseline State from Step Back: Step Back shall mutate only Runtime State. User Baseline State, baseline start PC, and user-supplied edits shall remain completely unchanged. The restored Runtime State shall be a valid architectural state from which subsequent Step or Run can continue. |
+| P2-FR-018 | Step Back sequence semantics: `step_seq` counts committed forward execution Steps only and shall NEVER be incremented or decremented on Step Back. Subsequent forward Steps continue from the session's monotonic maximum (`max_step_seq + 1`). A separate `state_revision` counter tracks all state mutations (Step, Step Back, manual edit, Reset, Load) for client synchronization. |
+| P2-FR-019 | Maintain linear execution history: if a user steps back one or more steps and then executes a forward Step or Run, all discarded forward history states are purged (no branching history trees). |
+| P2-FR-020 | Invalidate and clear all retained Step Back history upon any operation that mutates baseline or establishes a new execution origin: manual register edit, flag edit, PC edit, memory patch, zero-fill, session Reset, or program replacement Load. Breakpoint and watchpoint edits shall not clear history. |
+| P2-FR-021 | Bound execution history retention by a configurable maximum step capacity (default 100 steps). When capacity is reached during forward execution, the oldest historical state entries shall be discarded in FIFO order. Step Back is permitted only within the retained history window. |
+| P2-FR-022 | Extend the browser workspace to support ELF file upload and parsing diagnostics; symbol gutter badges, context labels, and Go-to-symbol navigation; DWARF `file:line` indicators; a Watchpoint management panel with address range, access type, and hit indicators; and a Step Back button with active history depth indication. |
+
+### 6.3 Product P3 functional requirements (Planned Milestone — RISC-V Introduction: RV32I)
+
+| ID | Description |
+| --- | --- |
+| P3-FR-001 | Execute little-endian RV32I integer instructions (`ADD`, `ADDI`, `SUB`, `AND`, `OR`, `XOR`, `SLL`, `SRL`, `SRA`, `SLT`, `SLTU`, `LUI`, `AUIPC`, `LB`, `LBU`, `LH`, `LHU`, `LW`, `SB`, `SH`, `SW`, `BEQ`, `BNE`, `BLT`, `BGE`, `BLTU`, `BGEU`, `JAL`, `JALR`, `FENCE`) under native engine execution with transactional single-step rollback on faults. |
+| P3-FR-002 | Enforce strict architectural immutability of register `x0` (`zero`): `x0` shall permanently evaluate to `0`. Any user edit targeting `x0` or `zero` shall be rejected atomically with HTTP 422 `x0_immutable`. Instructions writing to `x0` shall execute normally without altering `x0` or reporting a delta. |
+| P3-FR-003 | Model the RV32I register set as `x0`–`x31` and `pc`, supporting standard ABI aliases (`zero`, `ra`, `sp`, `gp`, `tp`, `t0`–`t6`, `s0`–`s11`, `a0`–`a7`) for user input, state editing, and UI presentation without storing aliases as independent registers. |
+| P3-FR-004 | Separate architecture profile identity (`"armv7-a-le"`, `"rv32i-le"`) from dynamic execution mode (`arm`/`thumb` for ARM; fixed/None for RV32I). Shared domain contracts shall not require fake CPSR or N/Z/C/V flags for RISC-V sessions. |
+| P3-FR-005 | Preserve `ProgramImage` as the single executable-image abstraction across all architectures. `ProgramImage.profile` shall identify the profile identity without creating an architecture-specific image subtype. |
+| P3-FR-006 | Define an architecture-owned control-flow boundary producing normalized `BranchAnalysis` records (`is_control_flow`, `kind`, `taken`, `target`, `fallthrough`) without hard-coding multi-architecture conditionals in shared simulation code. |
+| P3-FR-007 | Implement dedicated architecture execution backends (`ArmUnicornBackend`, `RiscvUnicornBackend`) sharing generic page mapping, memory access hooks, timeout enforcement, and transactional rollback helpers while isolating CPU model setup and register IDs. |
+| P3-FR-008 | Ingest RV32I assembly source with local labels, numeric offsets, and ABI register aliases into authoritative machine bytes via a standalone, zero-dependency embedded RV32I assembler. |
+| P3-FR-009 | Ingest addressed RV32 disassembly listings into `ProgramImage` with machine bytes authoritative, excluding ARM-specific mapping symbols (`$a`, `$t`, `$d`). |
+| P3-FR-010 | Verify RV32I test encodings and golden fixtures against an independent external assembler oracle (`llvm-mc` or GNU binutils) with provenance recorded. |
+| P3-FR-011 | Integrate RV32I execution with `MemoryState`, enforcing strict partial memory tracking (known vs unmapped `??` bytes), synthetic scratch stack, memory patches, zero-fill, and transactional rollback. |
+| P3-FR-012 | Initialize a synthetic scratch stack for RV32I at `0x200F0000` (size 64 KiB), initializing `x2`/`sp` to stack top (`0x20100000`) without synthesizing OS or libc runtime state. |
+| P3-FR-013 | Reuse debugger features (Bounded Run, concurrent Stop, pre-execution Breakpoints, Memory Watchpoints, Bounded Step Back, Reset, User Baseline State) seamlessly on RV32I sessions via shared session logic. |
+| P3-FR-014 | Treat environment instructions `ECALL` and `EBREAK` as explicit debugger trap stops (`environment_call`, `breakpoint_trap`) with actionable stop reasons rather than crashing native execution. |
+| P3-FR-015 | Dynamically adapt the browser UI from architecture profile metadata: render the 32 integer registers with ABI labels, hide ARM status bars (CPSR and flags) on RISC-V sessions, and provide RISC-V preset programs. |
+| P3-FR-016 | Guarantee complete preservation of existing ARMv7-A / Thumb-2 capabilities with zero regressions across all automated test suites. |
 
 ## 7. Input requirements
 
@@ -289,6 +362,57 @@ Data lines are normalized into `DataRegion` instances rather than fake instructi
 
 The assembly source input path (Keystone-based) remains strictly single-mode per snippet in P1 (matching P0). Assembler directives that create arbitrary mixed ARM/Thumb/Data source images are deferred post-P1. Mixed ARM/Thumb/Data images in P1 are produced via the disassembly/import pipeline.
 
+### 7.6 Product P2 direct ARM ELF loading workflow
+
+Product P2 introduces direct linked ARM ELF binary loading as a third `ProgramImage` producer. It accepts compiled ELF binaries without requiring users to manually run `objdump` or `fromelf` and paste text listings.
+
+#### 7.6.1 Supported ELF subset and validation contract
+
+The ELF loader is strictly bounded to already-linked executable images suitable for the existing ARMv7-A execution profile:
+
+1. **Header validation:**
+   - **Magic:** Must match standard ELF magic (`\x7fELF`).
+   - **Class:** Must be `ELFCLASS32` (32-bit). `ELFCLASS64` is rejected with `unsupported_elf_class`.
+   - **Data encoding:** Must be `ELFDATA2LSB` (little-endian). `ELFDATA2MSB` (big-endian) is rejected with `unsupported_elf_endianness`.
+   - **Machine:** Must be `EM_ARM` (machine type 40). Non-ARM machines (e.g. x86, RISC-V, MIPS) are rejected with `unsupported_elf_machine`.
+   - **Type:** Strictly `ET_EXEC` (executable). Position-independent executables (`ET_DYN` / PIE) are deferred to post-P2 until load-bias and relocation semantics are explicitly designed (absence of `PT_INTERP` does not prove `ET_DYN` needs no runtime relocation). Relocatable object files (`ET_REL`), core files (`ET_CORE`), and shared libraries are rejected with `unsupported_elf_type`.
+   - **Dynamic linking:** Binaries containing `PT_INTERP` (dynamic interpreter request) or unresolved dynamic relocations are rejected with `unsupported_dynamic_elf`. ArmStride does not emulate an OS dynamic linker (`ld.so`) or load shared libraries.
+
+2. **Segment extraction and logical memory population:**
+   - `PT_LOAD` headers define memory placement and permissions. Headers such as `PT_NOTE`, `PT_DYNAMIC`, or `PT_GNU_STACK` are ignored for memory allocation.
+   - Validates that segment virtual addresses and sizes do not wrap the 32-bit address space (`p_vaddr + p_memsz <= 0x100000000`).
+   - **Executable segments (`PF_X`):** Raw file bytes are NOT blindly decoded entirely as instructions. Reusing the mixed ARM/Thumb/Data `ProgramImage` model from P1, ARM mapping symbols (`$a`, `$t`, `$d`) partition executable segments:
+     - `$a` spans decode as ARM instructions (4-byte aligned).
+     - `$t` spans decode as Thumb instructions (2-byte aligned, 2-byte or 4-byte width).
+     - `$d` spans inside executable segments remain non-executable `DataRegion` records (e.g. inline literal pools, jump tables), loaded as known, readable, non-executable logical memory. Direct execution into `$d` ranges halts with `non_executable_target`.
+     - **Fail-closed policy for ambiguous executable regions:** If an executable segment lacks mapping symbols, the loader requires an explicit uniform mode or verifies uniform decoding from entry point without ambiguity; if mixed or ambiguous without reliable mapping symbols, the loader fails closed and rejects with `ambiguous_elf_execution_mode`.
+   - **Non-executable data segments (`PF_R`, `PF_W` without `PF_X`):** Raw file bytes are extracted into immutable `DataRegion` records in `ProgramImage` and loaded into `MemoryState` as known, readable (and writable if `PF_W`) logical data memory. Direct execution attempts halt with `non_executable_target`.
+   - **Zero-initialized regions (`.bss`):** For segments where memory size exceeds file size (`p_memsz > p_filesz`), the delta range `[p_vaddr + p_filesz, p_vaddr + p_memsz)` is explicitly established as known zero bytes in `MemoryState` and recorded as non-executable `DataRegion` entries.
+   - **Strict memory boundaries:** Gaps between segments and page padding remain strictly unknown memory (`??`). Unmapped accesses halt immediately.
+
+3. **Entry point and initial PC:**
+   - Default initial start PC is the ELF header entry point (`e_entry`), validated against loaded instruction starts in `ProgramImage`.
+   - If `e_entry` has bit 0 set (Thumb entry indicator), visible PC is canonicalized (`e_entry & ~1`) and initial execution mode is set to `thumb`. If bit 0 is clear, initial mode is `arm` and visible PC is `e_entry`.
+   - Entry address `0x00000000` is NOT assumed to be inherently invalid; it is valid whenever an executable instruction is loaded at that address.
+   - If `e_entry` does not address any loaded instruction start, initial PC falls back to the lowest loaded instruction address.
+
+4. **Independent resource bounds and eager decoding:**
+   Independent limits are enforced to prevent unconstrained resource consumption:
+   - Maximum raw ELF file size: 10 MiB (`MAX_ELF_FILE_BYTES = 10 * 1024 * 1024`).
+   - Maximum logical memory including BSS: 16 MiB (`MAX_LOGICAL_MEMORY_BYTES = 16 * 1024 * 1024`).
+   - Maximum backing-page allocation: 64 MiB (`MAX_BACKING_PAGES_BYTES = 64 * 1024 * 1024`, reusing `MemoryState`).
+   - Maximum decoded instructions: 10,000 instructions (`MAX_INSTRUCTIONS`).
+   - Maximum PT_LOAD segments: 32 (`MAX_ELF_SEGMENTS = 32`).
+   - Maximum ELF sections: 128 (`MAX_ELF_SECTIONS = 128`).
+   All executable `PT_LOAD` segments within these bounds are eagerly decoded upon load. Binaries exceeding any bound are rejected atomically with actionable diagnostics. Speculative lazy-disassembly infrastructure is deliberately excluded.
+
+#### 7.6.2 Decoupled ProgramMetadata (Symbols & DWARF)
+
+Debug information is extracted in parallel into a decoupled `ProgramMetadata` structure, preventing native ELF/DWARF library objects from polluting simulation core or execution backends:
+
+- **Symbol metadata:** Extracted from `.symtab` / `.strtab` (or `.dynsym` / `.dynstr`). Function symbols (`STT_FUNC`), data object symbols (`STT_OBJECT`), and ARM mapping symbols (`$a`, `$t`, `$d`) are indexed by address. Symbols provide labels in the UI, PC context badges, branch target tooltips, and Go-to-symbol navigation. Symbols are display metadata and never override machine bytes. Stripped ELF files remain 100% executable without symbols.
+- **DWARF line mapping:** Extracted from `.debug_line`. Maps instruction addresses to `(source_file, source_line)`. If the original source files are not provided to ArmStride, the UI displays `file:line` identifiers (e.g. `main.c:137`) without fabricating source text. Missing or malformed DWARF tables produce warnings and do not block execution.
+
 ## 8. Execution semantics
 
 ### 8.1 Load and start PC
@@ -401,6 +525,77 @@ while running:
 5. **One-time resume bypass:** When Run is initiated while PC is currently paused at an active breakpoint, that specific breakpoint is bypassed for exactly one Step. Normal breakpoint checking immediately resumes for subsequent steps. Breakpoints are never automatically deleted or globally disabled.
 6. **Lifecycle:** Breakpoints survive single Step, manual edits, and Reset. Breakpoints are cleared upon a successful replacement Load. New sessions start with an empty breakpoint set. Breakpoints are ephemeral and held in session memory.
 
+### 8.6 Product P2 execution and debugger semantics
+
+#### 8.6.1 Memory Watchpoint committed-boundary semantics
+
+Product P2 introduces memory Watchpoints as a non-intrusive debugging capability for observing memory reads and writes:
+
+1. **Identity and configuration:**
+   - A Watchpoint is identified by an address range `[start_address, end_address)` and access type: `read`, `write`, or `read_write`.
+   - Start address and length are validated within the 32-bit address space. Maximum 32 active watchpoints per session.
+2. **Post-instruction committed-boundary evaluation & dual observability:**
+   - Watchpoints discover accesses through actual CPU memory bus operations performed during an atomic Step.
+   - Evaluation sequence:
+     1. One atomic Step executes and completes successfully.
+     2. All architectural effects (registers, CPSR, PC, and memory writes) commit to Runtime State, and `step_seq` increments by 1.
+     3. The successfully committed `memory_reads` and `memory_writes` are evaluated against active watchpoints. Ordered multiple hits from multi-access instructions (e.g. `STM`, `PUSH`, `LDRD`) are preserved.
+     4. Dual observability on Step and Run:
+        - During single Step: The instruction completes normally, and `StepResult` reports all committed hits in `watchpoint_hits: list[WatchpointHitView]` while remaining paused.
+        - During bounded Run: Run terminates immediately after that Step with `RunResult.stop_reason = "watchpoint"` and populates `RunResult.watchpoint_hit`.
+   - **No step rollback:** A successfully executed instruction is never rolled back merely because it triggered a watchpoint. Machine state remains at a valid, consistent architectural Step boundary.
+3. **Isolation from failed Steps:**
+   - Attempted memory accesses from an atomic Step that fails and rolls back (e.g. `unmapped_memory_access`, `unaligned_memory_access`) shall never trigger a watchpoint hit.
+   - Run halts with the underlying execution fault (e.g. `memory_fault`), leaving all machine state restored to the pre-Step state.
+4. **Same-value writes:**
+   - A write watchpoint shall trigger on any executed memory store access within the watched range, even when the newly written byte value is identical to the existing byte value (`before == after`). Watchpoint triggers reflect CPU memory operations, not UI highlight deltas.
+5. **Strict separation of execution stop state and debugger observations:**
+   - A Step may simultaneously produce a normal architectural stop such as `pc_not_loaded` (when the resulting PC is outside loaded code) and one or more committed Watchpoint hits. Neither fact shall be discarded.
+   - `StepResult` captures both facts: `stop_reason: "pc_not_loaded"` and `watchpoint_hits: [...]`.
+   - Run loop evaluates stopping conditions in deterministic order of precedence:
+     1. *Pre-execution Breakpoint:* halts Run before instruction executes (`stop_reason: "breakpoint"`). Prevents that instruction from generating memory access or watchpoint events.
+     2. *Execution Fault:* instruction execution fails and rolls back (`stop_reason: <fault_reason>`), leaving `watchpoint_hits` empty.
+     3. *Post-execution Watchpoint Hit:* if committed memory accesses hit active watchpoints, Run halts with `stop_reason: "watchpoint"`. If `pc_not_loaded` also occurred, `last_step_result.stop_reason = "pc_not_loaded"` is preserved.
+     4. *Post-execution Architectural Stop (`pc_not_loaded`):* if no watchpoints hit but resulting PC is not loaded, Run halts with `stop_reason: "pc_not_loaded"`.
+     5. *User Stop:* concurrent stop event halts Run (`stop_reason: "user_stop"`).
+     6. *Run Bounds:* `step_limit` or `time_limit` reached.
+6. **Lifecycle:**
+   - Watchpoints survive single Step, bounded Run, session Reset, and manual register/flag/PC/memory edits.
+   - All watchpoints are cleared upon a successful replacement Load. New sessions start with an empty watchpoint set.
+
+#### 8.6.2 Bounded execution history and Step Back semantics
+
+Product P2 introduces a bounded **Step Back** capability to reverse execution without requiring full-program replay:
+
+1. **Exact state restoration and lazy memory capture:**
+   - Step Back restores Runtime State to the immediately preceding committed Step boundary within a retained execution history window (default 100 steps).
+   - History entries capture register state (R0–R12, SP, LR, PC), CPSR (flags N/Z/C/V, mode, ITSTATE), and lazily captured original memory bytes.
+   - **Lazy original byte capture:** Pre-step memory bytes are recorded lazily from committed write events / write hooks. For multiple writes to the same memory byte during a single instruction, the history entry retains the pre-Step original byte once (first pre-value observed) for exact reverse restoration.
+   - The restored state is an authentic, valid architectural state from which subsequent forward `step()` or `run()` can continue.
+2. **User Baseline State isolation:**
+   - Step Back mutates **only** Runtime State.
+   - User Baseline State, restart PC, and user-supplied edits remain completely untouched.
+   - Reset continues to restore Runtime State from User Baseline State, discarding execution history.
+3. **Step sequence and revision semantics:**
+   - Session `step_seq` strictly counts committed forward architectural Steps. Step Back shall **NEVER increment or decrement `step_seq`**.
+   - After stepping backward, a newly committed forward Step continues from the session's monotonic maximum (`max_step_seq + 1`), not the historical restored sequence number.
+   - A separate `state_revision` integer counter increments on every state mutation (committed Step, Step Back, manual register/flag/PC edit, memory patch, Reset, Load) to provide unambiguous client-side cache and synchronization tracking without overloading `step_seq`.
+4. **Linear history and forward invalidation (branching):**
+   - Execution history is strictly linear (no branching time-travel trees).
+   - When a user steps back $N$ steps (e.g. $A \to B \to C \to D$, stepped back to $B$) and executes a new forward Step or Run ($B \to E$), all discarded forward history states ($C \to D$) are permanently purged.
+5. **History invalidation policy:**
+   - Any operation that establishes a new experiment state or mutates the baseline invalidates and purges all retained execution history:
+     - Manual register edit
+     - Manual flag / CPSR edit
+     - Manual PC edit (Go)
+     - Memory patch or zero-fill
+     - Session Reset
+     - Program replacement Load
+   - Breakpoint and watchpoint additions, deletions, or toggles do not mutate CPU or memory state and therefore do not clear execution history.
+6. **Bounded retention bounds:**
+   - Execution history is retained in a FIFO bounded journal or ring buffer capped at a configurable maximum step capacity (default 100 steps).
+   - When forward execution exceeds the capacity, the oldest reversible historical states are discarded. Step Back operates strictly within the retained window.
+
 ## 9. Machine state and Reset
 
 ### 9.1 Initial state
@@ -481,46 +676,86 @@ Engine support does not add absent machine facilities to the product. Privileged
 
 A mode-changing BX/BLX or PC load is not supported in P0; same-mode transfers are supported. Thumb return targets may contain bit 0 as required by the ISA, but the displayed resulting PC is canonical/even. Explicit PC edits use canonical addresses only. An IT instruction is marked unsupported; because entry ITSTATE is zero, users must not treat a fragment cut from the middle of an omitted IT block as a faithful replay.
 
-### Product P1 architecture additions
+### Completed Product P1 architecture additions
 
-Product P1 formalizes the following execution capabilities:
+Product P1 formalized and verified the following execution capabilities:
 
 1. **Runtime ARM/Thumb interworking:** Enabled for all PC-writing instructions (BX, BLX, POP to PC, LDM to PC, etc.) via native CPSR T-bit resolution, committing exactly one architectural instruction atomically.
-2. **Thumb-2 IT block execution:** Multi-step IT block support (IT, ITT, ITE, etc.) preserving ITSTATE in CPSR across Steps, gated by the P1 IT validation spike.
+2. **Thumb-2 IT block execution:** Multi-step IT block support (IT, ITT, ITE, etc.) preserving ITSTATE in CPSR across Steps, verified via the P1 IT validation spike.
 3. **Bounded Run and concurrent Stop:** Composed of sequential atomic Steps bounded by configurable step and time limits.
 4. **Address/mode breakpoints:** Pre-execution halting at `(address, mode)` with single-step bypass and one-time resume bypass.
 5. **Mixed ARM/Thumb/Data listings:** Disassembly import driven by `$a`, `$t`, and `$d` mapping symbols.
 
-### Deferred architecture scope (post-P1)
+### Product P2 architecture additions
 
-Big-endian ARM, Cortex-M exception state, privileged/system execution, SIMD/VFP/NEON, exclusive monitor state, AArch64, RISC-V, x86/x86-64, and MIPS remain explicitly deferred post-P1. The instruction model must preserve widths/modes without adding implementations for those architectures.
+Product P2 formalizes the following debugger and input capabilities:
+
+1. **Direct linked ARM ELF loading:** ELF32 little-endian (`ET_EXEC`) container parsing as a third `ProgramImage` producer. PT_LOAD executable segments partitioned into ARM code, Thumb code, and non-executable `DataRegion`s via ARM mapping symbols (`$a`, `$t`, `$d`); non-executable data segments map to `DataRegion` and known memory; trailing BSS spans expand to explicit known zero bytes; initial PC and mode initialize from `e_entry` (including valid address 0); fail-closed on ambiguous segments lacking mapping symbols.
+2. **Decoupled ProgramMetadata (Symbols & DWARF):** ELF symbol table extraction (`address -> symbol name`) and DWARF `.debug_line` line table mapping (`address -> file:line`). Clean separation of presentation metadata from execution-truth machine instructions.
+3. **Memory Watchpoints:** Range-based memory access monitoring (`read`, `write`, `read_write`) evaluated at post-instruction committed Step boundaries on actual CPU memory bus events. Observable on both Step (`watchpoint_hits` list) and Run (`stop_reason: watchpoint`). Preserves ordered multiple hits from multi-access instructions; triggers write watchpoints on same-value stores (`before == after`); strictly separates execution stop state (`pc_not_loaded`, faults) from debugger observations.
+4. **Bounded Step Back & Execution History:** Reversible execution restoring exact previous Runtime State (registers, CPSR, PC, lazily captured original memory bytes) within a bounded linear journal (default 100 steps) without modifying User Baseline State. `step_seq` counts committed forward Steps only and is NEVER incremented or decremented on Step Back; subsequent forward Steps continue from monotonic maximum (`max_step_seq + 1`). Separate `state_revision` tracks state mutations. Discards forward history on branching; clears history on manual mutations, Reset, or reload.
+5. **Cortex-M Feasibility Research Gate (P2-R):** Dedicated non-blocking experimental spike investigating Unicorn Cortex-M CPU models, Thumb stepping, MSP/PSP, exception stacking, EXC_RETURN, and HardFault behavior to inform a future product milestone.
+
+### Deferred architecture scope (post-P2)
+
+The following capabilities are explicitly deferred beyond Product P2:
+- Position-independent executables (`ET_DYN` / PIE) and dynamic load-bias/relocation resolution.
+- Production Cortex-M execution and exception model (gated by P2-R feasibility spike outcome).
+- Behavioral MMIO and peripheral simulation (evaluated in distinct post-P2 layers from named metadata to behavioral devices).
+- VFP / NEON floating-point and SIMD vector register state.
+- RISC-V source/disassembly/execution profile.
+- Arbitrary branching reverse-execution trees or non-linear time-travel debugging.
+- Full DWARF variable debugging, lexical scopes, type reconstruction, expression evaluation, or CFI stack unwinding.
+- General object-file linking (`ET_REL`), dynamic loading (`PT_INTERP`), or shared-library runtime.
 
 ## 12. UI requirements
 
 The local page shall resemble a compact debugger/code viewer: a dominant monospaced instruction pane with a gutter, adjacent registers, and memory/stack inspection below or beside it. A spreadsheet-style editable instruction table is not required.
 
 - **Input/load:** source/import selector, text area, local text file selection, ARM/Thumb choice, Load, and assembly/parse diagnostics. Source requires a base/load address; import has format/encoding controls. Link diagnostics to source lines only when known. Preserve source separately from the generated execution listing. Optional scratch-stack fields can be grouped under setup. Loading a file only reads its text in the browser.
+  - *P2 extension:* Support direct ELF binary upload via file picker or drag-and-drop. Display ELF container metadata (entry point, loadable segments, symbol count, DWARF availability).
 - **Code view:** address, byte representation, source mnemonic/operands, decoded instruction, current-PC gutter marker, current-line highlight, and automatic scrolling to current PC. Unsupported instructions have a distinct marker. Selecting a line can fill the PC input; it does not execute.
   - *P1 extension:* Mixed-mode listing displaying ARM code, Thumb code, and non-executable DATA records in address order with clear tags. Breakpoint gutter allows toggling breakpoints on instruction lines; DATA rows reject breakpoint clicks. Visually distinguish current-PC marker, breakpoint marker, and combined PC+breakpoint marker.
+  - *P2 extension:* Display symbol labels at function and label addresses; show current symbol context badge; provide Go-to-symbol navigation. Display DWARF `file:line` metadata (e.g. `main.c:137`) alongside decoded instructions without requiring host source contents. Display active watchpoint gutter markers or highlights when memory accesses touch visible data rows.
 - **Registers:** R0–R12, SP, LR, PC, CPSR and N/Z/C/V; in-place value editing, range errors next to inputs, origin labels, and changed-register/flag highlighting. Full CPSR is visible with protected bits explained.
 - **Memory:** address/range input, bytes and aligned little-endian words, `??` cells, source-region labels, byte/word patch input, explicit zero-fill action, and latest writes/changes.
+  - *P2 extension:* Watchpoints panel: list active watchpoints with address range, access type (`read`, `write`, `read_write`), and hit counts; add/remove watchpoints directly from memory view or address input.
 - **Stack:** follows SP, shows words and an SP marker, and supports scrolling around SP. At the initial top-of-stack SP, display words below the top so the empty scratch stack is visible. Out-of-range cells remain `??`.
 - **Controls:** Load, Step, Reset, and start/current PC with Go. Step and edits require a loaded program. Pending operations disable conflicting controls; no double Step from one click.
   - *P1 extension:* Add Run and Stop controls to the toolbar. Run initiates bounded execution; Stop halts an active Run at the next Step boundary. Disable conflicting inputs while Run is active; ensure Stop remains enabled and clickable during Run.
+  - *P2 extension:* Add **Step Back** button to toolbar with history depth counter (e.g. `Step Back (12)`). Disabled when history is empty or invalidated.
 - **Feedback:** parse warnings/errors, condition and branch result, stopped PC, missing-memory details, the manual-edit/baseline rule, `step_seq`, and transport failure feedback. Do not automatically retry Step after a lost response. Highlighting must also use markers/text so meaning does not depend on color alone. Inputs and buttons are keyboard accessible.
   - *P1 extension:* StatusPanel displays Run stop reasons (`breakpoint`, `user_stop`, `step_limit`, `time_limit`, `pc_not_loaded`, etc.) and IT block execution/skip feedback.
+  - *P2 extension:* StatusPanel displays `watchpoint` stop reason with triggering address, access type, and byte values.
+  - *P2 extension:* State and response headers include `state_revision` for reliable mutation tracking.
 
-## 13. P0, P1, and deferred scope
+## 13. P0, P1, P2, P3, and deferred scope
 
 | Release boundary | Features |
 | --- | --- |
 | Mandatory P0 (Completed Baseline) | ARM/Thumb source assembly with explicit origin; supported addressed text formats; atomic assembly/parse/load; ARM and Thumb/Thumb-2 execution within the selected profile; arbitrary loaded start PC; exactly-one-instruction Step; register and N/Z/C/V edits; CPSR display; strict partial memory and explicit patches/zero-fill; scratch stack and stack inspection; current-PC and change highlights; branch results; deterministic Reset; isolated ephemeral local sessions; actionable errors. |
-| Product P1 (Current Milestone) | 1. Mixed ARM / Thumb / Data disassembly ProgramImages (`$a`, `$t`, `$d`).<br/>2. Non-executable DataRegions in ProgramImage and logical memory.<br/>3. Runtime ARM/Thumb interworking on all PC-writing instructions.<br/>4. Thumb-2 IT blocks (IT, ITT, ITE) with CPSR ITSTATE preservation and skip reporting (spike-gated).<br/>5. Bounded Run (composed of atomic Steps) bounded by step limit and wall-clock time limit.<br/>6. Concurrent, non-blocking Stop signaling.<br/>7. Address/mode breakpoints `(address, mode)` with pre-execution halting and one-time resume bypass.<br/>8. Browser UI integration for mixed listings, Run/Stop controls, and breakpoint gutter. |
-| Deferred (Post-P1) | Exact source-level debug mapping, assembly build-system / multi-section directives, persistent experiments, binary/dump/ELF loaders, Cortex-M exception model, privileged/system execution, SIMD/VFP/NEON, other ISAs (RISC-V, AArch64, x86), advanced debugger/analysis/integration features listed in Section 4. |
+| Product P1 (Completed Baseline) | 1. Mixed ARM / Thumb / Data disassembly ProgramImages (`$a`, `$t`, `$d`).<br/>2. Non-executable DataRegions in ProgramImage and logical memory.<br/>3. Runtime ARM/Thumb interworking on all PC-writing instructions.<br/>4. Thumb-2 IT blocks (IT, ITT, ITE) with CPSR ITSTATE preservation and skip reporting.<br/>5. Bounded Run (composed of atomic Steps) bounded by step limit and wall-clock time limit.<br/>6. Concurrent, non-blocking Stop signaling.<br/>7. Address/mode breakpoints `(address, mode)` with pre-execution halting and one-time resume bypass.<br/>8. Browser UI integration for mixed listings, Run/Stop controls, and breakpoint gutter. |
+| Product P2 (Completed Baseline — Debugger and Input Expansion) | 1. Direct ARM ELF32-LE binary loading (`ET_EXEC`) as third ProgramImage producer.<br/>2. PT_LOAD segment extraction, mapping symbol partitioning (`$a`, `$t`, `$d`), non-executable data regions, BSS zero-expansion, and `e_entry` initialization.<br/>3. Decoupled symbol metadata (`SymbolTable`) for labels, branch context, and Go-to-symbol navigation.<br/>4. Decoupled DWARF line mapping (`LineTable`) for address-to-file:line display without source fabrication.<br/>5. Memory Watchpoints (`read`, `write`, `read_write`) observable on Step and Run with ordered multi-hits.<br/>6. Bounded Step Back restoring exact Runtime State within a 100-step linear journal, capturing lazy memory changes.<br/>7. Monotonic `step_seq` invariance (neither incremented nor decremented on Step Back) and separate `state_revision`.<br/>8. Browser UI integration for ELF upload, symbols, watchpoint panel, and Step Back control.<br/>9. Non-blocking Cortex-M feasibility research spike (`P2-R`). |
+| Product P3 (Planned Milestone — RISC-V Introduction: RV32I) | 1. Native RV32I little-endian integer execution on Unicorn 2.1.4.<br/>2. RV32I assembly source and addressed disassembly/import input producers.<br/>3. Architectural immutability of register `x0` (`zero`), rejecting user edits and suppressing execution deltas.<br/>4. Multi-ISA domain contracts decoupling profile identity (`"armv7-a-le"`, `"rv32i-le"`) from dynamic execution mode.<br/>5. Architecture-owned control-flow interpreter (`RiscvControlFlowInterpreter`).<br/>6. Dedicated RISC-V execution backend (`RiscvUnicornBackend`).<br/>7. Full reuse of debugger features: Run / Stop, Breakpoints, Watchpoints, Bounded Step Back, Reset.<br/>8. Synthetic scratch stack at `0x200F0000` with `x2`/`sp` initialization.<br/>9. Profile-driven UI dynamically rendering RV32I registers and hiding ARM-specific CPSR/flags.<br/>10. Full ARM regression preservation. |
+| Post-P3 RISC-V Extensions | P3.1: RV32M (Integer Multiply/Divide); P3.2: RV32C (Compressed 16-bit instructions with mixed-width alignment); P3.3: RV64I (64-bit base integer with XLEN=64 expansion); P3.4: Direct RISC-V ELF32 loading. |
+| Deferred (Research / Future Scope) | Position-independent executables (`ET_DYN` / PIE), production Cortex-M execution, behavioral MMIO / peripheral simulation, VFP/NEON SIMD, RV32A atomics, RV32F/D floating-point, Vector, Bitmanip, privileged architecture / MMU / CSRs, OS/SBI emulation, branching reverse-execution trees, full DWARF variable debugging / CFI stack unwinding, relocatable object-file linking, dynamic loading. |
 
-### Operational bounds (explicit P0 assumptions)
+### Operational bounds (explicit P0/P1/P2 assumptions)
 
-The intended workload is tens to hundreds of instructions. To bound a local process, P0 accepts at most 1 MiB of input text, 10,000 instructions, 16 MiB of total logical code/stack/data memory per session, 64 MiB of backing pages per session (including padding for sparse ranges), a 64 KiB patch/zero-fill per request, and a 4 KiB inspection window per request. Excess input is rejected before mutation; memory-budget errors identify whether logical bytes or backing pages exceeded the limit. At most eight live sessions are retained; a ninth creation is rejected. Sessions expire after 30 minutes without a request and are destroyed when the server exits. Expired sessions produce an explicit message and a new-session action; state is not silently replaced. These limits are initial engineering defaults, not firmware address-space limits or performance claims. No background/cloud execution is required.
+The intended workload is tens to hundreds of instructions. To bound a local process:
+- Maximum input text: 1 MiB.
+- Maximum raw ELF binary file: 10 MiB (`MAX_ELF_FILE_BYTES`).
+- Maximum logical loaded memory including BSS: 16 MiB per session (`MAX_LOGICAL_MEMORY_BYTES`).
+- Maximum backing pages: 64 MiB per session (`MAX_BACKING_PAGES_BYTES`, including padding for sparse ranges).
+- Maximum decoded instructions: 10,000 instructions per ProgramImage (`MAX_INSTRUCTIONS`).
+- Maximum PT_LOAD segments: 32 per ELF (`MAX_ELF_SEGMENTS`).
+- Maximum ELF sections: 128 per ELF (`MAX_ELF_SECTIONS`).
+- Maximum memory patch / zero-fill: 64 KiB per request.
+- Maximum memory inspection window: 4 KiB per request.
+- Maximum live sessions: 8 concurrent sessions; 30-minute idle TTL.
+- Maximum active watchpoints: 32 per session.
+- Maximum retained execution history: 100 steps per session.
+Excess input is rejected before mutation; memory-budget errors identify whether logical bytes or backing pages exceeded the limit. No background/cloud execution is required.
 
 ## 14. Repository and Project Structure Requirements
 
@@ -617,7 +852,7 @@ These criteria derive tests; the architecture adds mechanism-specific verificati
 
 P0 is accepted and fully verified across all AC-01 through AC-21 acceptance criteria and the 388 test suite baseline.
 
-### 15.2 Product P1 acceptance criteria
+### 15.2 Completed Product P1 baseline acceptance criteria
 
 | ID | Given / When / Then | Requirements |
 | --- | --- | --- |
@@ -637,3 +872,61 @@ P0 is accepted and fully verified across all AC-01 through AC-21 acceptance crit
 | P1-AC-14 | Given an active breakpoint at `(address, mode)`, when Run reaches that instruction, then Run halts immediately before attempting execution with stop reason `breakpoint` and pre-execution state preserved; when manual Step is subsequently pressed, the breakpointed instruction executes normally. | P1-FR-013, P1-FR-014 |
 | P1-AC-15 | Given a session halted at an active breakpoint, when Run is initiated again, then the current breakpoint is bypassed for exactly one Step, execution continues, and if execution branches back to that breakpoint location later in the Run, execution halts again. | P1-FR-014, P1-FR-015 |
 | P1-AC-16 | Given registered breakpoints, when Step, manual edits, or Reset are performed, then breakpoints remain unchanged; when a replacement Load succeeds, all breakpoints are cleared; attempting to set a breakpoint on a DATA address or unaligned address is rejected. | P1-FR-013, P1-FR-016 |
+
+Product P1 is accepted and fully verified across all P1-AC-01 through P1-AC-16 acceptance criteria and the 410 automated test suite baseline.
+
+### 15.3 Product P2 acceptance criteria
+
+| ID | Given / When / Then | Requirements |
+| --- | --- | --- |
+| P2-AC-01 | Given a valid compiled ARM ELF32-LE executable (`ET_EXEC`) and equivalent assembly source / disassembly import snippets, when loaded, then normalized instruction bytes, addresses, widths, initial mode, and subsequent Step/Run architectural execution results agree across all three producers. | P2-FR-001, P2-FR-002, P2-FR-003 |
+| P2-AC-02 | Given an invalid or unsupported ELF file (ELF64 class, big-endian `ELFDATA2MSB`, non-ARM machine architecture, `ET_DYN` / PIE, relocatable `ET_REL` object, or binary requiring `PT_INTERP` dynamic linking), when Load is requested, then the loader rejects atomically with an explicit diagnostic (`unsupported_elf_*`) and existing session state remains completely intact. | P2-FR-002 |
+| P2-AC-03 | Given an ELF file with distinct executable (`PF_X`) segments containing ARM mapping symbols (`$a`, `$t`, `$d`) and readable/writable data segments (`PF_R`, `PF_W`), when loaded, then mapping symbols partition executable segments such that `$a`/`$t` ranges populate instructions in `ProgramImage`, `$d` inline data ranges inside executable segments and standalone data segments normalize into `DataRegion` entries and known logical memory, data reads via `LDR` succeed, and branching into any data range halts with `non_executable_target`. If mapping symbols are absent and execution mode is ambiguous, load rejects with `ambiguous_elf_execution_mode`. | P2-FR-003, P2-FR-006 |
+| P2-AC-04 | Given an ELF file with a `PT_LOAD` segment where `p_memsz > p_filesz` (representing `.bss`), when loaded, then the trailing memory range `[p_vaddr + p_filesz, p_vaddr + p_memsz)` is explicitly established as known zero bytes in `MemoryState`; reads from that range return zeros; unmapped memory outside the segment remains unknown (`??`). | P2-FR-004 |
+| P2-AC-05 | Given an ELF file with entry point `e_entry` matching an instruction start (including address `0x00000000` when mapped to executable code; e.g. `0x08000101` for Thumb or `0x08000100` for ARM), when loaded, then initial PC canonicalizes to even address (`e_entry & ~1`), execution mode initializes to `thumb` (if bit 0 is 1) or `arm` (if bit 0 is 0), and initial CPSR reflects the corresponding mode. | P2-FR-005 |
+| P2-AC-06 | Given an ELF file violating independent operational bounds (raw file > 10 MiB, segment count > 32, section count > 128, decoded instructions > 10,000, total logical loaded memory including BSS > 16 MiB, or backing pages > 64 MiB), when load is attempted, then it is rejected atomically with an actionable limit diagnostic (`input_limit` or `resource_limit`) with existing session state untouched. | P2-FR-006 |
+| P2-AC-07 | Given an unstripped ELF file with function (`STT_FUNC`) and object (`STT_OBJECT`) symbols, when loaded, then valid symbols resolve in `ProgramMetadata` and display as labels in the UI; when an identical binary stripped of symbol tables is loaded, execution behavior, stepping, and results remain identical. | P2-FR-007, P2-FR-008 |
+| P2-AC-08 | Given an ELF file with multiple symbols at the same address (e.g. local and global labels) or symbols without executable instructions, then symbols resolve deterministically without crashing or altering machine execution bytes. | P2-FR-007, P2-FR-008 |
+| P2-AC-09 | Given an ELF binary compiled with DWARF line tables (`.debug_line`), when loaded, instruction addresses map to corresponding `(file, line)` metadata records; when a binary lacking DWARF information is loaded, it loads and executes normally without errors. | P2-FR-009 |
+| P2-AC-10 | Given DWARF line records referencing source files absent from the local host or browser sandbox, the UI displays `file:line` metadata (e.g. `foo.c:42`) without fabricating source text or demanding arbitrary local filesystem access. | P2-FR-010 |
+| P2-AC-11 | Given an active read watchpoint on memory range `[0x20000000, 0x20000004)`, when an instruction reads memory within that range (e.g. `LDR r0, [r1]` where R1 is in range) during single Step or bounded Run, then the instruction commits its architectural effects, Step reports committed `watchpoint_hits`, Run halts immediately after committing that Step with stop reason `watchpoint`, and triggering access details are reported. | P2-FR-011, P2-FR-012 |
+| P2-AC-12 | Given an active write watchpoint on memory range `[0x20000000, 0x20000004)`, when an instruction writes to that range during single Step or bounded Run (including a store where written byte values equal the existing byte values), then the instruction commits its architectural effects, Step reports committed `watchpoint_hits`, Run halts at that Step boundary with stop reason `watchpoint`, and triggering access details are reported. | P2-FR-012, P2-FR-014 |
+| P2-AC-13 | Given an active watchpoint and a multi-access instruction (e.g. `LDM` or `STM`) whose second or subsequent register transfer touches the watched range, when stepped or run, the watchpoint triggers upon successful completion of the instruction, preserving ordered multiple hits from that single instruction. | P2-FR-011, P2-FR-012 |
+| P2-AC-14 | Given an active watchpoint on an unmapped address range, when an instruction attempts to access that range and fails (triggering `memory_fault` rollback), then the failed Step does not trigger a watchpoint hit; Run halts with stop reason `memory_fault` and machine state remains restored to the pre-Step state. If an instruction commits an architectural stop condition (e.g. `pc_not_loaded`) and simultaneously touches a watchpoint, Run reports stop reason `watchpoint` while `last_step_result` deterministically retains both `pc_not_loaded` and `watchpoint_hits`. | P2-FR-012, P2-FR-013 |
+| P2-AC-15 | Given an instruction that has an active breakpoint and also performs a memory access to an active watchpoint, when Run is initiated, then Run halts before executing the instruction with stop reason `breakpoint`; upon resuming, the instruction executes, commits, and Run halts with stop reason `watchpoint`. | P2-FR-012, P2-FR-015 |
+| P2-AC-16 | Given registered watchpoints, when single Step, bounded Run, manual register/flag/memory edits, or session Reset are performed, then watchpoints remain active; when a replacement Load succeeds, all watchpoints are cleared. | P2-FR-015 |
+| P2-AC-17 | Given execution of 3 consecutive atomic Steps modifying registers and memory (advancing `step_seq` from 0 to 3), when Step Back is invoked, then Runtime State (registers, CPSR flags/mode/ITSTATE, PC, memory bytes) is restored exactly to the state after Step 2; `step_seq` remains 3 (never decremented or incremented on Step Back); `state_revision` increments; a second Step Back restores state to after Step 1 (`step_seq` still 3); a subsequent forward Step executes instruction 2 correctly and commits with `step_seq` advancing from monotonic maximum (3 -> 4). | P2-FR-016, P2-FR-017, P2-FR-018 |
+| P2-AC-18 | Given a session where user manual edits were applied and several Steps were executed, when Step Back is performed, then User Baseline State and restart PC remain completely unchanged, and reverse memory restoration uses lazily captured pre-Step original bytes (retaining the first pre-value once for multiple writes to the same byte within a single instruction). | P2-FR-017, P2-FR-018 |
+| P2-AC-19 | Given a session stepped from state A to B to C, then stepped back to B, when a new forward Step or Run is executed producing state D, then previous forward state C is purged from history (linear history preserved). When forward steps exceed capacity (100), oldest history entries are discarded without error. | P2-FR-019, P2-FR-021 |
+| P2-AC-20 | Given an active execution history, when a manual register edit, flag edit, PC edit, memory patch, zero-fill, session Reset, or replacement Load is performed, then all retained execution history is cleared and Step Back is disabled until new steps commit. Breakpoint and watchpoint edits do not clear history. | P2-FR-020 |
+
+### 15.4 Product P3 acceptance criteria (Planned Milestone — RISC-V Introduction: RV32I)
+
+| ID | Given / When / Then | Requirements |
+| --- | --- | --- |
+| P3-AC-01 | Given existing ARMv7-A / Thumb-2 test fixtures and Playwright suites, when executed under the refactored multi-ISA domain boundary, then all tests remain 100% green with zero regressions. | P3-FR-016 |
+| P3-AC-02 | Given a multi-ISA codebase, when inspecting shared simulation contracts (`domain/models.py`, `simulation/state.py`), then shared models do not require ARM CPSR, Thumb IT context, or ARM condition flags for RISC-V sessions. | P3-FR-004, P3-FR-005 |
+| P3-AC-03 | Given an RV32I session, when reading register `x0` or `zero`, then it unconditionally returns value 0; when a user edit targeting `x0` or `zero` is attempted via API or UI, then the request rejects with HTTP 422 `x0_immutable`. | P3-FR-002, P3-FR-003 |
+| P3-AC-04 | Given an RV32I program containing `addi x0, x1, 5`, when stepped, then execution completes successfully, `x0` remains 0, and no register delta for `x0` is reported in `StepResult.register_changes`. | P3-FR-001, P3-FR-002 |
+| P3-AC-05 | Given an RV32I session, when user edits are applied to registers `x1` through `x31` or `pc`, then runtime and user baseline state reflect the updated values; edits with invalid register names reject with 422. | P3-FR-003 |
+| P3-AC-06 | Given an RV32I session, when registers are edited or referenced using standard ABI aliases (`ra`, `sp`, `gp`, `tp`, `t0`–`t6`, `s0`–`s11`, `a0`–`a7`), then they map to and update the underlying canonical registers (`x1`, `x2`, etc.). | P3-FR-003 |
+| P3-AC-07 | Given RV32I computational instructions (`ADD`, `SUB`, `ADDI`), when stepped, then 32-bit arithmetic produces exact wrapping overflow and signed immediate adjustment results. | P3-FR-001 |
+| P3-AC-08 | Given RV32I bitwise and shift instructions (`AND`, `OR`, `XOR`, `SLL`, `SRL`, `SRA`), when stepped, then exact bitwise masking, logical zero-fill shift (`SRL`), and sign-replicating arithmetic shift (`SRA`) are observed. | P3-FR-001 |
+| P3-AC-09 | Given comparison instructions (`SLT`, `SLTI`, `SLTU`, `SLTIU`), when stepped with operands `0xFFFFFFFF` (-1 signed) and `1`, then signed comparisons yield 1 and unsigned comparisons yield 0. | P3-FR-001 |
+| P3-AC-10 | Given upper immediate instructions (`LUI`, `AUIPC`), when stepped, then `LUI` sets upper 20 bits directly and `AUIPC` adds upper immediate to the instruction's own PC. | P3-FR-001 |
+| P3-AC-11 | Given memory load and store instructions (`LB`, `LBU`, `LH`, `LHU`, `LW`, `SB`, `SH`, `SW`), when stepped, then little-endian byte layout is maintained in memory; signed loads (`LB`, `LH`) sign-extend and unsigned loads (`LBU`, `LHU`) zero-extend into destination registers. | P3-FR-001, P3-FR-011 |
+| P3-AC-12 | Given an RV32I load or store instruction targeting unmapped memory (`??`), when stepped, then execution halts with `memory_fault` and native machine state completely rolls back to the pre-step snapshot. | P3-FR-001, P3-FR-011 |
+| P3-AC-13 | Given conditional branch instructions (`BEQ`, `BNE`, `BLT`, `BGE`, `BLTU`, `BGEU`), when stepped, then taken branches update PC to target and untaken branches advance PC by 4; signed vs unsigned branches observe correct predicate comparisons. | P3-FR-001, P3-FR-006 |
+| P3-AC-14 | Given jump instructions (`JAL`, `JALR`), when stepped, then `JAL` writes link address `PC + 4` to `rd` and updates PC; `JALR` masks bit 0 (`target & ~1`), updates PC, and writes link address if `rd != zero`. Return via `jalr zero, 0(ra)` executes cleanly. | P3-FR-001, P3-FR-006 |
+| P3-AC-15 | Given environment instructions `ECALL` and `EBREAK`, when stepped, then execution halts cleanly with explicit stop reasons `environment_call` or `breakpoint_trap` without crashing the session or engine. | P3-FR-014 |
+| P3-AC-16 | Given valid RV32I assembly source with local labels and ABI aliases, when loaded, then the assembler generates exact machine bytes and produces a valid `ProgramImage`. | P3-FR-008 |
+| P3-AC-17 | Given addressed RV32 disassembly text with hex bytes, when loaded, then machine bytes are authoritative and disassemble into valid `ProgramImage` instruction records without requiring ARM mapping symbols. | P3-FR-009 |
+| P3-AC-18 | Given representative RV32I test snippets, when compared against an independent `llvm-mc` or GNU binutils oracle, then assembled machine bytes match the oracle outputs byte-for-byte. | P3-FR-010 |
+| P3-AC-19 | Given an RV32I program loaded in a session, when bounded Run is triggered, consecutive Steps execute up to the limit; when Stop is signaled concurrently, Run halts cleanly at the next Step boundary. | P3-FR-013 |
+| P3-AC-20 | Given a pre-execution breakpoint on an RV32I instruction address, when Run is triggered, execution halts before executing the target instruction; resuming bypasses the breakpoint for one step. | P3-FR-013 |
+| P3-AC-21 | Given an active memory watchpoint on a memory range, when an RV32I load or store accesses that range, then committed `watchpoint_hits` are reported on single Step, and Run terminates with stop reason `watchpoint`. Rolled-back failed steps never trigger watchpoints. | P3-FR-013 |
+| P3-AC-22 | Given several executed RV32I steps, when Step Back is invoked, Runtime State is rewound to the preceding step boundary, preserving `step_seq` invariance and incrementing `state_revision`. | P3-FR-013 |
+| P3-AC-23 | Given an RV32I session with manual edits, when Reset is invoked, the session cleanly restores state from the User Baseline State. | P3-FR-013 |
+| P3-AC-24 | Given a browser connected to an RV32I session, the UI dynamically renders `x0`–`x31` with ABI labels, suppresses CPSR and flags panels, and enables Step/Run/Breakpoint interactions. | P3-FR-015 |
+
+

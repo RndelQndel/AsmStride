@@ -1,10 +1,10 @@
 # ArmStride Architecture
 
-Status: Architecture specification for [SRS.md](SRS.md). Product P0 baseline is fully verified and accepted as the stable foundation across 388 integration tests and Playwright suites. This document defines the Product P1 architecture design and implementation roadmap; see [milestones/P1.md](milestones/P1.md) for the dedicated milestone specification.
+Status: Architecture specification for [SRS.md](SRS.md). Product P0 and Product P1 baselines are fully verified and accepted as the stable foundation across 410 integration tests and Playwright suites. Product P2 defines the completed/defined ARM debugger and input expansion baseline (see [milestones/P2.md](milestones/P2.md)). Product P3 defines the planned multi-ISA expansion to RISC-V (RV32I) with feasibility verified via spike (see [milestones/P3.md](milestones/P3.md)).
 
 ## 1. Architectural principles and requirement basis
 
-The SRS is the behavioral contract. Its baseline assumptions A-01–A-08, Product P1 assumptions P1-A-01–P1-A-08, engine-based execution scope, memory policy, user-baseline lifecycle, and operational bounds are binding here. [concept.md](concept.md) supplies product intent; [README.md](../README.md) supplies the public summary. Historical Phases 0–8 describe how the P0 product was built and verified, and now serve as immutable historical evidence. Product P1 is organized into dependency-ordered implementation stages (P1-A through P1-F).
+The SRS is the behavioral contract. Its baseline assumptions A-01–A-08, Product P1 assumptions P1-A-01–P1-A-08, Product P2 assumptions P2-A-01–P2-A-10, engine-based execution scope, memory policy, user-baseline lifecycle, and operational bounds are binding here. [concept.md](concept.md) supplies product intent; [README.md](../README.md) supplies the public summary. Historical Phases 0–8 (P0) and Stages P1-A–P1-F (P1) describe how the baselines were built and verified, and now serve as immutable historical evidence. Product P2 is organized into dependency-ordered implementation stages (P2-A through P2-F) with a parallel, non-blocking Cortex-M feasibility research track (P2-R).
 
 Apply YAGNI to a small local developer tool: one process, normal HTTP, in-memory sessions, and one execution engine. There is no database, authentication service, distributed worker, plugin registry, symbolic execution, or angr dependency. There is no backward-compatibility requirement. Separate pure parsing/normalization from execution, and execution policy from HTTP and rendering. Use small modules and composition; introduce interfaces only at demonstrated boundaries. ARM details belong in one profile/codec and the Unicorn adapter, not in endpoint handlers or Svelte components.
 
@@ -25,7 +25,7 @@ The core owns product semantics. Unicorn supplies CPU execution, not session pol
 | FR-020 | In-memory session registry and per-session lock | Isolation, concurrent requests, deletion/expiry tests |
 | FR-021, FR-024 | FastAPI boundary, local launcher, Svelte controls, session Step counter | API/browser workflows and monotonic `step_seq` tests |
 
-#### Product P1 requirement map
+#### Completed Product P1 baseline map
 
 | P1 obligations | Responsible components | Primary verification |
 | --- | --- | --- |
@@ -37,16 +37,49 @@ The core owns product semantics. Unicorn supplies CPU execution, not session pol
 | P1-FR-013, P1-FR-014, P1-FR-015, P1-FR-016 | `BreakpointRegistry`, `SimulationSession`, breakpoint API routes | Pre-execution stop tests, one-time resume bypass tests, lifecycle tests |
 | P1-FR-017 | Svelte `CodeView`, `Toolbar`, `StatusPanel`, typed API client | Frontend component and Playwright workflow tests for mixed listings, Run/Stop, breakpoints |
 
+#### Product P2 requirement map
+
+| P2 obligations | Responsible components | Primary verification |
+| --- | --- | --- |
+| P2-FR-001, P2-FR-002, P2-FR-006 | `ElfLoader`, `ElfHeaderValidator`, `ProgramImage` validation | ELF fixture contracts, architecture/class/endianness rejection tests, resource bounds tests |
+| P2-FR-003, P2-FR-004 | `ElfSegmentMapper`, `MemoryState`, `DataRegion` | PT_LOAD executable/data mapping tests, BSS explicit zero-init tests, memory bounds tests |
+| P2-FR-005 | `SimulationSession.load`, `e_entry` initialization | Entry-point start PC tests, Thumb entry canonicalization and mode initialization tests |
+| P2-FR-007, P2-FR-008 | `SymbolTable`, `ProgramMetadata`, decoupled symbol indexer | Symbol resolution tests, stripped ELF equivalence tests, duplicate/local disambiguation tests |
+| P2-FR-009, P2-FR-010 | `LineTable`, `ProgramMetadata`, DWARF `.debug_line` adapter | DWARF line mapping tests, missing-source metadata display tests, malformed DWARF tolerance tests |
+| P2-FR-011, P2-FR-015 | `WatchpointRegistry`, `SimulationSession` | Watchpoint CRUD tests, address range validation tests, lifecycle survival tests |
+| P2-FR-012, P2-FR-014 | `SimulationSession.step/run`, committed memory event inspector | Post-instruction committed boundary stop tests, same-value write trigger tests, multi-access LDM/STM tests |
+| P2-FR-013 | `SimulationSession.step`, transactional rollback coordinator | Faulted Step isolation tests (unmapped/failed accesses do not fire watchpoints) |
+| P2-FR-016, P2-FR-017, P2-FR-021 | `ExecutionHistoryJournal`, `SimulationSession.step_back` | Exact register/CPSR/PC/memory restoration tests, User Baseline isolation tests, capacity FIFO tests |
+| P2-FR-018, P2-FR-019, P2-FR-020 | `SimulationSession`, monotonic `step_seq`, history invalidator | Monotonic counter invariance tests, branching forward-purge tests, manual edit invalidation tests |
+| P2-FR-022 | Svelte `CodeView`, `Toolbar`, `WatchpointPanel`, `StatusPanel` | Frontend component and Playwright workflow tests for ELF upload, symbols, watchpoints, and Step Back |
+
+#### Product P3 planned requirement map (RISC-V Introduction — RV32I)
+
+| P3 obligations | Responsible components | Primary verification |
+| --- | --- | --- |
+| P3-FR-001, P3-FR-007 | `RiscvUnicornBackend`, `BaseUnicornBackend`, `SimulationSession` | Headless P3 spike, RV32I execution tests, 32-bit wrapping arithmetic, rollback tests |
+| P3-FR-002, P3-FR-003 | `ArchitectureProfile`, `MachineState`, `SimulationSession` | Strict `x0` immutability tests, rejection of edits to `x0`/`zero`, ABI alias mapping tests |
+| P3-FR-004, P3-FR-005 | `domain.models`, `ProgramImage`, `Instruction` | Multi-ISA profile decoupling, dynamic execution mode separation, profile validation tests |
+| P3-FR-006 | `RiscvControlFlowInterpreter`, `BranchAnalysis` | RV32I branch condition evaluation tests (`BEQ`, `BLT`, etc.), JAL/JALR target tests |
+| P3-FR-008, P3-FR-010 | `RiscvAssembler`, golden test suite | Assembly source tests, label resolution, independent `llvm-mc`/GNU oracle equivalence |
+| P3-FR-009 | `RiscvDisassemblyParser`, `Capstone` RV32 decoder | Addressed disassembly import tests, authoritative machine bytes tests |
+| P3-FR-011, P3-FR-012 | `MemoryState`, `SimulationSession.load` | Partial memory tests, synthetic scratch stack at `0x200F0000`, `sp`/`x2` initialization |
+| P3-FR-013 | `SimulationSession` debugger mechanisms | Run, Stop, Breakpoints, Watchpoints, Step Back, and Reset reuse tests on RV32I sessions |
+| P3-FR-014 | `RiscvControlFlowInterpreter`, `SimulationSession` | `ECALL` and `EBREAK` stop trap tests, actionable stop reason reporting |
+| P3-FR-015 | Svelte `RegisterPanel`, `ProgramInput`, `CodeView`, API views | Dynamic register rendering, suppression of CPSR/flags on RISC-V, UI workflow tests |
+| P3-FR-016 | Test runner and regression fixtures | Full ARMv7-A / Thumb-2 automated regression green verification |
+
 ## 2. Recommended technology stack
 
-Unicorn 2.1.4, Capstone 5.0.7 and Keystone 0.9.2 are installed and verified on the recorded host; FastAPI 0.141.1, Pydantic 2.13.5 and Uvicorn 0.54.0 implement the API; Phase 7 implements Svelte/TypeScript/Vite; exact frontend versions are pinned in its manifest and lockfile. Pin compatible releases and lock dependencies during implementation after the backend correctness gate in Section 15. No arbitrary “latest version” requirement is needed.
+Unicorn 2.1.4, Capstone 5.0.7 and Keystone 0.9.2 are installed and verified on the recorded host; FastAPI 0.141.1, Pydantic 2.13.5 and Uvicorn 0.54.0 implement the API; Phase 7 implements Svelte/TypeScript/Vite; exact frontend versions are pinned in its manifest and lockfile. In Product P2, `pyelftools` is introduced for reading ELF headers, PT_LOAD segments, symbol tables, and DWARF `.debug_line` sections. Pin compatible releases and lock dependencies during implementation after the backend correctness gate in Section 15. No arbitrary “latest version” requirement is needed.
 
 | Choice | Why it fits / trade-off |
 | --- | --- |
 | Python 3.12+ | Suitable for text normalization, small immutable domain records, tests, and a thin execution-library adapter. Native CPU execution stays in Unicorn. Python is an implementation choice, not an input format or product identity. |
-| Unicorn Engine, Python binding | Sole P0 CPU executor. It exposes register/memory access, execution control, and hooks needed for the Step boundary. It does not reconstruct firmware or determine what memory is known. Its precise ARM/Thumb behavior must pass the conformance gate; it is not a substitute for the SRS. See the [official tutorial](https://www.unicorn-engine.org/docs/tutorial.html) and [FAQ](https://github.com/unicorn-engine/unicorn/blob/master/docs/FAQ.md). |
+| Unicorn Engine, Python binding | Sole P0/P1/P2 CPU executor. It exposes register/memory access, execution control, and hooks needed for the Step boundary. It does not reconstruct firmware or determine what memory is known. Its precise ARM/Thumb behavior must pass the conformance gate; it is not a substitute for the SRS. See the [official tutorial](https://www.unicorn-engine.org/docs/tutorial.html) and [FAQ](https://github.com/unicorn-engine/unicorn/blob/master/docs/FAQ.md). |
 | Capstone, Python binding | A small additional runtime dependency for decoding bytes, validating instruction width, identifying operands/conditions/control-flow families, and showing decoded text. This supports FR-004, FR-017, and FR-022; it is not a second execution engine or binary-analysis framework. Parsing pasted mnemonic strings cannot reliably identify aliases, PC writes, or misleading text. See [Python API and instruction detail](https://www.capstone-engine.org/lang_python.html). |
 | Keystone Engine 0.9.2, Python binding | ARM/Thumb snippet assembler behind the application-owned AssemblerBackend contract. Receives the origin, emits bytes; no objects/linker or firmware toolchain in the product workflow. Native packaging and mapping limitations are recorded in Section 3. |
+| pyelftools (P2) | Pure-Python library for reading ELF structures and DWARF debug information. Used strictly within the ELF loader pipeline (`src/armstride/elf/`) to extract headers, loadable PT_LOAD segments, symbol tables, and `.debug_line` tables into domain records. It is never imported by the simulation core, session registry, API schemas, or frontend, and its native objects never leak across domain boundaries. Pin compatible release (e.g. 0.31+) when implementing Stage P2-A. |
 | FastAPI with Pydantic and Uvicorn | A compact request/response boundary with typed validation and generated OpenAPI for the frontend contract. Domain records remain independent of Pydantic. A minimal custom HTTP server would require more manual validation/error plumbing; Django is unnecessary. [FastAPI features](https://fastapi.tiangolo.com/features/) support this choice. |
 | pytest | Parser tables, core behavior, real-engine integration, and API tests share a simple Python test runner. No test service or external database is needed. |
 | uv | Manage the Python environment, dependency resolution/lock, and local developer commands in one tool. It does not become a runtime service. See [uv documentation](https://docs.astral.sh/uv/). |
@@ -68,18 +101,24 @@ The `armstride` command starts one Uvicorn worker on loopback, serves `/api` and
 
 ```mermaid
 flowchart TD
-    UI[Svelte UI: CodeView, Run/Stop, Breakpoints] --> API[FastAPI routes: step, run, stop, breakpoints]
+    UI[Svelte UI: CodeView, Toolbar, Watchpoints, Step Back] --> API[FastAPI routes: step, run, stop, breakpoints, watchpoints, step-back]
     API --> Sessions[In-memory session registry with operation_lock and stop_event]
-    API --> Core[SimulationSession: Step, bounded Run, Breakpoint registry]
+    API --> Core[SimulationSession: Step, bounded Run, Breakpoint & Watchpoint registries, ExecutionHistory]
     Sessions --> Core
-    Core --> Domain[ProgramImage: Instructions + DataRegions; Breakpoints, MemoryState, RunResult]
+    Core --> Domain[ProgramImage: Instructions + DataRegions; MemoryState, RunResult, StepResult]
+    Core --> Metadata[ProgramMetadata: SymbolTable + LineTable]
     API --> Parsing[Format parsers: $a/$t/$d state transitions]
     API --> Assembly[AssemblerBackend: single-mode source assembly]
+    API --> ElfLoader[ElfLoader: Direct ARM ELF & DWARF line adapter]
     Assembly --> Domain
     Assembly --> Keystone[Keystone binding]
     Assembly --> Profile[ARM profile and codec]
     Parsing --> Domain
     Parsing --> Profile
+    ElfLoader --> Domain
+    ElfLoader --> Metadata
+    ElfLoader --> PyElfTools[pyelftools binding]
+    ElfLoader --> Profile
     Core --> Profile
     Profile --> Capstone[Capstone adapter]
     Core --> Port[ExecutionBackend contract]
@@ -88,9 +127,9 @@ flowchart TD
     UnicornAdapter --> Unicorn[Unicorn binding]
 ```
 
-Arrows show source dependencies or calls; the backend implements a core-owned contract. The composition root selects the ARM assembler and parser producers, session registry, and execution backend factory. Both producers return an optional validated ProgramImage; only a successful candidate is passed to SimulationSession.load. FastAPI routes validate transport input, look up and lock a session, call one core operation, and serialize results. They do not implement register aliases, branch evaluation, instruction sizes, memory defaults, or Reset behavior.
+Arrows show source dependencies or calls; the backend implements a core-owned contract. The composition root selects the ARM assembler, parser, and ELF loader producers, session registry, and execution backend factory. All three producers return an optional validated ProgramImage (ELF additionally returns ProgramMetadata); only a successful candidate is passed to SimulationSession.load. FastAPI routes validate transport input, look up and lock a session, call one core operation, and serialize results. They do not implement register aliases, branch evaluation, instruction sizes, memory defaults, or Reset behavior.
 
-The simulation core imports neither FastAPI/Pydantic nor frontend code. Parsers and assemblers create records, never emulator instances; the core does not import either producer or Keystone. In P1, `SessionEntry` introduces a thread-safe `stop_event` primitive that allows `POST .../stop` to signal cancellation directly without waiting on the active Run mutation lock. HTTP is the only UI/core transport; there is no WebSocket or streaming in P1.
+The simulation core imports neither FastAPI/Pydantic nor frontend code. Parsers, assemblers, and ELF loader create records, never emulator instances; the core does not import Keystone or pyelftools. In P1, `SessionEntry` introduces a thread-safe `stop_event` primitive that allows `POST .../stop` to signal cancellation directly without waiting on the active Run mutation lock. In P2, `SimulationSession` incorporates a `WatchpointRegistry` (committed-boundary memory access monitoring) and an `ExecutionHistoryJournal` (bounded, linear Step Back journal). HTTP is the only UI/core transport; there is no WebSocket or streaming.
 
 ## 4. Domain model and ownership
 
@@ -101,16 +140,23 @@ Favor immutable value records for parse output, instructions, data regions, snap
 | Instruction | One addressed decoded instruction: `address`, `raw_bytes`, derived `size`, `source_line`, `source_text`, `display_text`, `decoded_text`, `architecture`, `mode` (`arm` or `thumb`), normalized decode metadata, `feature_exclusion` and reason if known. | Immutable member of ProgramImage; retained until reload/session destruction. Contains no library objects/constants. |
 | DataRegion | One addressed concrete data record (e.g. literal pool): `address`, `raw_bytes`, derived `size`, `source_line`, `source_text`, `display_text`. Non-executable; mapped into known memory. | Immutable member of ProgramImage; retained until reload/session destruction. |
 | ProgramImage | Validated executable listing: `instructions` (ARM and Thumb), `data_regions`, `execution_locations` index mapping `(address, mode)` to Instruction, address index, original text, parser format. | Immutable per successful load; shared by current state and baseline. Gaps are neither instructions nor initialized bytes. |
+| ProgramMetadata (P2) | Optional auxiliary debug metadata: `symbols: SymbolTable`, `lines: LineTable`, and ELF section bounds. Completely decoupled from execution; absence never impairs simulation. | Owned by SimulationSession alongside ProgramImage; retained until reload/session destruction. Zero native library objects. |
+| SymbolTable (P2) | Resolved symbol index: `by_address: dict[int, list[SymbolEntry]]`, `by_name: dict[str, SymbolEntry]`. Each entry has `name`, `address`, `size`, `binding` (`LOCAL`/`GLOBAL`/`WEAK`), and `kind` (`FUNC`/`OBJECT`/`NOTYPE`). | Value object inside ProgramMetadata; read-only metadata for UI navigation, PC labels, and breakpoint targeting. |
+| LineTable (P2) | DWARF `.debug_line` index mapping instruction addresses to `(file_path, line_number, column)`. Does not require or fetch host source text. | Value object inside ProgramMetadata; read-only metadata for source location display. |
 | Breakpoint | Active execution breakpoint: `address`, `mode`. Identifies a valid loaded instruction start. | Value record owned by `BreakpointRegistry` on SimulationSession; preserved across Step, edits, and Reset; cleared on replacement Load. |
-| RunResult | Aggregated result of bounded Run: `start_step_seq`, `end_step_seq`, `steps_committed`, `stop_reason`, `final_state`, `last_step`. | Ephemeral return value of a Run operation; no cumulative execution history is stored. |
+| Watchpoint (P2) | Active memory watchpoint: `address`, `length`, `kind` (`read`, `write`, `read_write`). Watches data memory access in `[address, address + length)`. | Value record owned by `WatchpointRegistry` on SimulationSession; preserved across Step, Run, edits, and Reset; cleared on replacement Load. |
+| WatchpointHit (P2) | Value record of a triggered watchpoint at a committed Step boundary: `watchpoint`, `access_type` (`read` or `write`), `address`, `length`, `triggering_pc`. | Contained in `StepResult.watchpoint_hits` and `RunResult.watchpoint_hit`. |
+| RunResult | Aggregated result of bounded Run: `start_step_seq`, `end_step_seq`, `steps_committed`, `stop_reason` (including `watchpoint`), `final_state`, `last_step`. | Ephemeral return value of a Run operation; no cumulative execution history is stored. |
+| ExecutionHistoryEntry (P2) | Snapshot of state prior to an atomic Step commit: `step_seq`, `registers: RegisterState`, `cpsr: int`, `mode: str`, `pc: int`, `modified_memory` (lazily captured pre-Step original bytes for written intervals; retaining the first pre-value once for multiple writes to the same byte within one instruction), `last_step: Optional[StepResult]`. | Owned by `ExecutionHistoryJournal`; discarded on FIFO capacity limit or linear branching. |
+| HistoryJournal (P2) | Bounded linear history queue (default capacity 100) on SimulationSession. Allows Step Back to restore Runtime State without touching UserBaselineState. | Managed by SimulationSession; cleared on manual edits, Reset, or replacement Load. |
 | AssemblyResult / AssemblerBackend | `assemble(source, profile, mode, base_address)` returns original source, base address, emitted bytes, optional ProgramImage and application Diagnostic values. Single-mode per snippet in P1. | Stateless producer boundary in `assembly.py`; Keystone objects/errors/constants stay in `backends/keystone.py`. No architecture registry. |
 | ArchitectureProfile | Small ARM profile value plus ARM-specific functions: register descriptors/aliases, address width, endianness, alignment, initial CPSR, explicit feature exclusions, condition evaluation, PC normalization. | Application-lifetime read-only object for `armv7-a-le`. |
 | RegisterState | R0–R15 and CPSR values plus origin labels; aliases resolve to the same slot. N/Z/C/V are derived from CPSR, not separately writable storage. | Value snapshot owned by MachineState; replaced on committed operations. |
 | MemoryState | Exact logical code/data/stack intervals, bytes and source labels; answers full-range access checks, pure inspections, validated patches, and cloning for a baseline/rollback. In P1, includes DataRegions as known, readable, non-executable data. | Mutable only through its session; it is authoritative for known bytes. Backend page mappings are a derived representation. |
 | MachineState | Current RegisterState and MemoryState plus active mode; immutable public snapshots expose register values and region metadata, not all memory bytes. | Owned by one session. No second independent register source of truth in the UI. Backend state is synchronized at transaction boundaries. |
-| StepResult | One attempted step: instruction identity, before/after PC, deltas, memory events, condition/control-flow result, IT execution context, completion/stop/error. | Retain only latest result per session; no trace history store. See Section 11. |
-| SimulationSession | Program load, manual edits, Step, bounded Run, Reset, breakpoint management, and consistent snapshots. Fields: optional image/backend, Runtime State, optional User Baseline State, `step_seq`, breakpoints, latest result, readiness status. | Created/destroyed by registry. Owns one backend. Does not own HTTP locks, TTL, or request parsing. |
-| UserBaselineState | Program reference, load defaults, registers/CPSR, restart PC and logical memory updated by accepted manual edits only. | Private session-owned state with an independent copy of memory/registers. Every manual edit updates the exact requested fields in baseline and runtime atomically. Reset clones it; CPU execution never mutates it. |
+| StepResult | One attempted step: instruction identity, before/after PC, deltas, memory events, condition/control-flow result, IT execution context, watchpoint hits (P2), completion/stop/error. | Retain only latest result per session in State; historical results held in bounded HistoryJournal (P2). See Section 11. |
+| SimulationSession | Program load, manual edits, Step, bounded Run, Step Back (P2), Reset, breakpoint & watchpoint management, and consistent snapshots. Fields: optional image/metadata/backend, Runtime State, optional User Baseline State, `step_seq`, `max_step_seq`, `state_revision`, breakpoints, watchpoints, history journal, latest result, readiness status. | Created/destroyed by registry. Owns one backend. Does not own HTTP locks, TTL, or request parsing. |
+| UserBaselineState | Program reference, load defaults, registers/CPSR, restart PC and logical memory updated by accepted manual edits only. | Private session-owned state with an independent copy of memory/registers. Every manual edit updates the exact requested fields in baseline and runtime atomically. Reset clones it; CPU execution and Step Back never mutate it. |
 | ParseResult | Optional normalized candidate image (with instructions and data regions), diagnostics, selected/detected format, parsed/ignored counts. | Short-lived per load request. An image is installable only with no errors and at least one instruction. |
 | DomainError / Diagnostic | Stable code, message, structured context, severity and source line when relevant. | Values returned or raised at domain boundaries; independent of HTTP status. |
 | ExecutionBackend | Behavioral contract for initializing, synchronizing edits, checkpoint/restore, attempting one instruction, reading resulting state, and closing native resources. In P1, handles CPSR T-bit mode transitions and ITSTATE preservation. | One UnicornBackend per loaded session. A test fake is the only other necessary implementation. |
@@ -169,6 +215,49 @@ Keystone's supported labels and branches are passed directly to it. P0 admits on
 The result and ProgramImage retain the complete original source. Generated Instruction `source_line` is null, `source_text` is empty, and display text equals decoded text; native statement counts are diagnostic context, never guessed source lines. The public Step identity also permits a null source line. Imported records still require their original one-based line numbers. This deliberately revises the earlier all-instructions-have-a-source-line assumption without weakening parser fixtures. Exact debug/source-line stepping is deferred; no object/debug-information machinery is introduced.
 
 Future RISC-V assembler/parser producers may join the higher-level ProgramImage workflow **after ARM P0 is complete**. This phase adds no RISC-V implementation/dependency, register design, generic ISA registry, or tests. ARM profile validation remains explicit.
+
+### 5.4 Direct ARM ELF loader pipeline
+
+```text
+ELF binary -> ElfHeaderValidator (EM_ARM, 32-bit LE, ET_EXEC only; ET_DYN deferred)
+           -> ElfSegmentMapper (PT_LOAD segments: memory intervals and permissions PF_R, PF_W, PF_X)
+           -> Mapping symbol partitioner ($a, $t, $d markers; mixed ARM/Thumb/Data ProgramImage)
+           -> BSS expansion (p_memsz > p_filesz -> explicit known zeros)
+           -> Capstone stream decode ($a and $t ranges up to 10k instructions)
+           -> ProgramImage (instructions + data regions including $d literal pools)
+           -> ElfMetadataExtractor (SymbolTable from .symtab/.dynsym + LineTable from DWARF .debug_line)
+           -> ProgramMetadata (symbols + lines)
+           -> SimulationSession.load(image, metadata, initial_pc=e_entry)
+```
+
+1. **Third producer role (ADR-019):** ELF loading is an input producer that emits the existing `ProgramImage` domain structure plus auxiliary `ProgramMetadata`. It creates zero parallel execution machinery (`ElfSimulationSession`, `ElfExecutionBackend`, etc.). After loading, the simulation core operates identically whether code originated from source assembly, disassembly import, or direct ELF.
+2. **Supported ELF subset:**
+   - Architecture: ARM (`EM_ARM` / 0x28).
+   - Format: 32-bit little-endian (`ELFCLASS32`, `ELFDATA2LSB`).
+   - ELF Type: Strictly `ET_EXEC` (executable). Position-independent executables (`ET_DYN` / PIE) are deferred to post-P2 until load-bias and relocation semantics are explicitly designed (absence of `PT_INTERP` does not prove `ET_DYN` requires no runtime relocation). Relocatable objects (`ET_REL`), core files (`ET_CORE`), and shared libraries are rejected with `unsupported_elf_type`.
+3. **Memory & segment mapping (ADR-025):**
+   - `PT_LOAD` defines memory placement and permissions (`PF_R`, `PF_W`, `PF_X`). It does NOT dictate that every byte of an executable segment is an instruction.
+   - Executable segments (`PF_X`) are partitioned using ARM ELF mapping symbols (`$a` for ARM, `$t` for Thumb, and `$d` for inline data/literal pools), reusing the mixed ARM/Thumb/Data `ProgramImage` model from P1.
+   - Any `$d` ranges inside executable segments remain non-executable `DataRegion`s mapped into known memory. Direct execution into a `$d` range halts with `non_executable_target`.
+   - Ambiguous mixed executable regions without reliable mapping symbols fail closed with actionable diagnostic `ambiguous_elf_execution_mode`.
+   - Segments with `PT_LOAD` and `PF_R` / `PF_W` without `PF_X` become `DataRegion` sequences (known, non-executable data).
+   - Overlap validation: reject overlapping segments or segments colliding with scratch stack.
+   - BSS zero-initialization: When `p_memsz > p_filesz`, the delta `[p_vaddr + p_filesz, p_vaddr + p_memsz)` is explicitly initialized to known zero bytes as a `DataRegion`. Page-padding bytes outside `p_memsz` remain strictly unknown memory.
+4. **Entry point & initial mode:**
+   - If `e_entry` has bit 0 set (`e_entry & 1 == 1`), the initial mode is `thumb` and canonical starting PC is `e_entry & ~1`.
+   - If bit 0 is clear, initial mode is `arm` and starting PC is `e_entry`.
+   - Address `0x00000000` is NOT inherently invalid; validate it against the loaded executable image (valid if an executable instruction is mapped there).
+   - The canonical starting PC must match a loaded instruction start; otherwise loading is rejected with `invalid_pc`.
+5. **Independent resource bounds (ADR-025):**
+   - Raw ELF input file size <= 10 MiB.
+   - Decoded instruction count <= 10,000 instructions.
+   - Total logical loaded memory (including BSS) <= 16 MiB.
+   - Backing-page allocation <= 64 MiB (reusing MemoryState page budget).
+   - ELF segment count <= 32 segments, section count <= 128 sections.
+   - Exceeding any limit immediately rejects the file with an actionable diagnostic (`elf_resource_limit_exceeded`). Speculative lazy disassembly is avoided.
+6. **Metadata extraction & decoupling (ADR-020):**
+   - Symbols extracted from `.symtab` or `.dynsym`: functions (`STT_FUNC`), objects (`STT_OBJECT`), and mapping labels. Stored in `SymbolTable`. Stripped ELFs without symbols are fully supported for execution.
+   - DWARF source lines extracted from `.debug_line` into `LineTable`. Absence or corruption of DWARF does not halt execution; line metadata simply falls back to null. Source files are not read from the host filesystem.
 
 ## 6. Simulation core and state transactions
 
@@ -262,6 +351,57 @@ def run(self, stop_event: threading.Event, max_steps: int = 10_000, max_seconds:
 5. **One-time resume bypass:** When Run starts at an active breakpoint, it bypasses that breakpoint once for the first step, then immediately resumes normal checking. If a loop branches back to the breakpoint, Run halts again.
 6. **Lifecycle:** Breakpoints persist across Steps, manual edits, and Reset. Breakpoints are cleared when a new program is loaded via replacement Load.
 
+### 6.6 Memory Watchpoint mechanics
+
+1. **Watchpoint domain model:** Stored as `Watchpoint(address, length, kind)` where `kind` is `read`, `write`, or `read_write`. Up to 32 concurrent watchpoints are permitted.
+2. **Post-instruction committed-boundary evaluation & dual observability (ADR-021):**
+   - Breakpoints stop *before* instruction execution.
+   - Watchpoints are discovered through actual committed memory accesses performed by an executing instruction.
+   - Dual observability on Step and Run:
+     - When a single Step completes and commits, if committed reads or writes overlap active watchpoints, `StepResult.watchpoint_hits` reports them while the session remains paused.
+     - When bounded Run executes, after each Step commits, if committed watchpoint hits exist, Run halts immediately with `stop_reason = "watchpoint"`.
+     - Multi-access instructions (e.g. `LDM`, `STM`): ordered multiple hits within the single Step are preserved.
+     - Never rollback: A successful instruction is never rolled back merely because it triggered a watchpoint. State remains at a clean architectural Step boundary.
+3. **Failed step isolation:** If an instruction faults (e.g. unmapped memory or invalid instruction), the Step transaction rolls back completely. Attempted accesses in a failed step never trigger watchpoint hits.
+4. **Same-value writes:** A write operation that does not alter the numeric value of memory (`before_bytes == after_bytes`) is still an architectural CPU write event and MUST trigger any overlapping write watchpoint.
+5. **Separation of execution stop state from debugger observations:**
+   - A Step may simultaneously produce an architectural stop condition such as `pc_not_loaded` and one or more Watchpoint hits.
+   - Neither fact is discarded: `RunResult.stop_reason` is `"watchpoint"`, and `RunResult.last_step.stop_condition` retains `"pc_not_loaded"`.
+   - Deterministic stop precedence matrix:
+     1. Pre-execution Breakpoint (Run stops before instruction execution; no memory access occurs, so no watchpoint can hit).
+     2. Execution Fault (unmapped access, illegal instruction -> atomic rollback; no watchpoint hits; Run stops with fault reason).
+     3. Post-execution Watchpoint Hit (instruction commits; Run stops with `"watchpoint"`; architectural stop preserved in `last_step_result`).
+     4. Post-execution Architectural Stop (`pc_not_loaded` halts Run if no watchpoint was hit).
+     5. User Stop (`POST /api/sessions/{id}/stop` signals clean stop between Steps).
+     6. Run bounds (`step_limit` or `time_limit`).
+6. **Decoupled from MMIO (ADR-024):** Watchpoints monitor logical memory accesses passively; they do not perform callbacks, alter values, simulate peripherals, or advance device timers.
+7. **Lifecycle:** Watchpoints persist across Steps, Runs, manual edits, and Reset. Cleared only on explicit deletion or replacement program Load.
+
+### 6.7 Bounded Step Back and execution history journal
+
+1. **Journal structure:** `ExecutionHistoryJournal` maintains a bounded linear deque of `ExecutionHistoryEntry` records (default capacity 100).
+2. **Refined recorded state:** Prior to committing each successful atomic Step, a snapshot of the pre-step state is pushed to the journal:
+   - Registers R0–R15, CPSR, PC, and execution mode at the step boundary.
+   - Pre-step original memory bytes captured lazily from the step's committed write events / write hooks.
+   - For multiple writes to the same byte within one instruction, retain the pre-Step original byte once (the first pre-value observed) for exact reverse restoration.
+   - Previous `last_step` result and current `step_seq`.
+3. **Rewind mechanics:**
+   - `step_back()` pops the most recent history entry.
+   - Restores the exact register state, CPSR, PC, and memory bytes into the active `SimulationSession` and native backend.
+   - Sets session status to `ready` or `stopped` depending on whether the restored PC is loaded.
+4. **Monotonic `step_seq` invariance and state revisions (ADR-022):**
+   - `step_seq` counts committed architectural forward Steps only.
+   - Step Back must NOT increment or decrement `step_seq`.
+   - After stepping backward, a newly committed forward Step continues from the existing monotonic maximum (`max_step_seq + 1`), not the historical restored value.
+   - A separate `state_revision` integer counter tracks all state mutations (Step, Step Back, edit, Reset, Load) monotonically for client synchronization and cache invalidation.
+5. **UserBaselineState isolation:**
+   - Step Back restores Runtime State ONLY.
+   - UserBaselineState is immutable with respect to execution and Step Back; Reset always restores from the intact User Baseline.
+6. **Linear history & invalidation rules:**
+   - If the user executes forward (`step()` or `run()`) after stepping back, any forward history entries beyond the current rewind point are purged (linear history; no branching time-travel trees).
+   - Any manual state modification (register edit, memory patch, PC change) invalidates and clears the entire history journal.
+   - Session Reset and replacement program Load clear the entire history journal.
+
 ## 7. Unicorn boundary and ARM/Thumb semantics
 
 ### Minimum backend contract
@@ -331,27 +471,33 @@ After a lost Step response, GET State and compare with the last observed counter
 
 Program load is replacement, not append: retrying the same load creates fresh default baseline/runtime and discards the prior experiment. After a lost Load response, offer an explicit retry with that reset effect stated. A program-recovery endpoint is unnecessary. Idempotency storage and shared session editing remain out of scope.
 
-## 10. P0 HTTP API
+## 10. HTTP API (P0/P1 baseline & P2 extensions)
 
 ### Conventions and shared shapes
 
-Base path: `/api/sessions`. JSON only, except DELETE's empty response. API integer values are unsigned numeric integers (all 32-bit values are exactly representable in JavaScript); UI accepts decimal or `0x` input and formats addresses as hex. Memory `bytes` is an even-length hex string in memory order, for example `01000000`. No arbitrary filesystem paths are accepted.
+Base path: `/api/sessions`. JSON only, except DELETE's empty response and multipart/form-data for ELF binary upload. API integer values are unsigned numeric integers (all 32-bit values are exactly representable in JavaScript); UI accepts decimal or `0x` input and formats addresses as hex. Memory `bytes` is an even-length hex string in memory order, for example `01000000`. No arbitrary host filesystem paths are accepted or read.
 
 All mutation requests are serialized by the frontend. Validation rejects unknown fields and ambiguous patch alternatives. Limits are checked before allocating memory. Request-level failures use the envelope below. A valid Step attempt returns HTTP 200 even if simulated execution fails; its StepResult contains a domain error. No native traceback reaches the client.
 
 | Shape | Fields |
 | --- | --- |
-| `State` | `session_id`, `status` (`empty`, `ready`, `stopped`, `unavailable`), `profile`, `mode`, `baseline_pc`, `step_seq`, `registers` (canonical names to `{value, origin}`), `cpsr`, `flags` (N/Z/C/V), `pc`, `stack` (`base`, `size`), `regions` (`base`, `size`, `kind`, permissions), `last_step` or null. Empty sessions have null machine/profile fields and empty region lists; their `step_seq` is zero. |
-| `Program` | `profile`, `mode`, `format` (including `assembly`), original `source_text`, `instructions` with address/bytes/size/source line/source and decoded text/feature-exclusion marker, plus diagnostics/counts. Returned on replacement load, not every Step; a lost load response is handled by an explicit replacement retry. |
+| `State` | `session_id`, `status` (`empty`, `ready`, `stopped`, `unavailable`), `profile`, `mode`, `baseline_pc`, `step_seq`, `state_revision` (P2), `registers` (canonical names to `{value, origin}`), `cpsr`, `flags` (N/Z/C/V), `pc`, `stack` (`base`, `size`), `regions` (`base`, `size`, `kind`, permissions), `last_step` or null, `history_depth` (P2). Empty sessions have null machine/profile fields and empty region lists; their `step_seq` and `state_revision` are zero. |
+| `Program` | `profile`, `mode`, `format` (`assembly`, `disassembly`, or `elf`), original `source_text`, `instructions` with address/bytes/size/source line/source and decoded text/feature-exclusion marker/DWARF line tag (P2), plus diagnostics/counts and symbol summary (P2). Returned on replacement load, not every Step. |
 | `Diagnostic` | `code`, `severity`, `message`, `line` or null, `source_text` when applicable, structured `context` including conflicting line/address. |
 | `MemoryWindow` | `address`, `length`, `cells` (each `{value: byte or null, origin: code/stack/user/unknown}`); null means unknown. Words are derived only from four known bytes. |
+| `BreakpointView` | `address`, `mode`. Validated instruction start. |
+| `WatchpointView` (P2) | `address`, `length`, `kind` (`read`, `write`, `read_write`). |
+| `WatchpointHitView` (P2) | `address`, `length`, `access_type` (`read` or `write`), `triggering_pc`. |
+| `SymbolView` (P2) | `name`, `address`, `size`, `binding` (`LOCAL`/`GLOBAL`/`WEAK`), `kind` (`FUNC`/`OBJECT`/`NOTYPE`). |
+| `LineView` (P2) | `address`, `file_path`, `line_number`, `column` (optional). |
+| `StepBackResult` (P2) | `status` (`ok` or `empty`), `restored_step_seq`, `current_step_seq`, `state_revision`, `history_depth`, `state`. |
 | `ErrorEnvelope` | `error: {code, message, context}`, optional `diagnostics` and `preview`. State remains unchanged for rejected operations. |
 
 Public canonical register keys are lowercase `r0` through `r12`, `sp`, `lr`, and `pc`; `r13`/`r14`/`r15` are accepted input aliases. CPSR and its origin are represented separately (`cpsr: {value, origin}`), and `flags` are derived from its value.
 
-`ready` means a program is loaded and no stop is pending; `stopped` records a recoverable failed Step or `pc_not_loaded`; `unavailable` requires Reset/reload after native restoration failure. A stopped session can still be edited or retried. Successful edits clear the last result and set ready if PC is loaded, otherwise stopped. Load/Reset produce ready; empty is only for a session with no program.
+`ready` means a program is loaded and no stop is pending; `stopped` records a recoverable failed Step, `pc_not_loaded`, or watchpoint hit; `unavailable` requires Reset/reload after native restoration failure. A stopped session can still be edited, retried, or stepped back. Successful edits clear the last result and set ready if PC is loaded, otherwise stopped. Load/Reset produce ready; empty is only for a session with no program.
 
-State includes the small register set for resynchronization; it never embeds all memory bytes or repeats the program. Full region metadata is acceptable under the P0 workload; memory inspection remains bounded. State and StepResult share PC/CPSR values for rendering and validation, and carry the same post-attempt `step_seq`. No revision field or request-history store is added.
+State includes the small register set for resynchronization; it never embeds all memory bytes or repeats the program. Full region metadata is acceptable under the P0 workload; memory inspection remains bounded. State and StepResult share PC/CPSR values for rendering and validation, and carry the same post-attempt `step_seq`. In P2, `state_revision` is introduced specifically to track state mutations (Step, Step Back, edit, Reset, Load) monotonically for client cache synchronization without overloading `step_seq`.
 
 ### Endpoints
 
@@ -361,23 +507,28 @@ State includes the small register set for resynchronization; it never embeds all
 | --- | --- | --- | --- |
 | `POST /api/sessions` | Create empty page-owned session. Body `{}`. | 201 `{session_id, state: State, limits}` | 429 `session_limit` |
 | `DELETE /api/sessions/{id}` | Destroy session and native resources. No body. | 204, no body | 404 for already missing/expired ID |
-| `POST /api/sessions/{id}/program` | Produce and atomically replace program and both states with load defaults; preserve `step_seq`. Common fields: `{input_kind: "assembly" or "disassembly", text, profile: "armv7-a-le", mode: "arm" or "thumb", stack?: {base, size}}`. Assembly additionally requires `base_address`; disassembly accepts `format: "auto" or "fromelf" or "objdump" or "generic"` and `encoding: "auto" or "words" or "bytes"` (both default auto). Reject fields belonging to the other workflow. | 200 `{program: Program, state: State}` with diagnostics | 413 input limit; 422 assembly/source-policy/parse/duplicate/overlap/invalid encoding/unsupported profile or mode/stack conflict; 409 resource limit; 503 backend unavailable. Failed parse may include partial preview; failed assembly exposes no executable bytes/image. |
+| `POST /api/sessions/{id}/program` | Produce and atomically replace program and both states with load defaults; preserve `step_seq`. Supports `input_kind`: `"assembly"`, `"disassembly"`, or `"elf"`. Assembly requires `base_address`; disassembly accepts `format` and `encoding`; ELF accepts multipart file upload or JSON `{input_kind: "elf", data_base64: "..."}`. Stack override optional. | 200 `{program: Program, state: State}` with diagnostics | 413 input limit; 422 parse/assembly/ELF validation errors; 409 resource limit; 503 backend unavailable. |
 | `GET /api/sessions/{id}/state` | Obtain authoritative snapshot and latest StepResult; no body. | 200 `State` | No program is valid: returns empty state. |
-| `PUT /api/sessions/{id}/pc` | Set runtime and baseline restart PC without executing. `{value}`. | 200 `State` | 409 `program_not_loaded`; 422 `invalid_pc` |
-| `PUT /api/sessions/{id}/registers/{name}` | Set R0–R15 or SP/LR/PC alias, case-insensitive; CPSR also accepted with only N/Z/C/V changes. `{value}`; CPSR alone also permits optional `mask` for a flag toggle. With a mask, only masked bits of `value` are used; the mask must be a nonzero subset of `0xF0000000`. Without a mask, validate protected bits against runtime and apply all four editable flags. Apply the same explicit edit to baseline and runtime. | 200 `State` | 409 no program/unavailable state; 422 `invalid_register`, `invalid_register_value`, `protected_cpsr_bits`, `invalid_pc` |
-| `PUT /api/sessions/{id}/memory` | Inject/overwrite/create exact data interval. Body is either `{address, bytes}` or `{address, zero_fill_length}`. UI word entry converts to four LE bytes. Empty patches are invalid. | 200 `State` | 409 no program/resource limit/unavailable state; 422 `invalid_memory_patch`, address overflow, code overlap; 413 patch limit |
-| `GET /api/sessions/{id}/memory?address={n}&length={n}` | Inspect logical memory; query values are decimal integers; 1–4096 bytes. | 200 `MemoryWindow`, including unknown cells | 409 no program; 422 range/overflow/inspection limit |
-| `POST /api/sessions/{id}/step` | Attempt one instruction. Body `{}`. | 200 `{result: StepResult, state: State}`; `result` equals `state.last_step` | 409 no program/unavailable state. Simulated invalid PC, unsupported instruction, memory faults, and execution errors are inside the 200 StepResult, not transport errors. |
-| `POST /api/sessions/{id}/reset` | Copy UserBaselineState into runtime, preserve manual evidence and `step_seq`, clear latest result. Body `{}`. | 200 `State` | 409 `program_not_loaded`; 503 backend recreation failure |
-| `POST /api/sessions/{id}/run` | Execute bounded Run loop of atomic Steps until bound, breakpoint, stop, or fault. Body `{step_limit?: int, time_limit_ms?: int}`. Default step limit 10,000; default time limit 2,000 ms. | 200 `{run_result: RunResult, state: State}` | 409 no program/unavailable state; 422 invalid limit bounds. Faults halt Run and return 200 with `run_result.stop_reason` and rolled-back StepResult. |
-| `POST /api/sessions/{id}/stop` | Concurrent request to signal active Run loop to stop cleanly before the next Step. Body `{}`. Signals `stop_event` without waiting on operation lock. | 200 `{stopped: bool}` | 404 session not found. Always succeeds if session exists, whether Run is active or idle. |
+| `PUT /api/sessions/{id}/pc` | Set runtime and baseline restart PC without executing. `{value}`. Invalidates Step Back history. | 200 `State` | 409 `program_not_loaded`; 422 `invalid_pc` |
+| `PUT /api/sessions/{id}/registers/{name}` | Set R0–R15 or SP/LR/PC alias, case-insensitive; CPSR flags. Invalidates Step Back history. | 200 `State` | 409 no program/unavailable state; 422 `invalid_register`, `protected_cpsr_bits`, `invalid_pc` |
+| `PUT /api/sessions/{id}/memory` | Inject/overwrite exact data interval. Invalidates Step Back history. | 200 `State` | 409 no program/resource limit; 422 `invalid_memory_patch`, code overlap; 413 patch limit |
+| `GET /api/sessions/{id}/memory?address={n}&length={n}` | Inspect logical memory; 1–4096 bytes. | 200 `MemoryWindow`, including unknown cells | 409 no program; 422 range/overflow/inspection limit |
+| `POST /api/sessions/{id}/step` | Attempt one instruction. Pushes pre-state to HistoryJournal. Body `{}`. | 200 `{result: StepResult, state: State}`; `result` equals `state.last_step` | 409 no program/unavailable state. Execution faults return 200 with failed StepResult. |
+| `POST /api/sessions/{id}/step-back` (P2) | Rewind Runtime State by one step from HistoryJournal. Preserves `step_seq`; increments `state_revision`. Body `{}`. | 200 `{result: StepBackResult, state: State}` | 409 no program or `history_empty`; 503 backend sync error |
+| `POST /api/sessions/{id}/reset` | Copy UserBaselineState into runtime, clear history journal, preserve `step_seq`. Body `{}`. | 200 `State` | 409 `program_not_loaded`; 503 backend recreation failure |
+| `POST /api/sessions/{id}/run` | Execute bounded Run loop of atomic Steps until bound, breakpoint, watchpoint, stop, or fault. Body `{step_limit?: int, time_limit_ms?: int}`. | 200 `{run_result: RunResult, state: State}` | 409 no program/unavailable state; 422 invalid limit bounds. |
+| `POST /api/sessions/{id}/stop` | Signal active Run loop to stop cleanly before the next Step. Body `{}`. Non-blocking. | 200 `{stopped: bool}` | 404 session not found. |
 | `GET /api/sessions/{id}/breakpoints` | List active breakpoints in session. No body. | 200 `{breakpoints: list[BreakpointView]}` | 409 no program; 404 session not found. |
-| `POST /api/sessions/{id}/breakpoints` | Add a breakpoint at `(address, mode)`. Body `{address: int, mode?: "arm" or "thumb"}`. Mode defaults to instruction mode at that address. | 200 `{breakpoints: list[BreakpointView]}` | 409 no program; 422 `invalid_breakpoint` (DATA address, gap, unaligned, or invalid mode). |
+| `POST /api/sessions/{id}/breakpoints` | Add a breakpoint at `(address, mode)`. Body `{address: int, mode?: "arm" or "thumb"}`. | 200 `{breakpoints: list[BreakpointView]}` | 409 no program; 422 `invalid_breakpoint`. |
 | `DELETE /api/sessions/{id}/breakpoints/{address}` | Remove breakpoint at address. Optional query `mode`. No body. | 200 `{breakpoints: list[BreakpointView]}` | 409 no program; 404 breakpoint not found. |
+| `GET /api/sessions/{id}/watchpoints` (P2) | List active watchpoints in session. No body. | 200 `{watchpoints: list[WatchpointView]}` | 409 no program; 404 session not found. |
+| `POST /api/sessions/{id}/watchpoints` (P2) | Add memory watchpoint. Body `{address: int, length: int, kind: "read" or "write" or "read_write"}`. | 200 `{watchpoints: list[WatchpointView]}` | 409 no program / watchpoint limit (32); 422 `invalid_watchpoint`. |
+| `DELETE /api/sessions/{id}/watchpoints/{address}` (P2) | Remove watchpoint at address. Optional query `length`. No body. | 200 `{watchpoints: list[WatchpointView]}` | 409 no program; 404 watchpoint not found. |
+| `GET /api/sessions/{id}/symbols` (P2) | List extracted symbol metadata from loaded ELF program. No body. | 200 `{symbols: list[SymbolView]}` | 409 no program; 404 session not found. |
 
-There is no arbitrary-code evaluation, binary upload, WebSocket/SSE, user-management, or database endpoint in P1. Stop is handled via synchronous HTTP request signaling `stop_event`.
+There is no arbitrary-code evaluation, server-side filesystem browsing, WebSocket/SSE, user-management, or database endpoint in P2.
 
-## 11. StepResult and RunResult contracts
+## 11. StepResult, RunResult, and StepBackResult contracts
 
 ### StepResult contract
 
@@ -396,38 +547,54 @@ The response describes an attempt, not always successful execution.
 | `cpsr_change`, `flag_changes` | Full CPSR before/after or null, and changed named N/Z/C/V bits. Allows display of both raw status and comparison effects. |
 | `memory_reads` | Ordered successful data reads with `{address, size, bytes}`; excludes instruction fetch. |
 | `memory_writes` | Ordered committed writes with `{address, size, before_bytes, after_bytes}` including same-value writes. Highlights compare pre-Step with final state. |
+| `watchpoint_hits` (P2) | List of `WatchpointHitView` records triggered by committed memory reads or writes in this Step. Ordered multiple hits from multi-access instructions preserved. Empty on failure or when no watchpoints hit. |
 | `branch` | Null for non-control-flow; otherwise `{kind, condition, taken, target, fallthrough}`. `kind` is branch/call/return/pc_write; target is the computed canonical destination when available, including for a not-taken direct branch. |
-| `stop_reason` | Null when ready; `pc_not_loaded` after a completed instruction; `invalid_pc`, `unsupported_instruction`, `memory_fault`, `unsupported_mode_transition`, `execution_error`, or `backend_unavailable` for failed attempts. |
+| `stop_reason` | Null when ready; `pc_not_loaded` after a completed instruction; `watchpoint` (P2) when a committed memory access triggered a watchpoint (if `pc_not_loaded` also occurs, `stop_condition` retains `pc_not_loaded` while `stop_reason` reflects `watchpoint`); `invalid_pc`, `unsupported_instruction`, `memory_fault`, `unsupported_mode_transition`, `execution_error`, or `backend_unavailable` for failed attempts. |
 | `error` | Null on success, otherwise DomainError including `restored: true/false`, relevant PC/line, access type/address/width, and native diagnostic text if useful. |
 
-On failure, committed register/flag/write deltas are empty and `branch`/`condition_passed` are null; successful-looking branch outcomes are not published for rolled-back operations. `error.context.attempted_accesses` may contain diagnostic access events, clearly separate from `memory_reads`/`memory_writes`, which are empty on failure. `error.context.missing_ranges` identifies missing bytes as well as the full requested access. Stop after an external branch has `status: executed`, `stop_reason: pc_not_loaded`, and `error: null`.
+On failure, committed register/flag/write deltas are empty, `watchpoint_hits` is empty, and `branch`/`condition_passed` are null; successful-looking branch outcomes or watchpoints are not published for rolled-back operations. `error.context.attempted_accesses` may contain diagnostic access events, clearly separate from `memory_reads`/`memory_writes`, which are empty on failure. `error.context.missing_ranges` identifies missing bytes as well as the full requested access. Stop after an external branch has `status: executed`, `stop_reason: pc_not_loaded`, and `error: null`.
 
-The UI already has the program and uses bounded GET memory calls for visible panes. Do not return the entire image or memory space with every Step. Keep only the latest result for highlighting/recovery; no cumulative history collection is needed.
+The UI already has the program and uses bounded GET memory calls for visible panes. Do not return the entire image or memory space with every Step. Keep only the latest result for highlighting/recovery; bounded history is maintained in the HistoryJournal (P2).
 
-### RunResult contract (P1)
+### RunResult contract
 
 Bounded Run wraps sequential Step executions until a termination condition is reached.
 
 | Field | Meaning |
 | --- | --- |
-| `stop_reason` | Terminal condition: `breakpoint`, `user_stop`, `step_limit`, `time_limit`, `pc_not_loaded`, `execution_failure`, or `backend_unavailable`. |
+| `stop_reason` | Terminal condition: `breakpoint`, `watchpoint` (P2), `user_stop`, `step_limit`, `time_limit`, `pc_not_loaded`, `execution_failure`, or `backend_unavailable`. |
 | `steps_executed` | Total count of atomic Steps committed during this Run invocation. |
 | `elapsed_ms` | Server wall-clock elapsed time in milliseconds for the Run operation. |
 | `breakpoint_hit` | Integer canonical address of the breakpoint hit, or null if stopped for another reason. |
-| `last_step_result` | StepResult of the last attempted step (null if stopped before any step). |
+| `watchpoint_hit` (P2) | `WatchpointHitView` of the memory access that halted Run, or null if stopped for another reason. |
+| `last_step_result` | StepResult of the last attempted step (null if stopped before any step). Retains both `pc_not_loaded` and `watchpoint_hits` when both occur. |
 | `state` | MachineState after Run stopped (always at a valid committed Step boundary or restored pre-step state). |
+
+### StepBackResult contract (P2)
+
+Step Back rewinds Runtime State by one step using the session's HistoryJournal.
+
+| Field | Meaning |
+| --- | --- |
+| `status` | `ok` if state was successfully rewound; `empty` if no history was available. |
+| `restored_step_seq` | The historical `step_seq` associated with the restored Runtime State. |
+| `current_step_seq` | The session sequence counter (unchanged across Step Back; subsequent forward steps continue from monotonic maximum `max_step_seq + 1`). |
+| `state_revision` | The new session mutation revision counter (incremented on Step Back). |
+| `history_depth` | Number of remaining history entries available in the journal. |
+| `state` | Authoritative State snapshot after rewind. |
 
 ## 12. Frontend architecture
 
 ```text
 App (page-owned session controller and authoritative response state)
-├── ProgramInput (source/import selector, textarea, file read, mode/stack, source base or import format)
-├── Toolbar (Load, Step, Run, Stop, Reset, PC/Go, baseline-edit notice, step_seq, run limits)
-├── CodeView (gutter with breakpoint toggle, current PC marker, mode badges $a/$t/$d, source and decoded lines)
+├── ProgramInput (source/import/ELF upload selector, textarea, file upload, mode/stack, symbol/line summary)
+├── Toolbar (Load, Step, Step Back, Run, Stop, Reset, PC/Go, baseline-edit notice, step_seq, run limits)
+├── CodeView (gutter with breakpoint toggle, current PC marker, mode badges $a/$t/$d, source/decoded lines, DWARF file:line tags, symbol labels)
 ├── RegisterPanel (values, edits, CPSR/flags, origins, changes)
 ├── StackView (memory window centered around SP)
 ├── MemoryView (address/window, bytes/words, injection/zero-fill)
-└── StatusPanel (parse diagnostics, branch result, IT context, stop/error, run summaries)
+├── WatchpointPanel (active watchpoints list, add/remove range+kind, hit indicators)
+└── StatusPanel (parse diagnostics, branch result, IT context, watchpoint alert, stop/error, run summaries, history depth)
 ```
 
 App owns the session ID, loaded Program, latest State/StepResult/RunResult, active breakpoints set, selected inspection windows, and request/pending status. Child components receive read-only data and emit edit/step/run/stop/breakpoint actions. A small typed API client centralizes serialization and error-envelope handling. Local form drafts stay in their components until submitted. No Redux-like store or duplicated CPU state is necessary.
@@ -452,36 +619,39 @@ ArmStride/
 ├── .gitignore                  Generated files and environments
 ├── src/armstride/
 │   ├── __init__.py              Production Python package
-│   ├── domain/                 Immutable instruction/image/parse/diagnostic records
+│   ├── domain/                 Immutable instruction/image/metadata/history records
 │   ├── architecture/           ARM profile and Capstone-to-domain byte decoding
 │   ├── parser/                 Fromelf, objdump, generic adapters and selection
 │   ├── assembly.py             Application-owned assembler contract/result
+│   ├── elf/                    (P2) Direct ARM ELF loader, symbol indexer, and DWARF line reader
+│   │   ├── loader.py           ELF header validation, PT_LOAD mapping, eager decode
+│   │   ├── symbols.py          Symbol table extraction and lookup
+│   │   └── dwarf.py            DWARF .debug_line extraction
 │   ├── backends/               Unicorn execution and Keystone assembly adapters
-│   └── simulation/             Logical memory, sessions, Step and result contracts
+│   └── simulation/             Logical memory, sessions, Step, Run, Watchpoints, History
 ├── tests/
 │   ├── fixtures/parser/        Original parser text and expected normalization contracts
-│   ├── golden/                 Independent execution contracts for later core tests
+│   ├── fixtures/elf/           (P2) Valid and invalid ARM ELF test binaries
+│   ├── golden/                 Independent execution contracts for core tests
 │   ├── provenance/             Captured tool output and encoding verification evidence
 │   ├── parser/                 Tests invoking the production parsers and codec
-│   ├── simulation/             Logical memory and session unit tests
+│   ├── elf/                    (P2) Tests for ELF validation, mapping, symbols, and DWARF
+│   ├── simulation/             Logical memory, session, watchpoint, and history unit tests
 │   ├── assembly/               Source normalization/validation tests
 │   ├── integration/            Native execution, golden and source-equivalence tests
-│   ├── verify_fixtures.py      Independent Phase 1 contract consistency check
+│   ├── verify_fixtures.py      Independent contract consistency check
 │   └── verify_encodings.py     Independent assembler verification
 ├── frontend/                   Svelte/TypeScript UI, typed client, Vite and component tests
-├── docs/                       Concept, SRS, architecture, and validation reports
+├── docs/                       Concept, SRS, architecture, milestones, and reports
 ├── spikes/
 │   ├── phase0/                 Historical P0 Unicorn execution spike (preserved)
-│   └── p1_it/                  Planned P1 Thumb-2 IT block semantics validation spike
+│   ├── p1_it/                  Completed P1 Thumb-2 IT block semantics validation spike
+│   └── p2_cortex_m/            (P2-R) Independent Cortex-M feasibility research spike
 ```
 
-`domain/` owns immutable values without web or native-library imports. `architecture/` owns ARM defaults, aliases, encoding/width validation, decoded metadata, and explicit feature exclusions; Capstone objects stay there. `parser/` owns text classification, normalization, source locations, diagnostics, whole-input format selection, and creation of an installable ProgramImage only when no errors remain. `simulation/` owns the logical known-byte memory model in Phase 2, with no native emulator allocation.
+`domain/` owns immutable values without web or native-library imports. `architecture/` owns ARM defaults, aliases, encoding/width validation, decoded metadata, and explicit feature exclusions; Capstone objects stay there. `parser/` owns text classification, normalization, source locations, diagnostics, whole-input format selection, and creation of an installable ProgramImage. `elf/` owns ELF header validation, PT_LOAD segment extraction, Capstone instruction stream decoding, symbol extraction, and DWARF `.debug_line` parsing into `ProgramMetadata`. `simulation/` owns the logical known-byte memory model, session coordinator, breakpoint registry, watchpoint registry, and linear execution history journal.
 
-`tests/` is the only production Python test tree. The former `backend/tests/` assets move here with their contents and provenance preserved except for necessary relative-path corrections. The obsolete `backend/` container is removed. Fixture integrity checks supplement, rather than replace, tests that call production code.
-
-`src/armstride/backends/` now contains the Unicorn and Keystone adapters. Phase 6 adds `api/` for FastAPI/session transport, `app.py` for composition, and `cli.py` for the `uv run armstride` launcher. The ExecutionBackend contract belongs to the simulation-facing domain boundary, not its implementation. These modules and their dependencies are not created in Phase 2.
-
-Phase 7 implements the Node/Vite project under `frontend/`; no frontend was included in Phase 2. Vite emits generated assets to `src/armstride/static`; Hatch includes them in wheel and sdist and rejects non-editable builds without an index page. Production packaging includes `src/armstride`, not tests, provenance, or the isolated spike environment. Generated bytecode, test caches, virtual environments, build outputs, and frontend dependencies are ignored.
+`tests/` is the only production Python test tree. `tests/fixtures/elf/` contains verified ELF binaries with clear provenance.
 
 ## 14. Error model
 
@@ -494,6 +664,12 @@ Domain errors have stable codes and structured context; messages can improve wit
 | `assembly_error`, `unsupported_source` | Native assembler message/statement count, or rejected source directive with line; no installable image | 422 with diagnostics |
 | `duplicate_instruction_address`, `overlapping_instructions` | Address ranges and both source lines | 422 |
 | `unsupported_architecture`, `unsupported_mode` | Requested profile/mode and accepted alternatives | 422 |
+| `unsupported_elf_class`, `unsupported_elf_machine`, `unsupported_elf_type` (P2) | ELF identity fields and rejected values (requires 32-bit LE ARM `ET_EXEC`) | 422 with diagnostics |
+| `elf_pie_unsupported` (P2) | Position-independent executable (`ET_DYN` / PIE) rejected; deferred post-P2 | 422 with diagnostic to provide statically linked `ET_EXEC` |
+| `ambiguous_elf_execution_mode` (P2) | Executable segment lacking mapping symbols where ARM/Thumb execution mode cannot be reliably resolved | 422 with diagnostic |
+| `elf_relocation_unsupported` (P2) | Relocatable object file (`ET_REL`) rejected | 422 with diagnostic to provide linked executable |
+| `elf_dynamic_linking_unsupported` (P2) | Dynamic interpreter (`PT_INTERP`) or dynamic relocations rejected | 422 with diagnostic to provide statically linked binary |
+| `elf_resource_limit_exceeded` (P2) | Independent limits: raw file size (> 10 MiB), segment count (> 32), section count (> 128), instruction count (> 10,000), total logical memory (> 16 MiB), or backing pages (> 64 MiB) exceeded | 409 resource limit / 413 payload limit / 422 limit diagnostic |
 | `invalid_pc` | Requested/current PC, alignment/boundary reason | 422 for edits; failed StepResult for execution |
 | `unsupported_instruction` | Address, source line and explicit feature exclusion or engine rejection | Load warning only for a known exclusion; otherwise report rejection in failed StepResult |
 | `unsupported_mode_transition` | Old/requested mode, instruction and destination; rolled back | Failed StepResult |
@@ -501,6 +677,10 @@ Domain errors have stable codes and structured context; messages can improve wit
 | `unaligned_memory_access`, `memory_permission_denied` | Access range/width and permission/alignment reason; rolled back | Failed StepResult with `memory_fault` |
 | `invalid_register`, `invalid_register_value`, `protected_cpsr_bits` | Name/value, supported names or permitted mask | 422 |
 | `invalid_memory_patch`, `stack_conflict` | Overflow, code overlap, invalid size/alignment and conflicting ranges | 422 |
+| `invalid_breakpoint` | Address not a loaded instruction start, or DATA region address | 422 |
+| `invalid_watchpoint` (P2) | Range overflow, zero length, or watchpoint limit (> 32) exceeded | 422; 409 for count limit |
+| `history_empty` (P2) | Step Back requested when history journal contains zero entries | 409 |
+| `history_unavailable` (P2) | Step Back requested after state was invalidated by manual edits or Reset | 409 |
 | `execution_failure`, `execution_timeout` | Instruction/PC and sanitized native details; rolled back | Failed StepResult with `execution_error` |
 | `backend_unavailable` | Initialization/restore failure and required Reset/reload action | 503 for load/reset initialization; 409 for further mutations while unavailable; Step restoration failure is a failed StepResult |
 | `program_not_loaded` | Operation needs a program | 409 |
@@ -606,49 +786,65 @@ Phase 8  Memory/stack UI and P0 release check    COMPLETE
 
 All 388 Python unit and integration tests and Playwright acceptance suites pass and form the immutable regression baseline for P1.
 
-### P1 Semantics Validation: Thumb-2 IT Block Spike
+### Product P1 Validation and Baseline (Stages P1-A through P1-F Completed)
 
-Before implementing production IT block support, an isolated execution semantics spike must be conducted in `spikes/p1_it/` to verify that the pinned execution backend (Unicorn 2.1.4, ARM CPU candidate, Thumb mode) correctly supports ArmStride's single-Step (`count=1`) execution model across IT blocks.
+Product P1 was developed and verified across Stages P1-A through P1-F:
+
+```text
+Stage P1-A  Validation Spikes & Parser Foundation               COMPLETE
+Stage P1-B  ARM/Thumb Runtime Interworking & Data Non-Executability COMPLETE
+Stage P1-C  Thumb-2 IT Block Execution & Skip Reporting         COMPLETE
+Stage P1-D  Breakpoints Engine & API                            COMPLETE
+Stage P1-E  Bounded Run Loop & Concurrent Stop                  COMPLETE
+Stage P1-F  Frontend UI Integration & Acceptance Verification   COMPLETE
+```
+
+All 410 Python unit and integration tests and Playwright acceptance suites pass and form the immutable regression baseline for Product P2.
+
+### Cortex-M Feasibility Research Gate (P2-R Spike)
+
+Cortex-M support is an important candidate for future milestones but is explicitly **decoupled from the Product P2 release commitment**. A dedicated, non-blocking feasibility research spike will be conducted in `spikes/p2_cortex_m/` to evaluate Unicorn's Cortex-M CPU support and behavioral characteristics before committing to Cortex-M in any product milestone.
 
 | Probe | Test structure | Required observation / completion condition |
 | --- | --- | --- |
-| IT-01: Single-instruction IT condition true | `IT EQ` + `ADDEQ r0, r1` with Z=1 | `IT` executes, establishes ITSTATE; next step executes `ADDEQ`, updates `r0`, CPSR ITSTATE clears. Verify exact 1-step boundaries. |
-| IT-02: Single-instruction IT condition false | `IT EQ` + `ADDEQ r0, r1` with Z=0 | `IT` executes; next step conditionally skips `ADDEQ` (PC advances by instruction width, `r0` unchanged, no memory/register write deltas, ITSTATE clears). |
-| IT-03: Multi-instruction ITT condition true & false | `ITT NE` + 2 instructions with Z=0 and Z=1 | Verify both instructions execute in order when NE is true; verify both conditionally skip when NE is false across distinct single-step invocations. |
-| IT-04: Alternating ITE block | `ITE EQ` + 2 instructions with Z=1 and Z=0 | When Z=1: step 1 executes, step 2 skips. When Z=0: step 1 skips, step 2 executes. Verify PC advancement and ITSTATE progression. |
-| IT-05: Step-by-step ITSTATE preservation | CPSR read across `count=1` steps | Verify `CPSR[15:10, 26:25]` is faithfully retained and updated by Unicorn across consecutive `emu_start(..., count=1)` calls without premature zeroing or corruption. |
-| IT-06: Same-value execution vs conditional skip | Instruction writes current register value vs skip | Verify that an instruction writing its existing value produces an execution event / write delta, whereas a conditionally skipped instruction produces no write delta and sets `executed: false`. |
-| IT-07: Manual entry into IT block | Set PC directly to controlled instruction without executing `IT` | Verify backend and simulation behavior when ITSTATE is 0; confirm ArmStride preflight rejects manual jump into mid-IT-block. |
-| IT-08: Breakpoint on IT-controlled instruction | Breakpoint hit inside IT block | Verify stopping at a breakpoint on an IT-controlled instruction preserves ITSTATE so subsequent Step or Run continues correctly. |
+| CM-01: Cortex-M CPU model availability | Initialize Unicorn with `UC_CPU_ARM_CORTEX_M3` / `UC_CPU_ARM_CORTEX_M4` | Confirm Unicorn supports M-profile models in Thumb mode without initialization failure. |
+| CM-02: Vector table & reset entry | Load 8-byte vector table at `0x00000000` (`Initial SP`, `Reset Handler PC`) | Verify whether Unicorn natively loads SP from vector table address 0 and entry PC from address 4, or requires explicit ArmStride adapter setup. |
+| CM-03: Dual stack pointers (MSP / PSP) | Inspect and mutate `MSP` vs `PSP` and `CONTROL` register | Determine whether Unicorn models `MSP` and `PSP` as separate hardware registers and whether switching via `CONTROL[1]` behaves correctly. |
+| CM-04: Hardware exception stacking | Trigger fault or exception entry | Observe whether Unicorn automatically pushes `{r0-r3, r12, lr, pc, xPSR}` onto the active stack on exception, or requires emulator intervention. |
+| CM-05: EXC_RETURN semantics | Return via `BX LR` with `LR = 0xFFFFFFF9` / `0xFFFFFFFD` | Observe whether Unicorn natively decodes `EXC_RETURN` magic values and unstacks CPU registers, or treats it as an invalid branch address. |
+| CM-06: Peripheral & interrupt absence | Access SysTick or NVIC registers (`0xE000E010`, `0xE000E100`) | Document whether Unicorn provides any built-in peripheral registers or if all M-profile peripherals are unmapped memory requiring custom hooks. |
 
-**Stop/Go Gate:** If the pinned Unicorn engine fails to maintain correct ITSTATE or fails to step through IT blocks one instruction at a time, production implementation of IT blocks must halt immediately, and the blocker must be formally documented before considering alternative strategies.
+**Decision Criteria (ADR-023):**
+- If Unicorn supports M-profile instruction execution but lacks hardware stacking, EXC_RETURN unstacking, and NVIC peripherals, full Cortex-M execution would require significant microcontroller system simulation.
+- In that event, Cortex-M will be deferred to a dedicated post-P2 profile milestone (e.g. Product P3) rather than complicating the ARMv7-A execution model in P2.
+- The outcome of `P2-R` is purely informational and will not gate or delay the delivery of Stages P2-A through P2-F.
 
-### Product P1 Implementation Roadmap (Stages P1-A through P1-F)
+### Product P2 Implementation Roadmap (Stages P2-A through P2-F)
 
-The P1 implementation follows a strict dependency-ordered progression across six stages:
+Product P2 ("Debugger and Input Expansion") proceeds through six dependency-ordered stages, developed in parallel with the non-blocking research track `P2-R`:
 
 ```text
-Stage P1-A  Validation Spikes & Parser Foundation
+Stage P2-A  Direct ARM ELF32-LE Loading
     ↓
-Stage P1-B  ARM/Thumb Runtime Interworking & Data Non-Executability
+Stage P2-B  ProgramMetadata, ELF Symbols & DWARF Line Mapping
     ↓
-Stage P1-C  Thumb-2 IT Block Execution & Skip Reporting
+Stage P2-C  Memory Watchpoints Engine & Post-Instruction Committed Semantics
     ↓
-Stage P1-D  Breakpoints Engine & API
+Stage P2-D  Bounded Step Back & Execution History Journal
     ↓
-Stage P1-E  Bounded Run Loop & Concurrent Stop
+Stage P2-E  REST API Extensions & Error Handling
     ↓
-Stage P1-F  Frontend UI Integration & Acceptance Verification
+Stage P2-F  Frontend UI Integration & Full Acceptance Verification
 ```
 
 | Stage | Scope and deliverables | Completion condition / gates |
 | --- | --- | --- |
-| **Stage P1-A**<br>Validation Spikes & Parser Foundation | 1. Implement IT semantics spike in `spikes/p1_it/`.<br>2. Extend `ProgramImage` domain with `instructions: Sequence[Instruction]` and `data_regions: Sequence[DataRegion]`.<br>3. Parser support for `$a`, `$t`, `$d` mapping symbols as section state transitions.<br>4. Normalization and address overlap validation (instruction vs instruction, instruction vs data, data vs data). | IT spike passes all probes IT-01–08 or blocker documented. Disassembly imports containing `$a`, `$t`, `$d` parse into valid mixed images. Overlaps rejected with 422. Full P0 regression green. |
-| **Stage P1-B**<br>ARM/Thumb Runtime Interworking & Data Non-Executability | 1. Runtime interworking in `UnicornBackend` / `SimulationSession`: read post-step CPSR T-bit, canonicalize PC (`pc & ~1`), resolve `(address, resulting_mode)`.<br>2. Load `DataRegion` bytes into `MemoryState` as read-only known memory; reject execution at data addresses (`pc_not_loaded` or `unsupported_instruction`).<br>3. Interworking branch families tested: BX, BLX, POP {pc}, LDM {pc}.<br>4. Update Golden Execution suite with interworking cases. | Interworking branches cleanly switch mode in a single atomic Step. Data read via LDR succeeds; execution into data halts cleanly. P0 GE-26 replaced by valid interworking check. Full regression green. |
-| **Stage P1-C**<br>Thumb-2 IT Block Execution & Skip Reporting | 1. Implement IT block preflight validation (reject manual PC entry into mid-IT-block).<br>2. Extend `StepResult` with `executed: bool` and `it_context: Optional[ITContext]`.<br>3. Distinguish conditional skip (`executed=False, condition_passed=False`) from executed same-value write (`executed=True`).<br>4. Add golden execution fixtures for IT, ITT, ITE true/false conditions. | All IT block golden cases pass. StepResult accurately differentiates conditional skip from silent execution. Full regression green. |
-| **Stage P1-D**<br>Breakpoints Engine & API | 1. Add `Breakpoint` domain model keyed by `(address, mode)`.<br>2. Session-level breakpoint registry: add, remove, list, clear.<br>3. Pre-execution breakpoint check with single-step resume bypass.<br>4. Preserve ITSTATE and architectural context upon breakpoint hit.<br>5. REST endpoints: `GET /sessions/{id}/breakpoints`, `POST`, `DELETE`. | Breakpoint hit stops before instruction executes; state matches pre-execution; resume advances past breakpoint without immediately re-triggering. API tests green. Full regression green. |
-| **Stage P1-E**<br>Bounded Run Loop & Concurrent Stop | 1. Add `stop_event = threading.Event()` to `SessionEntry`.<br>2. Implement `run()` loop in `SimulationSession` composing existing atomic `step()` calls.<br>3. Enforcement of step count limit and wall-clock execution limit.<br>4. REST endpoint `POST /sessions/{id}/run` returning `RunResult`.<br>5. Non-blocking REST endpoint `POST /sessions/{id}/stop` setting `stop_event` without session lock contention. | Run executes bounded loops stopping on breakpoint, user stop, step limit, time limit, or failure. State remains strictly at a committed Step boundary. Full regression green. |
-| **Stage P1-F**<br>Frontend UI Integration & Acceptance Verification | 1. Update `CodeView` to display `$a`, `$t`, `$d` badges and format data regions.<br>2. Add breakpoint toggle gutter in `CodeView`.<br>3. Add Run and Stop buttons with limit indicators to `Toolbar`.<br>4. Handle `/run` and `/stop` API client workflows and status reporting.<br>5. Write Playwright end-to-end acceptance tests for P1 features.<br>6. Verify full P0 Playwright and backend test suites pass. | All P1 acceptance criteria (`P1-AC-01` through `P1-AC-16`) and P0 criteria (`AC-01` through `AC-21`) pass. Zero regressions. |
+| **Stage P2-A**<br>Direct ARM ELF32-LE Loading | 1. Add `pyelftools` dependency to root project.<br>2. Implement `ElfHeaderValidator` (ARM, 32-bit LE, strictly `ET_EXEC`; reject `ET_DYN`/PIE, relocations, dynamic linking).<br>3. Implement `ElfSegmentMapper` for PT_LOAD segments and mapping symbol partitioner (`$a`, `$t`, `$d` markers; fail-closed on ambiguous mixed segments).<br>4. Eagerly decode executable segments using `ArmDecoder` respecting independent bounds (10 MiB file, 32 segments, 128 sections, 10k instructions, 16 MiB memory, 64 MiB backing pages).<br>5. Integrate with `SimulationSession.load` using `e_entry` start PC (bit 0 Thumb resolution; address 0 permitted if mapped).<br>6. Create ELF fixtures and equivalence tests against assembly/disassembly baselines. | Valid ARM ELFs load into standard `ProgramImage`. Relocations, dynamic linking, PIE, and unsupported classes rejected with 422 diagnostics. P0/P1 equivalence verified. Full regression green. |
+| **Stage P2-B**<br>ProgramMetadata, Symbols & DWARF Lines | 1. Define `ProgramMetadata`, `SymbolTable`, `LineTable` domain records decoupled from `ProgramImage`.<br>2. Extract functions, objects, and labels from `.symtab` / `.dynsym`.<br>3. Extract instruction address to source `(file, line)` mappings from DWARF `.debug_line`.<br>4. Implement missing-source metadata representation (`foo.c:137` without reading host filesystem).<br>5. Tolerate missing or corrupt symbol tables / DWARF sections without execution failure. | Symbols and line mappings correctly indexed. Stripped ELFs execute identically. Malformed DWARF generates non-fatal diagnostics. Full regression green. |
+| **Stage P2-C**<br>Memory Watchpoints Engine | 1. Add `Watchpoint` and `WatchpointHit` domain models.<br>2. Implement `WatchpointRegistry` on `SimulationSession` (up to 32 watchpoints; range validation).<br>3. Implement post-instruction committed-boundary evaluation in `step()` and `run()` (dual observability: Step reports hits; Run halts with `watchpoint`).<br>4. Implement multi-access ordered hit preservation (e.g. `LDM`/`STM`) and same-value write detection.<br>5. Implement stop precedence matrix (Breakpoint -> Fault -> Watchpoint -> Architectural Stop -> User Stop -> Limits).<br>6. Ensure rolled-back failed Steps never report watchpoint hits. | Watchpoints observable on Step and Run; state remains clean at step boundary; same-value stores hit; failed steps isolate; precedence deterministic. Full regression green. |
+| **Stage P2-D**<br>Bounded Step Back & History Journal | 1. Add `ExecutionHistoryEntry` and `HistoryJournal` (bounded 100-step FIFO deque).<br>2. Lazily capture pre-step original bytes from committed writes (first pre-value rule for multiple writes to same byte).<br>3. Implement `SimulationSession.step_back()` rewinding Runtime State while leaving UserBaselineState untouched.<br>4. Preserve `step_seq` on Step Back (never increment or decrement); subsequent forward steps continue from `max_step_seq + 1`.<br>5. Introduce monotonic `state_revision` counter incremented on Step Back, edit, Reset, and Load.<br>6. Implement linear history forward-purge on branching step/run and history invalidation on manual edits/Reset/Load. | Step Back exactly restores prior registers, CPSR, PC, and memory. User baseline isolated. `step_seq` invariant; `state_revision` monotonic. Full regression green. |
+| **Stage P2-E**<br>REST API Extensions | 1. Update `POST /sessions/{id}/program` to accept ELF multipart upload or base64 JSON payload.<br>2. Implement `GET /sessions/{id}/symbols`.<br>3. Implement `GET`, `POST`, `DELETE /sessions/{id}/watchpoints`.<br>4. Implement `POST /sessions/{id}/step-back`.<br>5. Update `State`, `StepResult`, `RunResult` schemas with P2 fields.<br>6. Implement P2 domain error codes and HTTP mappings. | All P2 REST endpoints verified with automated integration tests. Schema validation and error envelopes compliant. Full regression green. |
+| **Stage P2-F**<br>Frontend UI Integration & Verification | 1. Add ELF binary file upload tab/selector in `ProgramInput`.<br>2. Add `WatchpointPanel` with CRUD controls and hit highlights.<br>3. Add "Step Back" button with history depth indicator to `Toolbar`.<br>4. Display DWARF `file:line` tags and symbol labels in `CodeView`.<br>5. Write Playwright end-to-end acceptance tests for ELF loading, watchpoints, and Step Back.<br>6. Verify all P2 acceptance criteria (`P2-AC-01` through `P2-AC-20`) and full regression suite pass. | All P2 acceptance criteria verified. Complete end-to-end browser workflows pass. 410 baseline tests + P2 tests green. |
 
 ## 16. Architecture decision records
 
@@ -672,6 +868,20 @@ Stage P1-F  Frontend UI Integration & Acceptance Verification
 | ADR-016 | Distinguishing IT conditional skip from same-value execution via `executed` and `condition_passed`. Both cases return `status: executed`, but skipped instructions report `executed: false` and empty write sets. | UI and domain must inspect `executed` rather than inferring skips from empty deltas. |
 | ADR-017 | Breakpoints use pre-execution semantics with single-step resume bypass. Identified by `(address, mode)`, preserving execution context and ITSTATE. | Resuming from a breakpoint requires a one-step bypass to avoid re-triggering immediately. |
 | ADR-018 | Bounded Run composes atomic Steps with thread-safe `stop_event` cancellation. Zero duplicate execution paths; Run checks limits and cancellation between Steps. | Run throughput is bounded by individual Step transaction overhead, prioritizing absolute correctness over raw speed. |
+| ADR-019 | Direct ARM ELF as Third ProgramImage Producer. ELF loader emits standard `ProgramImage` (executable instructions and data regions) plus auxiliary `ProgramMetadata`. Zero parallel execution machinery or ELF-specific session types. | Initial scope strictly restricted to statically linked 32-bit LE ARM executables (`ET_EXEC` only; `ET_DYN`/PIE deferred post-P2). |
+| ADR-020 | Decoupled ProgramMetadata for Symbols and DWARF. Symbols and DWARF line records live in `ProgramMetadata`, completely separate from `ProgramImage` and execution core. Native `pyelftools` objects never leak past the loader boundary. Stripped ELFs execute identically. | DWARF line mapping displays `file:line` metadata but does not read or render host source files. |
+| ADR-021 | Post-Instruction Committed-Boundary Watchpoint Semantics & Dual Observability. Watchpoint hits are detected from committed CPU memory events after an atomic Step completes successfully. Observable on both Step (reports committed hits) and Run (terminates Run). Ordered multi-access hits preserved; same-value stores hit; failed steps never trigger watchpoints. Stop precedence matrix separates execution faults and architectural stops from debugger observations. | Watchpoints halt execution after memory mutation occurs, rather than preempting execution prior to memory access. |
+| ADR-022 | Bounded Step Back with Monotonic `step_seq` Invariance, `state_revision`, and User Baseline Isolation. History journal stores up to 100 pre-step snapshots of registers and lazily captured original memory bytes (first pre-value rule). Step Back rewinds Runtime State only, leaving UserBaselineState untouched. `step_seq` is invariant on Step Back (never decremented or incremented); forward steps continue from monotonic maximum (`max_step_seq + 1`). `state_revision` tracks state mutations monotonically. | History is bounded and strictly linear (no branching time-travel trees). Rewinding does not create persistent alternate timeline forks. |
+| ADR-023 | Cortex-M Feasibility Research Gate Decoupled from P2 Core. Cortex-M requires complex system simulation (NVIC, dual SP, hardware exception stacking, EXC_RETURN). An isolated spike (`P2-R`) probes Unicorn M-profile behavior; its outcome informs future milestones without gating or blocking P2. | Product P2 remains focused on ARMv7-A / Thumb interworking; Cortex-M is not a P2 release commitment. |
+| ADR-024 | Decoupling Memory Watchpoints from MMIO Peripheral Emulation. Memory watchpoints are passive debugger observation hooks on logical memory accesses. MMIO (read/write callbacks, side-effects, device state, timers, interrupts) is fundamentally distinct and deferred across 5 explicit layers to future milestones. | ArmStride remains a CPU debugger, not a peripheral/system emulator. Watchpoints do not mutate data or invoke device models. |
+| ADR-025 | Mapping Symbols Partitioning and Independent ELF Resource Bounds. Reuses P1 mixed ARM/Thumb/Data ProgramImage. Mapping symbols `$a`, `$t`, `$d` partition executable segments; `$d` inline data remain non-executable `DataRegion`s. Ambiguous mixed regions fail closed. Independent operational bounds for raw file size (10 MiB), segments (32), sections (128), instructions (10,000), total logical memory (16 MiB), and backing pages (64 MiB). | Large firmware or OS binaries exceeding bounds must be filtered or sliced before loading. Speculative lazy disassembly avoided. |
+| ADR-026 | Multi-ISA Architecture Profile Abstraction and Decoupled Register Descriptor. Separate architecture profile identity (`"armv7-a-le"`, `"rv32i-le"`) from dynamic execution mode (`arm`/`thumb` for ARM; fixed/None for RV32I). Domain state, registers, and UI presentation are driven by `ArchitectureProfile` metadata rather than hardcoding R0-R15 + CPSR across the system. | Avoids sprawling `if/else` conditionals across core simulation while enabling profile-driven state views. |
+| ADR-027 | RV32I Architectural Immutability of Register x0/zero. Register `x0` permanently evaluates to 0. User edits targeting `x0` or `zero` reject atomically with HTTP 422 `x0_immutable`. Instructions writing to `x0` execute normally without modifying `x0` or generating delta events. Native backend reads explicitly canonicalize `x0` to 0. | Prevents native Unicorn storage leakage where `reg_write` to `UC_RISCV_REG_X0` stores non-zero values into native arrays. |
+| ADR-028 | Architecture-Owned Control-Flow Boundary. Simulation core consumes normalized `BranchAnalysis` records (`is_control_flow`, `kind`, `taken`, `target`, `fallthrough`) produced by architecture-specific interpreters (`ArmControlFlowInterpreter`, `RiscvControlFlowInterpreter`). ARM condition codes and IT context remain strictly isolated within ARM interpretation. | Prevents polluting RISC-V control flow with ARM CPSR flags and ITSTATE evaluation. |
+| ADR-029 | Dedicated Architecture Execution Backends (ArmUnicornBackend vs RiscvUnicornBackend). Structure execution engine around generic `BaseUnicornBackend` (managing memory pages, access hooks, timeouts, and rollback) with dedicated subclasses for ARM and RISC-V. CPU model configuration, native register mappings, and fault interpretation remain isolated per ISA. | Eliminates multi-architecture switch statements inside native execution loops. |
+| ADR-030 | RV32I Memory Access Alignment and Fault Semantics. In RV32I, instruction fetch addresses must be 4-byte aligned (unaligned target triggers `unaligned_pc` stop). Unaligned data accesses (`LW`/`SW`) within mapped known memory succeed (matching Unicorn/QEMU and modern hardware behavior), while accesses crossing into unmapped memory trigger atomic transaction rollback. | Aligns with RISC-V unaligned memory access semantics while preserving strict partial memory bounds. |
+| ADR-031 | Standalone Embedded RV32I Assembler and External Oracle Provenance. Pinned Keystone 0.9.2 lacks RISC-V support. Production P3 implements a lightweight, pure-Python two-pass RV32I assembler supporting local labels, branch offsets, and ABI aliases. All golden test encodings are verified offline against mature independent toolchains (`llvm-mc` or GNU binutils) with provenance recorded. | Eliminates heavyweight native C++ build dependencies (CMake/LLVM) for end users while guaranteeing byte correctness. |
+| ADR-032 | RISC-V Environment Instructions (ECALL/EBREAK) as Debugger Traps. `ECALL` and `EBREAK` do not simulate an operating system or hardware debug interface. They are classified by the decoder and control-flow interpreter as trap control-flow, halting execution cleanly with explicit stop reasons (`environment_call`, `breakpoint_trap`) without native engine crashes. | Preserves snippet debugger boundary without fabricating complex OS or SBI emulators. |
 
 ## 17. Repository structure decision
 
