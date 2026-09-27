@@ -1,0 +1,61 @@
+{
+  "spike": "p2_cortex_m",
+  "probes": [
+    {
+      "probe": "CM-01",
+      "description": "CPU Model Availability",
+      "supported": true,
+      "details": {
+        "Cortex-M3": {
+          "supported": true,
+          "error": null
+        },
+        "Cortex-M4": {
+          "supported": true,
+          "error": null
+        }
+      }
+    },
+    {
+      "probe": "CM-02",
+      "description": "Vector Table & Reset Entry",
+      "native_auto_reset": false,
+      "sp_before_emulation": "0x0",
+      "pc_before_emulation": "0x0",
+      "conclusion": "Manual setup required: Unicorn does not automatically read SP/PC from vector table at 0x0."
+    },
+    {
+      "probe": "CM-03",
+      "description": "Dual Stack Pointers",
+      "msp": "0x20001000",
+      "psp": "0x20002000",
+      "sp_default_msp": "0x20001000",
+      "sp_with_control_spsel": "0x20002000",
+      "hardware_banking_supported": true
+    },
+    {
+      "probe": "CM-04",
+      "description": "Hardware Exception Stacking",
+      "exception_raised": "Unhandled CPU exception (UC_ERR_EXCEPTION)",
+      "sp_before": "0x20000800",
+      "sp_after": "0x20000800",
+      "native_stacking_occurred": false,
+      "conclusion": "Unicorn halts with UC_ERR_EXCEPTION without pushing exception stack frames to RAM."
+    },
+    {
+      "probe": "CM-05",
+      "description": "EXC_RETURN Semantics",
+      "error": "Unhandled CPU exception (UC_ERR_EXCEPTION)",
+      "conclusion": "Unicorn does not natively decode EXC_RETURN magic values; raises UC_ERR_EXCEPTION."
+    },
+    {
+      "probe": "CM-06",
+      "description": "Peripheral & Interrupt Absence",
+      "systick_0xE000E010": "Invalid memory read (UC_ERR_READ_UNMAPPED)",
+      "nvic_0xE000E100": "Invalid memory read (UC_ERR_READ_UNMAPPED)",
+      "built_in_peripherals": false,
+      "conclusion": "SysTick and NVIC addresses are unmapped; Unicorn provides no built-in peripheral hardware."
+    }
+  ],
+  "decision_gate_recommendation": "Cortex-M simulation requires custom software vector table dispatch, software exception stack frame emulation, and synthetic NVIC/SysTick memory regions. It should be scheduled as a dedicated post-P2 profile milestone."
+}

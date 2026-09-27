@@ -1,7 +1,7 @@
 import { STACK_WINDOW_BYTES } from './memory';
 import type { MemoryPatch, MemoryWindow } from './memory';
 import { ApiError, request } from './api';
-import type { Breakpoint, ErrorEnvelope, LoadRequest, Mode, Program, RunResponse, RunResult, State, StopResponse } from './api';
+import type { Breakpoint, ErrorEnvelope, LoadRequest, Mode, Program, RunResponse, RunResult, State, StopResponse, StepBackResponse, SymbolEntry, Watchpoint } from './api';
 
 /** One page owns one session; all operations, including recovery reads, are serialized. */
 export class PageSession {
@@ -22,6 +22,9 @@ export class PageSession {
   memoryAddress = 0x20000000;
   memoryLength = 64;
   stackOffset = 0;
+  watchpoints = $state<Watchpoint[]>([]);
+  historyDepth = $state<number>(0);
+  symbols = $state<SymbolEntry[]>([]);
   private closed = false;
 
   private async refreshMemory() {
@@ -184,6 +187,21 @@ export class PageSession {
       if (kind === 'load' || kind === 'reset') {
         this.stackOffset = 0;
         this.runResult = null;
+        this.historyDepth = 0;
+      }
+      if (kind === 'edit') {
+        this.historyDepth = 0;
+      }
+      if (kind === 'step') {
+        this.historyDepth = Math.min(100, this.historyDepth + 1);
+      }
+      if (kind === 'load') {
+        try {
+          const syms = await request<{ symbols: SymbolEntry[] }>(`/${this.id}/symbols`);
+          this.symbols = syms.symbols ?? [];
+        } catch {
+          this.symbols = [];
+        }
       }
       await this.refreshMemory();
       return null;
@@ -217,6 +235,72 @@ export class PageSession {
       await this.refreshMemory();
       return this.message;
     } finally { this.pending = false; }
+  }
+
+  async stepBack(): Promise<string | null> {
+    if (this.pending || this.running || !this.id || this.expired || this.closed) return 'Session is not available.';
+    if (!this.editable) return 'Reset or reload before continuing.';
+    this.pending = true;
+    this.error = null;
+    this.message = '';
+    try {
+      const result = await request<StepBackResponse>(`/${this.id}/step-back`, 'POST', {});
+      if (this.closed) return null;
+      this.state = result.state;
+      this.historyDepth = result.history_depth;
+      this.message = `Step back to step ${result.restored_step_seq}.`;
+      await this.refreshMemory();
+      return null;
+    } catch (error) {
+      if (this.closed) return null;
+      if (error instanceof ApiError) {
+        this.error = error.detail;
+        this.message = error.message;
+        return error.message;
+      }
+      this.message = String(error);
+      return String(error);
+    } finally {
+      this.pending = false;
+    }
+  }
+
+  async addWatchpoint(address: number, length = 1, kind: 'read' | 'write' | 'read_write' = 'read_write'): Promise<string | null> {
+    if (this.pending || this.running || !this.id || this.expired || this.closed) return 'Session is not available.';
+    this.pending = true;
+    try {
+      await request(`/${this.id}/watchpoints`, 'POST', { address, length, kind });
+      const wps = await request<Watchpoint[]>(`/${this.id}/watchpoints`);
+      if (this.state) this.state = { ...this.state, watchpoints: wps };
+      this.watchpoints = wps;
+      return null;
+    } catch (error) {
+      if (error instanceof ApiError) return error.message;
+      return String(error);
+    } finally {
+      this.pending = false;
+    }
+  }
+
+  async removeWatchpoint(address: number): Promise<string | null> {
+    if (this.pending || this.running || !this.id || this.expired || this.closed) return 'Session is not available.';
+    this.pending = true;
+    try {
+      await request(`/${this.id}/watchpoints/${address}`, 'DELETE');
+      const wps = await request<Watchpoint[]>(`/${this.id}/watchpoints`);
+      if (this.state) this.state = { ...this.state, watchpoints: wps };
+      this.watchpoints = wps;
+      return null;
+    } catch (error) {
+      if (error instanceof ApiError) return error.message;
+      return String(error);
+    } finally {
+      this.pending = false;
+    }
+  }
+
+  loadElf(contentBase64: string, profile = 'armv7-a-le') {
+    return this.command('load', '/program', { input_kind: 'elf', content_base64: contentBase64, profile });
   }
 
   load(body: LoadRequest) { return this.command('load', '/program', body); }

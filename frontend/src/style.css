@@ -458,6 +458,113 @@ button:disabled, input:disabled, select:disabled, textarea:disabled {
   border-radius: 6px;
 }
 
+/* Central Visual Studio Style Code Stage */
+.ide-code-stage {
+  background: var(--bg-card);
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.ide-stage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border-medium);
+  padding: 8px 16px;
+  gap: 12px;
+}
+
+.stage-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.stage-icon {
+  font-size: 14px;
+}
+
+.inst-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.stage-view-toggles {
+  display: inline-flex;
+  gap: 2px;
+  background: var(--bg-app);
+  padding: 2px;
+  border-radius: 6px;
+  border: 1px solid var(--border-light);
+}
+
+.stage-toggle-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.stage-toggle-btn:hover {
+  color: var(--text-main);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.stage-toggle-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Embedded Panes inside Central Code Stage */
+.ide-code-stage section {
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 14px 18px !important;
+}
+
+.stage-editor-pane {
+  border-bottom: 1px solid var(--border-light);
+}
+
+/* Visibility according to viewMode */
+.stage-focus-disasm .stage-editor-pane {
+  display: none !important;
+}
+
+.stage-focus-editor .stage-disasm-pane {
+  display: none !important;
+}
+
+.stage-focus-disasm .code-pane {
+  max-height: 650px;
+}
+
+/* Bottom Dock */
+.ide-bottom-dock {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 /* Code View */
 .code-pane {
   overflow: auto;

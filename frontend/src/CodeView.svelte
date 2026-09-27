@@ -53,6 +53,27 @@
     return list;
   });
 
+  const symbolsByAddress = $derived.by<Record<number, string[]>>(() => {
+    const map: Record<number, string[]> = {};
+    if (program?.metadata?.symbols) {
+      for (const s of program.metadata.symbols) {
+        if (!map[s.address]) map[s.address] = [];
+        map[s.address].push(s.name);
+      }
+    }
+    return map;
+  });
+
+  const linesByAddress = $derived.by<Record<number, string>>(() => {
+    const map: Record<number, string> = {};
+    if (program?.metadata?.lines) {
+      for (const l of program.metadata.lines) {
+        map[l.address] = `${l.file}:${l.line}`;
+      }
+    }
+    return map;
+  });
+
   const isMixed = $derived.by(() => {
     if (!program) return false;
     if (program.data_regions && program.data_regions.length > 0) return true;
@@ -91,6 +112,9 @@
             <span class="section-badge">{row.mode === 'arm' ? '$a · ARM' : row.mode === 'thumb' ? '$t · Thumb' : '$d · DATA'}</span>
           </div>
         {/if}
+        {#if symbolsByAddress[row.address]}
+          <div class="symbol-label">🏷️ {symbolsByAddress[row.address].join(', ')}:</div>
+        {/if}
         {#if row.kind === 'instruction'}
           {@const isCurrent = pc === row.instruction.address}
           {@const bpActive = hasBp(row.instruction.address)}
@@ -125,6 +149,7 @@
             <span class="bytes">{row.instruction.bytes.match(/../g)?.join(' ')}</span>
             <div class="instruction-content">
               <strong>{row.instruction.decoded_text}</strong>
+              {#if linesByAddress[row.instruction.address]}<small class="dwarf-line">📍 {linesByAddress[row.instruction.address]}</small>{/if}
               {#if row.instruction.display_text !== row.instruction.decoded_text}<small class="diff-input">Input: {row.instruction.display_text}</small>{/if}
               {#if row.instruction.source_line !== null}<small class="source-line">Source line {row.instruction.source_line}</small>{/if}
               {#if row.instruction.feature_exclusion}<small class="error">! Unsupported: {row.instruction.feature_exclusion}</small>{/if}
