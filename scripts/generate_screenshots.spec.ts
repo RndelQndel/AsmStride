@@ -84,4 +84,26 @@ ldr r0, [r1, #4]`;
       fullPage: true,
     });
   });
+
+  test('capture 4. RISC-V (RV32I) Multi-ISA Workspace', async ({ page }) => {
+    await page.setViewportSize({ width: 1380, height: 920 });
+    await page.goto('/');
+    await page.locator('main[aria-busy="false"]').waitFor();
+
+    // Load RV32I Loop preset
+    await page.getByRole('button', { name: 'RV32I Loop', exact: true }).click();
+    await page.locator('main[aria-busy="false"]').waitFor();
+
+    const stepBtn = page.getByRole('button', { name: 'Step', exact: true });
+    await stepBtn.click();
+    await page.locator('main[aria-busy="false"]').waitFor();
+    await stepBtn.click();
+    await page.locator('main[aria-busy="false"]').waitFor();
+    await stepBtn.click();
+    await page.locator('main[aria-busy="false"]').waitFor();
+
+    await page.screenshot({
+      path: path.join(ASSETS_DIR, 'feature_riscv.png'),
+    });
+  });
 });

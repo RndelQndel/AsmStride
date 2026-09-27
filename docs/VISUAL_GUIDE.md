@@ -85,12 +85,32 @@ ArmStride enforces **strict memory safety**. Access to uninitialized or unmapped
    - Clear diagnostic message: *"Previous state restored; baseline preserved"*.
 5. You can patch the required memory using the **Memory Patch** tool and retry execution safely.
 
+## 4. RISC-V (RV32I) Multi-ISA Workspace
+
+When switching the architecture to **RISC-V (RV32I)**, ArmStride automatically adapts its entire workspace according to the architecture profile:
+
+![RISC-V RV32I Workspace](../docs/assets/feature_riscv.png)
+
+### Key RV32I Features in UI:
+1. **Dynamic Architecture & Mode Adapters**:
+   - Choosing `RISC-V (RV32I)` locks the execution mode to `RV32I`.
+   - Dedicated quick presets are available: **`RV32I Loop`** and **`RV32I Load/Store`**.
+   - Top banner displays the active profile badge (`RV32I`).
+2. **32 Integer Registers Grid (`x0`–`x31` + `PC`)**:
+   - Each register is clearly annotated with its standard RISC-V ABI alias (e.g. `X0 (ZERO)`, `X1 (RA)`, `X2 (SP)`, `X10 (A0)`–`X17 (A7)`, `X5 (T0)`–`X7 (T2)`, `X28 (T3)`–`X31 (T6)`).
+   - **`x0` (zero) Immutability**: Register `x0` is locked and disabled for user editing. Instruction writes to `x0` produce no state modifications or delta events.
+3. **Suppression of ARM Status Bars**:
+   - CPSR and condition flags (`N`, `Z`, `C`, `V`) are cleanly hidden from both the UI and API response envelopes.
+4. **Clean Environment Traps**:
+   - `ECALL` and `EBREAK` stop execution cleanly with informative stop reasons (`environment_call` or `breakpoint_trap`) without native engine crashes.
+
 ---
 
-## 4. Useful Keyboard Shortcuts
+## 5. Useful Keyboard Shortcuts
 
 | Shortcut | Action | Description |
 | :--- | :--- | :--- |
+| **`F5`** | **Run** | Run instructions until breakpoint, stop, or step limit |
 | **`F7`** or **`F8`** | **Step** | Advance simulation by one instruction |
 | **`F9`** | **Reset** | Reset registers and memory to baseline |
 | **`Enter`** | **Apply** | Commit edited register or memory value |

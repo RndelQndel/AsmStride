@@ -48,7 +48,7 @@
 <header class="app-header toolbar" aria-label="Execution controls">
   <div class="header-brand">
     <h1>⚡ ArmStride</h1>
-    <span class="badge">ARMv7-A</span>
+    <span class="badge">{session.state?.profile === 'rv32i-le' ? 'RV32I' : 'ARMv7-A'}</span>
   </div>
   <div class="header-controls">
     <div class="action-buttons">

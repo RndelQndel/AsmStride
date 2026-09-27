@@ -71,6 +71,11 @@ Accessing unmapped memory (`??`) immediately pauses simulation and reports the e
 
 <img src="docs/assets/feature_fault_rollback.png" alt="Memory Fault and Rollback" width="100%" />
 
+### 4. RISC-V (RV32I) Multi-ISA Workspace
+Switch architecture to **RISC-V (RV32I)** to debug 32-bit integer RISC-V snippets. The UI automatically renders the full 32-register grid (`x0`–`x31`) with standard ABI names (`zero`, `ra`, `sp`, `a0`–`a7`, `t0`–`t6`, `s0`–`s11`), locks immutable `x0 (zero)` to 0, and hides ARM-specific status bars (CPSR and NZCV flags).
+
+<img src="docs/assets/feature_riscv.png" alt="RISC-V RV32I Workspace" width="100%" />
+
 ---
 
 ## 🚀 Quickstart
