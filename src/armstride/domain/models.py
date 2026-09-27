@@ -8,6 +8,13 @@ Mode = Literal["arm", "thumb"]
 ADDRESS_SPACE = 1 << 32
 MAX_TEXT_BYTES = 1 << 20
 MAX_INSTRUCTIONS = 10_000
+MAX_ELF_FILE_BYTES = 10 * 1024 * 1024
+MAX_LOGICAL_MEMORY_BYTES = 16 * 1024 * 1024
+MAX_BACKING_PAGES_BYTES = 64 * 1024 * 1024
+MAX_ELF_SEGMENTS = 32
+MAX_ELF_SECTIONS = 128
+MAX_WATCHPOINTS = 32
+MAX_HISTORY_STEPS = 100
 
 
 class DomainError(ValueError):
@@ -41,6 +48,38 @@ class Diagnostic:
 class Breakpoint:
     address: int
     mode: Mode
+
+
+@dataclass(frozen=True, slots=True)
+class Watchpoint:
+    address: int
+    length: int = 1
+    kind: Literal["read", "write", "read_write"] = "read_write"
+
+    def __post_init__(self):
+        if type(self.address) is not int or not 0 <= self.address < ADDRESS_SPACE:
+            raise DomainError("invalid_watchpoint", "Watchpoint address must be an unsigned 32-bit integer.",
+                              address=self.address)
+        if type(self.length) is not int or not 1 <= self.length <= 4096:
+            raise DomainError("invalid_watchpoint", "Watchpoint length must be between 1 and 4096 bytes.",
+                              length=self.length)
+        if self.address + self.length > ADDRESS_SPACE:
+            raise DomainError("invalid_watchpoint", "Watchpoint range exceeds 32-bit address space.",
+                              address=self.address, length=self.length)
+        if self.kind not in ("read", "write", "read_write"):
+            raise DomainError("invalid_watchpoint", f"Invalid watchpoint kind {self.kind}; expected read, write, or read_write.",
+                              kind=self.kind)
+
+
+@dataclass(frozen=True, slots=True)
+class WatchpointHit:
+    watchpoint: Watchpoint
+    access_type: Literal["read", "write"]
+    address: int
+    length: int
+    triggering_pc: int
+    before_bytes: str | None = None
+    after_bytes: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -106,6 +145,7 @@ class DataRegion:
     data: bytes
     source_line: int | None = None
     source_text: str = ""
+    writable: bool = False
 
     def __post_init__(self):
         if not isinstance(self.data, bytes):
@@ -217,4 +257,71 @@ class ParseResult:
     @property
     def ignored_line_count(self) -> int:
         return len(self.ignored_lines)
+
+
+@dataclass(frozen=True, slots=True)
+class SymbolEntry:
+    address: int
+    name: str
+    size: int = 0
+    kind: str = "label"  # "func", "object", "label", etc.
+    binding: str = "global"  # "global", "local", "weak"
+    section: str | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class SymbolTable:
+    by_address: Mapping[int, tuple[SymbolEntry, ...]] = field(default_factory=dict)
+    by_name: Mapping[str, SymbolEntry] = field(default_factory=dict)
+
+    def __post_init__(self):
+        object.__setattr__(self, "by_address", MappingProxyType(dict(self.by_address)))
+        object.__setattr__(self, "by_name", MappingProxyType(dict(self.by_name)))
+
+
+@dataclass(frozen=True, slots=True)
+class LineEntry:
+    address: int
+    file_path: str
+    line_number: int
+    column: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class LineTable:
+    entries: tuple[LineEntry, ...] = ()
+    by_address: Mapping[int, LineEntry] = field(default_factory=dict)
+
+    def __post_init__(self):
+        object.__setattr__(self, "entries", tuple(self.entries))
+        object.__setattr__(self, "by_address", MappingProxyType(dict(self.by_address)))
+
+
+@dataclass(frozen=True, slots=True)
+class ElfInfo:
+    entry_point: int
+    initial_mode: Mode
+    segment_count: int
+    section_count: int
+    is_stripped: bool
+    has_dwarf: bool
+
+
+@dataclass(frozen=True, slots=True)
+class ProgramMetadata:
+    symbols: SymbolTable = field(default_factory=SymbolTable)
+    lines: LineTable = field(default_factory=LineTable)
+    elf_info: ElfInfo | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ExecutionHistoryEntry:
+    step_seq: int
+    registers: Mapping[str, int]
+    cpsr: int
+    mode: Mode
+    pc: int
+    register_origins: Mapping[str, str]
+    modified_memory: Mapping[int, int]
+    last_step: Mapping[str, object] | None = None
 

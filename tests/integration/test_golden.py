@@ -71,6 +71,8 @@ def test_golden(case):
                     compare_result.pop('executed', None)
                 if 'it_context' not in expected_result:
                     compare_result.pop('it_context', None)
+                if 'watchpoint_hits' not in expected_result:
+                    compare_result.pop('watchpoint_hits', None)
                 assert compare_result == expected_result
             else:
                 assert session.last_step is None

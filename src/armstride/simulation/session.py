@@ -1,5 +1,6 @@
 """Session-owned runtime and user baseline with atomic replacement and Step."""
 
+from collections import deque
 from copy import deepcopy
 from typing import Callable
 
@@ -7,7 +8,8 @@ from armstride.architecture.arm import (EDITABLE_FLAGS, STACK_BASE, STACK_SIZE,
     canonical_register, initial_registers, validate_pc)
 from armstride.architecture.control_flow import (IT_CONDITIONS, branch_result,
     condition_passed, evaluate_condition, get_itstate)
-from armstride.domain.models import Breakpoint, DomainError, ProgramImage
+from armstride.domain.models import (Breakpoint, DomainError, ExecutionHistoryEntry,
+    MAX_HISTORY_STEPS, MAX_WATCHPOINTS, ProgramImage, ProgramMetadata, Watchpoint, WatchpointHit)
 from armstride.simulation.memory import MemoryState
 from armstride.simulation.results import StepResult
 from armstride.simulation.state import ExecutionBackend, MachineState
@@ -38,6 +40,15 @@ class SimulationSession:
         self._it_blocks = {}
         self._it_interior_addresses = set()
         self.breakpoints: dict[int, Breakpoint] = {}
+        self.watchpoints: dict[int, Watchpoint] = {}
+        self.metadata: ProgramMetadata | None = None
+        self.state_revision = 1
+        self._history: deque[ExecutionHistoryEntry] = deque(maxlen=MAX_HISTORY_STEPS)
+        self._max_step_seq = 0
+
+    @property
+    def history_depth(self) -> int:
+        return len(self._history)
 
 
     @property
@@ -96,13 +107,19 @@ class SimulationSession:
         if previous is not None:
             previous.close()
 
-    def load(self, program, *, stack_base=STACK_BASE, stack_size=STACK_SIZE):
-        self.clear_breakpoints()
+    def load(self, program, *, initial_pc=None, metadata=None, stack_base=STACK_BASE, stack_size=STACK_SIZE):
         memory = MemoryState.from_program(program, stack_base=stack_base, stack_size=stack_size)
-        registers = dict(initial_registers(program.mode, program.start_pc))
+        start_pc = initial_pc if initial_pc is not None else program.start_pc
+        registers = dict(initial_registers(program.mode, start_pc))
         registers['sp'] = stack_base + stack_size
         state = MachineState(registers, memory)
         self._replace(program, state, state)
+        self.clear_breakpoints()
+        self.clear_watchpoints()
+        self._history.clear()
+        self.metadata = metadata
+        self.state_revision += 1
+        self._max_step_seq = 0
 
     def set_register(self, name, value, *, mask=None):
         self._require_loaded()
@@ -131,6 +148,8 @@ class SimulationSession:
             registers[name] = (registers[name] & ~mask) | (value & mask) if mask is not None else value
             candidates.append(MachineState(registers, state.memory, dict(state.register_origins) | {name: 'user'}))
         self._replace(self.program, *candidates)
+        self._history.clear()
+        self.state_revision += 1
 
     def set_pc(self, value):
         self.set_register('pc', value)
@@ -143,12 +162,16 @@ class SimulationSession:
         candidates = [MachineState(state.registers, state.memory.patch(address, raw_bytes), state.register_origins)
                       for state in (self.runtime, self.baseline)]
         self._replace(self.program, *candidates)
+        self._history.clear()
+        self.state_revision += 1
 
     def zero_fill(self, address, size):
         self._require_loaded()
         candidates = [MachineState(state.registers, state.memory.zero_fill(address, size), state.register_origins)
                       for state in (self.runtime, self.baseline)]
         self._replace(self.program, *candidates)
+        self._history.clear()
+        self.state_revision += 1
 
     def inspect_memory(self, address, size):
         self._require_loaded(recovery=True)
@@ -157,6 +180,8 @@ class SimulationSession:
     def reset(self):
         self._require_loaded(recovery=True)
         self._replace(self.program, self.baseline, self.baseline)
+        self._history.clear()
+        self.state_revision += 1
 
     def close(self):
         if self._backend is not None:
@@ -172,6 +197,7 @@ class SimulationSession:
         result = StepResult(status='failed', executed=False, pc_before=pc, pc_after=pc,
                             condition_passed=None, it_context=None,
                             branch=None, stop_reason=None, error=None, memory_reads=[], memory_writes=[],
+                            watchpoint_hits=[],
                             flag_changes={}, step_seq=self.step_seq, register_changes={}, cpsr_change=None,
                             instruction=None if instruction is None else dict(address=pc, size=instruction.size,
                                                                              source_line=instruction.source_line))
@@ -208,11 +234,69 @@ class SimulationSession:
                     'backend_unavailable' if code == 'backend_unavailable' else 'execution_error')
             result.update(error=dict(code=code, context=context, restored=restored), stop_reason=stop)
         else:
+            watchpoint_hits = []
+            for r in outcome.reads:
+                r_addr, r_size = r['address'], r['size']
+                for wp in self.watchpoints.values():
+                    if wp.kind in ('read', 'read_write'):
+                        if max(r_addr, wp.address) < min(r_addr + r_size, wp.address + wp.length):
+                            watchpoint_hits.append(dict(
+                                address=r_addr,
+                                size=r_size,
+                                access_type='read',
+                                triggering_pc=pc,
+                                watchpoint_address=wp.address,
+                                watchpoint_length=wp.length,
+                                watchpoint_kind=wp.kind,
+                                before_bytes=r.get('bytes'),
+                                after_bytes=r.get('bytes'),
+                            ))
+            for w in outcome.writes:
+                w_addr, w_size = w['address'], w['size']
+                for wp in self.watchpoints.values():
+                    if wp.kind in ('write', 'read_write'):
+                        if max(w_addr, wp.address) < min(w_addr + w_size, wp.address + wp.length):
+                            watchpoint_hits.append(dict(
+                                address=w_addr,
+                                size=w_size,
+                                access_type='write',
+                                triggering_pc=pc,
+                                watchpoint_address=wp.address,
+                                watchpoint_length=wp.length,
+                                watchpoint_kind=wp.kind,
+                                before_bytes=w.get('before_bytes'),
+                                after_bytes=w.get('after_bytes'),
+                            ))
+
+            modified_memory = {}
+            for w in outcome.writes:
+                addr = w['address']
+                before_hex = w['before_bytes']
+                before_raw = bytes.fromhex(before_hex)
+                for offset, byte_val in enumerate(before_raw):
+                    byte_addr = addr + offset
+                    if byte_addr not in modified_memory:
+                        modified_memory[byte_addr] = byte_val
+
+            history_entry = ExecutionHistoryEntry(
+                step_seq=self.step_seq,
+                registers=dict(before.registers),
+                cpsr=before.registers['cpsr'],
+                mode='thumb' if before.registers['cpsr'] & 0x20 else 'arm',
+                pc=before.registers['pc'],
+                register_origins=dict(before.register_origins),
+                modified_memory=modified_memory,
+                last_step=deepcopy(self._last_step),
+            )
+            self._history.append(history_entry)
+
             after = outcome.state.registers
             register_changes = changes(before.registers, after)
             origins = dict(before.register_origins) | dict.fromkeys(register_changes, 'execution')
             self.runtime = MachineState(after, outcome.state.memory, origins)
-            self.step_seq += 1
+            self._max_step_seq = max(self._max_step_seq, self.step_seq)
+            self.step_seq = self._max_step_seq + 1
+            self._max_step_seq = self.step_seq
             cpsr_change = register_changes.pop('cpsr', None)
             resulting_mode = 'thumb' if after['cpsr'] & 0x20 else 'arm'
             if after['pc'] in self.program.address_index:
@@ -249,7 +333,7 @@ class SimulationSession:
             result.update(status='executed', executed=executed, pc_after=after['pc'],
                           condition_passed=cond_passed, it_context=it_context,
                           branch=branch_result(instruction, before.registers, after, outcome.reads),
-                          stop_reason=stop_reason,
+                          stop_reason=stop_reason, watchpoint_hits=watchpoint_hits,
                           memory_reads=list(outcome.reads), memory_writes=list(outcome.writes),
                           flag_changes=changes(flags(before.registers), flags(after)),
                           step_seq=self.step_seq, register_changes=register_changes, cpsr_change=cpsr_change)
@@ -306,6 +390,53 @@ class SimulationSession:
             return bp
         return None
 
+    def add_watchpoint(self, address: int, length: int = 1, kind: str = "read_write") -> Watchpoint:
+        self._require_loaded()
+        if len(self.watchpoints) >= MAX_WATCHPOINTS and address not in self.watchpoints:
+            raise DomainError('invalid_watchpoint', f'Maximum active watchpoints ({MAX_WATCHPOINTS}) exceeded.',
+                              limit=MAX_WATCHPOINTS)
+        wp = Watchpoint(address, length, kind)
+        self.watchpoints[address] = wp
+        return wp
+
+    def remove_watchpoint(self, address: int) -> bool:
+        self._require_loaded()
+        if address in self.watchpoints:
+            del self.watchpoints[address]
+            return True
+        return False
+
+    def list_watchpoints(self) -> list[Watchpoint]:
+        return sorted(self.watchpoints.values(), key=lambda w: w.address)
+
+    def clear_watchpoints(self) -> None:
+        self.watchpoints.clear()
+
+    def step_back(self) -> dict[str, object]:
+        self._require_loaded()
+        if not self._history:
+            raise DomainError('history_empty', 'No execution history available to step back.')
+
+        entry = self._history.pop()
+        restored_memory = self.runtime.memory.restore_bytes(entry.modified_memory)
+        restored_runtime = MachineState(
+            dict(entry.registers),
+            restored_memory,
+            dict(entry.register_origins)
+        )
+        self.state_revision += 1
+        self._replace(self.program, restored_runtime, self.baseline)
+        self._last_step = entry.last_step
+
+        return {
+            'status': 'ok',
+            'restored_step_seq': entry.step_seq,
+            'current_step_seq': self.step_seq,
+            'state_revision': self.state_revision,
+            'history_depth': len(self._history),
+            'state': self.snapshot(),
+        }
+
     def run(self, stop_event=None, max_steps: int = 10_000,
             timeout_seconds: float = 2.0) -> dict[str, object]:
         self._require_loaded()
@@ -318,6 +449,7 @@ class SimulationSession:
         start_time = monotonic()
         stop_reason = None
         breakpoint_hit = None
+        watchpoint_hit = None
 
         bypassed_bp = self._current_breakpoint()
 
@@ -344,6 +476,12 @@ class SimulationSession:
                 stop_reason = step_res.get('stop_reason') or 'execution_failure'
                 break
             steps_committed += 1
+
+            if step_res.get('watchpoint_hits'):
+                stop_reason = 'watchpoint'
+                watchpoint_hit = step_res['watchpoint_hits'][0]
+                break
+
             if step_res.get('stop_reason') is not None:
                 stop_reason = step_res['stop_reason']
                 break
@@ -357,6 +495,7 @@ class SimulationSession:
             'stop_reason': stop_reason or 'user_stop',
             'elapsed_ms': elapsed_ms,
             'breakpoint_hit': breakpoint_hit,
+            'watchpoint_hit': watchpoint_hit,
             'last_step': self.last_step,
             'last_step_result': self.last_step,
         }

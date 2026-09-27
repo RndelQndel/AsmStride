@@ -1,7 +1,7 @@
 """Immutable sparse logical memory. Mapped padding is never treated as known bytes."""
 
 from dataclasses import dataclass
-from typing import Literal
+from typing import Literal, Mapping
 
 from armstride.architecture.arm import STACK_BASE, STACK_SIZE
 from armstride.domain.models import ADDRESS_SPACE, DomainError, ProgramImage, validate_range
@@ -97,11 +97,28 @@ class MemoryState:
             raise DomainError("resource_limit", "Stack exceeds the logical memory budget.",
                               budget="logical_bytes", limit=MAX_LOGICAL_BYTES)
         code = tuple(MemoryRegion(i.address, i.raw_bytes, "code") for i in program.instructions)
-        data = tuple(MemoryRegion(d.address, d.data, "code") for d in program.data_regions)
+        data = tuple(MemoryRegion(d.address, d.data, "code" if not getattr(d, 'writable', False) else "user") for d in program.data_regions)
         all_program = code + data
         if any(region.address < stack_base + stack_size and region.end > stack_base for region in all_program):
             raise DomainError("stack_conflict", "Scratch stack overlaps code.")
         return cls(all_program + (MemoryRegion(stack_base, bytes(stack_size), "scratch_stack"),))
+
+    def restore_bytes(self, modified_memory: dict[int, int] | Mapping[int, int]) -> "MemoryState":
+        if not modified_memory:
+            return self
+        new_regions = []
+        for region in self.regions:
+            raw = bytearray(region.raw_bytes)
+            changed = False
+            for addr, val in modified_memory.items():
+                if region.address <= addr < region.end:
+                    raw[addr - region.address] = val
+                    changed = True
+            if changed:
+                new_regions.append(MemoryRegion(region.address, bytes(raw), region.origin))
+            else:
+                new_regions.append(region)
+        return MemoryState(tuple(new_regions))
 
 
     def patch(self, address: int, raw_bytes: bytes) -> "MemoryState":

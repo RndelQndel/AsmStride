@@ -41,7 +41,14 @@ class DisassemblyRequest(ProgramRequest):
     encoding: Literal['auto', 'words', 'bytes'] = 'auto'
 
 
-LoadRequest = Annotated[AssemblyRequest | DisassemblyRequest, Field(discriminator='input_kind')]
+class ElfRequest(Schema):
+    input_kind: Literal['elf']
+    content_base64: str
+    profile: str = 'armv7-a-le'
+    stack: Stack | None = None
+
+
+LoadRequest = Annotated[AssemblyRequest | DisassemblyRequest | ElfRequest, Field(discriminator='input_kind')]
 
 
 class ValueRequest(Schema):
@@ -84,6 +91,30 @@ class BreakpointRequest(Schema):
     mode: Literal['arm', 'thumb'] | None = None
 
 
+class WatchpointView(Schema):
+    address: UInt32
+    length: PositiveSize
+    kind: Literal['read', 'write', 'read_write']
+
+
+class WatchpointRequest(Schema):
+    address: UInt32
+    length: PositiveSize = 1
+    kind: Literal['read', 'write', 'read_write'] = 'read_write'
+
+
+class WatchpointHitView(Schema):
+    address: UInt32
+    size: PositiveSize
+    access_type: Literal['read', 'write']
+    triggering_pc: UInt32
+    watchpoint_address: UInt32
+    watchpoint_length: PositiveSize
+    watchpoint_kind: Literal['read', 'write', 'read_write']
+    before_bytes: str | None = None
+    after_bytes: str | None = None
+
+
 class State(Schema):
     session_id: str
     status: Literal['empty', 'ready', 'stopped', 'unavailable']
@@ -91,6 +122,8 @@ class State(Schema):
     mode: Literal['arm', 'thumb'] | None
     baseline_pc: UInt32 | None
     step_seq: int
+    state_revision: int = 1
+    history_depth: int = 0
     registers: dict[str, RegisterValue]
     cpsr: RegisterValue | None
     flags: dict[str, bool] | None
@@ -99,6 +132,7 @@ class State(Schema):
     regions: list[Region]
     last_step: StepResult | None
     breakpoints: list[Breakpoint] = []
+    watchpoints: list[WatchpointView] = []
 
 
 class DiagnosticView(Schema):
@@ -129,6 +163,26 @@ class DataRegionView(Schema):
     source_line: int | None
 
 
+class SymbolEntryView(Schema):
+    address: UInt32
+    name: str
+    size: int = 0
+    kind: str = 'label'
+    binding: str = 'global'
+    section: str | None = None
+
+
+class SymbolTableView(Schema):
+    symbols: list[SymbolEntryView] = []
+
+
+class LineEntryView(Schema):
+    address: UInt32
+    file_path: str
+    line_number: int
+    column: int = 0
+
+
 class Program(Schema):
     profile: str
     mode: Literal['arm', 'thumb']
@@ -136,6 +190,8 @@ class Program(Schema):
     source_text: str
     instructions: list[InstructionView]
     data_regions: list[DataRegionView] = []
+    symbols: list[SymbolEntryView] = []
+    lines: list[LineEntryView] = []
     diagnostics: list[DiagnosticView]
     instruction_count: int
     ignored_line_count: int
@@ -169,6 +225,15 @@ class StepResponse(Schema):
     state: State
 
 
+class StepBackResponse(Schema):
+    status: Literal['ok', 'empty']
+    restored_step_seq: int
+    current_step_seq: int
+    state_revision: int
+    history_depth: int
+    state: State
+
+
 class RunRequest(Schema):
     step_limit: Annotated[int, Field(ge=1, le=100_000)] = 10_000
     time_limit_ms: Annotated[int, Field(ge=1, le=10_000)] = 2000
@@ -182,6 +247,7 @@ class RunResultView(Schema):
     stop_reason: str
     elapsed_ms: float
     breakpoint_hit: UInt32 | None
+    watchpoint_hit: WatchpointHitView | None = None
     last_step: StepResult | None = None
     last_step_result: StepResult | None = None
 

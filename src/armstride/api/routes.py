@@ -6,12 +6,15 @@ from fastapi import APIRouter, Query, Request, Response
 from fastapi.responses import JSONResponse
 
 from armstride.api.schemas import (AssemblyRequest, Breakpoint, BreakpointRequest, BytesPatch,
-    CreateResponse, EmptyRequest, ErrorEnvelope, LoadRequest, LoadResponse, MemoryWindow,
-    RegisterRequest, RunRequest, RunResponse, State, StepResponse, StopResponse, ValueRequest, ZeroPatch)
+    CreateResponse, ElfRequest, EmptyRequest, ErrorEnvelope, LoadRequest, LoadResponse, MemoryWindow,
+    RegisterRequest, RunRequest, RunResponse, State, StepBackResponse, StepResponse, StopResponse,
+    SymbolTableView, ValueRequest, WatchpointRequest, WatchpointView, ZeroPatch)
 from armstride.api.sessions import IDLE_SECONDS, MAX_SESSIONS
-from armstride.api.views import diagnostic_view, instruction_view, program_view, state_view
+from armstride.api.views import (diagnostic_view, instruction_view, program_view,
+    state_view, symbol_entry_view)
 from armstride.architecture.arm import STACK_BASE, STACK_SIZE
-from armstride.domain.models import MAX_INSTRUCTIONS, MAX_TEXT_BYTES, DomainError
+from armstride.domain.models import (MAX_ELF_FILE_BYTES, MAX_INSTRUCTIONS,
+    MAX_TEXT_BYTES, DomainError)
 from armstride.parser import parse
 from armstride.simulation.memory import (MAX_BACKING_BYTES, MAX_INSPECTION_BYTES,
     MAX_LOGICAL_BYTES, MAX_PATCH_BYTES)
@@ -34,8 +37,11 @@ def error_status(error, request):
         return 503 if request.url.path.endswith(('/program', '/reset')) else 409
     if error.code == 'input_limit':
         return 422 if request.method == 'GET' or error.context.get('limit') == MAX_INSTRUCTIONS else 413
-    return {'session_not_found': 404, 'session_limit': 429, 'program_not_loaded': 409,
-            'resource_limit': 409}.get(error.code, 422)
+    if error.code == 'elf_resource_limit_exceeded':
+        return 413 if error.context.get('limit') == MAX_ELF_FILE_BYTES else 422
+    if error.code in ('history_empty', 'resource_limit', 'program_not_loaded'):
+        return 409
+    return {'session_not_found': 404, 'session_limit': 429}.get(error.code, 422)
 
 
 @router.post('', status_code=201, response_model=CreateResponse)
@@ -61,6 +67,26 @@ def get_state(session_id: str, request: Request):
 @router.post('/{session_id}/program', response_model=LoadResponse)
 def load_program(session_id: str, body: LoadRequest, request: Request):
     with request.app.state.registry.access(session_id) as entry:
+        if isinstance(body, ElfRequest):
+            try:
+                import base64
+                raw_bytes = base64.b64decode(body.content_base64)
+            except Exception as e:
+                raise DomainError('invalid_input', f'Invalid base64 payload: {e}') from None
+            if len(raw_bytes) > MAX_ELF_FILE_BYTES:
+                raise DomainError('elf_resource_limit_exceeded', 'ELF file size exceeds 10 MiB limit.',
+                                  limit=MAX_ELF_FILE_BYTES, actual=len(raw_bytes))
+            from armstride.elf.loader import load_elf
+            program, metadata, entry_pc, initial_mode = load_elf(raw_bytes, profile=body.profile)
+            stack = body.stack.model_dump() if body.stack else dict(base=STACK_BASE, size=STACK_SIZE)
+            entry.session.load(program, initial_pc=entry_pc, metadata=metadata,
+                               stack_base=stack['base'], stack_size=stack['size'])
+            entry.stack = stack
+            from armstride.parser.records import ParseResult
+            parse_res = ParseResult(program=program, records=program.instructions, diagnostics=(),
+                                    selected_format='elf', data_regions=program.data_regions)
+            return dict(program=program_view(parse_res, metadata=metadata), state=state_view(session_id, entry))
+
         # Check decoded text before parsing/assembly; JSON wire size is bounded separately.
         try:
             too_large = len(body.text) > MAX_TEXT_BYTES or len(body.text.encode('utf-8')) > MAX_TEXT_BYTES
@@ -174,4 +200,45 @@ def run_session(session_id: str, body: RunRequest, request: Request):
 def stop_session(session_id: str, body: EmptyRequest, request: Request):
     request.app.state.registry.signal_stop(session_id)
     return dict(signaled=True)
+
+
+@router.get('/{session_id}/symbols', response_model=SymbolTableView)
+def get_symbols(session_id: str, request: Request):
+    with request.app.state.registry.access(session_id) as entry:
+        symbols = []
+        if entry.session.metadata is not None:
+            for entries in entry.session.metadata.symbols.by_address.values():
+                for s in entries:
+                    symbols.append(symbol_entry_view(s))
+        return dict(symbols=symbols)
+
+
+@router.get('/{session_id}/watchpoints', response_model=list[WatchpointView])
+def list_watchpoints(session_id: str, request: Request):
+    with request.app.state.registry.access(session_id) as entry:
+        return [dict(address=wp.address, length=wp.length, kind=wp.kind)
+                for wp in entry.session.list_watchpoints()]
+
+
+@router.post('/{session_id}/watchpoints', status_code=201, response_model=WatchpointView)
+def add_watchpoint(session_id: str, body: WatchpointRequest, request: Request):
+    with request.app.state.registry.access(session_id) as entry:
+        wp = entry.session.add_watchpoint(body.address, length=body.length, kind=body.kind)
+        return dict(address=wp.address, length=wp.length, kind=wp.kind)
+
+
+@router.delete('/{session_id}/watchpoints/{address}', status_code=204)
+def remove_watchpoint(session_id: str, address: int, request: Request):
+    with request.app.state.registry.access(session_id) as entry:
+        entry.session.remove_watchpoint(address)
+        return Response(status_code=204)
+
+
+@router.post('/{session_id}/step-back', response_model=StepBackResponse)
+def step_back(session_id: str, body: EmptyRequest, request: Request):
+    with request.app.state.registry.access(session_id) as entry:
+        res = entry.session.step_back()
+        return dict(status=res['status'], restored_step_seq=res['restored_step_seq'],
+                    current_step_seq=res['current_step_seq'], state_revision=res['state_revision'],
+                    history_depth=res['history_depth'], state=state_view(session_id, entry))
 

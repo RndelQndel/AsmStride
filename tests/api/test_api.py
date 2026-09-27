@@ -305,7 +305,7 @@ def test_static_contract_openapi_and_safe_internal_error(tmp_path):
         assert client.get('/asset.js').status_code == 200
         assert client.get('/api/missing').status_code == 404
         schema = client.get('/api/openapi.json').json()
-        assert len(schema['paths']) == 13
+        assert len(schema['paths']) == 17
         assert 'State' in schema['components']['schemas']
         assert 'discriminator' in schema['paths']['/api/sessions/{session_id}/program']['post']['requestBody']['content']['application/json']['schema']
         def fail():

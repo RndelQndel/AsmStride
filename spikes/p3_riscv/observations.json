@@ -1,0 +1,107 @@
+{
+  "arithmetic": {
+    "ADD_pos_overflow": "0x80000000",
+    "ADD_wrap_zero": "0x0",
+    "ADDI_neg_imm": "0x5",
+    "SUB_underflow": "0xffffffff",
+    "SLL": "0x100",
+    "SRL": "0x8000001",
+    "SRA": "0xf8000001",
+    "SLT_signed": 1,
+    "SLTU_unsigned": 0,
+    "AND": "0x3030303",
+    "OR": "0x3f3f3f3f",
+    "XOR": "0x3c3c3c3c"
+  },
+  "upper_immediate": {
+    "LUI": "0x12345000",
+    "AUIPC": "0x2004",
+    "AUIPC_base_used": "PC of AUIPC instruction (0x1004) + 0x1000 = 0x2004"
+  },
+  "loads_and_stores": {
+    "stored_raw_bytes_for_0x12345678": [
+      "0x78",
+      "0x56",
+      "0x34",
+      "0x12"
+    ],
+    "is_little_endian": true,
+    "LB_sign_extended": "0xffffff85",
+    "LBU_zero_extended": "0x85",
+    "LH_sign_extended": "0xfffffa85",
+    "LHU_zero_extended": "0xfa85",
+    "LW_word": "0xfa85"
+  },
+  "branches": {
+    "BEQ_taken_pc": "0x1008",
+    "BEQ_not_taken_pc": "0x100c",
+    "BLT_signed_taken_pc": "0x1014",
+    "BLTU_unsigned_not_taken_pc": "0x1018",
+    "branch_to_self_pc": "0x1018"
+  },
+  "jumps": {
+    "JAL_target_pc": "0x1010",
+    "JAL_link_ra": "0x1004",
+    "JALR_ret_pc": "0x1004",
+    "JALR_unaligned_target_masked_bit0": "0x1004"
+  },
+  "x0_behavior": {
+    "reg_write_x0_allowed_by_unicorn": true,
+    "cpu_read_x0_treats_as_zero": true,
+    "cpu_write_to_x0_discarded_by_engine": true,
+    "read_x0_after_cpu_write": "0xcafe",
+    "zero_and_x0_ids_share_state": true,
+    "armstride_design_obligation": "ArmStride domain MUST enforce x0 immutability, reject user edits to x0, and canonicalize x0 to 0 on state reads"
+  },
+  "alignment": {
+    "unaligned_data_read_fault": null,
+    "unaligned_data_read_value": "0x5040302",
+    "unaligned_fetch_fault": "Unhandled CPU exception (UC_ERR_EXCEPTION)"
+  },
+  "unmapped_fetch": {
+    "unmapped_fetch_fault": "Invalid memory fetch (UC_ERR_FETCH_UNMAPPED)",
+    "ra_after_unmapped_jal": "0x1004",
+    "pc_after_unmapped_jal": "0x9000",
+    "observation": "In Unicorn, JAL to unmapped address: Does JAL commit ra before fetch fault occurs?"
+  },
+  "memory_hooks": {
+    "hook_events_captured": [
+      {
+        "access": "WRITE",
+        "address": "0x2000",
+        "size": 4,
+        "value": "0x55aa55aa"
+      },
+      {
+        "access": "READ",
+        "address": "0x2000",
+        "size": 4,
+        "value": null
+      }
+    ],
+    "hook_matches_expected": true
+  },
+  "count_and_timeout": {
+    "count_1_advances_pc_by_4": true,
+    "count_1_executes_only_first_insn": true,
+    "timeout_halts_infinite_loop": true
+  },
+  "context_save_restore": {
+    "context_save_restore_supported": true,
+    "x1_restored": true,
+    "x2_restored": true,
+    "pc_restored": true
+  },
+  "backend_reconstruction": {
+    "fault_triggered": true,
+    "reuse_after_fault_ok": true,
+    "fresh_instance_clean": true,
+    "recommendation": "Preserve ArmStride pattern: on execution fault or state reset, reconstruct or roll back completely"
+  },
+  "environment_instructions": {
+    "FENCE_behavior": "Executes cleanly as NOP",
+    "ECALL_behavior": "Unhandled CPU exception (UC_ERR_EXCEPTION)",
+    "EBREAK_behavior": "Invalid instruction (UC_ERR_INSN_INVALID)",
+    "design_decision": "ECALL and EBREAK raise Unicorn exceptions because no OS/SBI/trap-vector is mapped. ArmStride snippet debugger should treat ECALL/EBREAK as explicit breakpoint/stop traps or unsupported environment stops rather than crashing."
+  }
+}

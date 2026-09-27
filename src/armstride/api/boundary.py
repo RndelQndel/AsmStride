@@ -5,10 +5,10 @@ from urllib.parse import urlsplit
 from starlette.datastructures import Headers, MutableHeaders
 
 from armstride.api.routes import error_response
-from armstride.domain.models import MAX_TEXT_BYTES
+from armstride.domain.models import MAX_ELF_FILE_BYTES, MAX_TEXT_BYTES
 
-# JSON can encode each ASCII source byte as six bytes (e.g. \\u0061).
-MAX_REQUEST_BYTES = 6 * MAX_TEXT_BYTES + (64 << 10)
+# Bounded JSON body: accommodate encoded assembly text or base64 ELF binaries.
+MAX_REQUEST_BYTES = max(6 * MAX_TEXT_BYTES, 4 * MAX_ELF_FILE_BYTES // 3) + (64 << 10)
 
 
 class LocalBoundary:

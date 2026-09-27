@@ -48,6 +48,18 @@ class ITContext(TypedDict):
     passed: bool
 
 
+class WatchpointHitView(TypedDict):
+    address: int
+    size: int
+    access_type: Literal['read', 'write']
+    triggering_pc: int
+    watchpoint_address: int
+    watchpoint_length: int
+    watchpoint_kind: str
+    before_bytes: str | None
+    after_bytes: str | None
+
+
 class StepResult(TypedDict):
     status: Literal['executed', 'failed']
     executed: bool
@@ -63,10 +75,11 @@ class StepResult(TypedDict):
     memory_reads: list[MemoryRead]
     memory_writes: list[MemoryWrite]
     branch: BranchResult | None
+    watchpoint_hits: list[WatchpointHitView]
     stop_reason: Literal['pc_not_loaded', 'invalid_pc', 'unsupported_instruction',
                          'memory_fault', 'unsupported_mode_transition', 'mode_mismatch',
                          'non_executable_target', 'invalid_it_block_entry',
-                         'breakpoint', 'user_stop', 'step_limit', 'time_limit',
+                         'breakpoint', 'watchpoint', 'user_stop', 'step_limit', 'time_limit',
                          'execution_error', 'backend_unavailable'] | None
     error: StepError | None
 
