@@ -21,6 +21,8 @@ def changes(before, after):
 
 
 def flags(registers):
+    if 'cpsr' not in registers:
+        return {}
     return {name: bool(registers['cpsr'] & (1 << bit)) for name, bit in zip('nzcv', (31, 30, 29, 28))}
 
 
@@ -66,6 +68,8 @@ class SimulationSession:
         pc = self.runtime.registers['pc']
         if pc not in self.program.address_index:
             return 'stopped'
+        if self.program.profile == 'rv32i-le':
+            return 'ready'
         current_mode = 'thumb' if self.runtime.registers['cpsr'] & 0x20 else 'arm'
         if self.program.address_index[pc].mode != current_mode:
             return 'stopped'
@@ -110,8 +114,14 @@ class SimulationSession:
     def load(self, program, *, initial_pc=None, metadata=None, stack_base=STACK_BASE, stack_size=STACK_SIZE):
         memory = MemoryState.from_program(program, stack_base=stack_base, stack_size=stack_size)
         start_pc = initial_pc if initial_pc is not None else program.start_pc
-        registers = dict(initial_registers(program.mode, start_pc))
-        registers['sp'] = stack_base + stack_size
+        if program.profile == 'rv32i-le':
+            from armstride.architecture import riscv
+            registers = dict(riscv.initial_registers(program.mode, start_pc))
+            registers['x2'] = stack_base + stack_size
+            registers['x0'] = 0
+        else:
+            registers = dict(initial_registers(program.mode, start_pc))
+            registers['sp'] = stack_base + stack_size
         state = MachineState(registers, memory)
         self._replace(program, state, state)
         self.clear_breakpoints()
@@ -123,25 +133,39 @@ class SimulationSession:
 
     def set_register(self, name, value, *, mask=None):
         self._require_loaded()
-        name = canonical_register(name)
-        if type(value) is not int or not 0 <= value < 1 << 32:
-            raise DomainError('invalid_register', 'Register values must be unsigned 32-bit integers.')
-        if mask is not None and name != 'cpsr':
-            raise DomainError('invalid_register', 'Only CPSR accepts a mask.')
-        if name == 'pc':
-            validate_pc(self.program, value)
-            if value in self._it_interior_addresses and get_itstate(self.runtime.registers['cpsr']) == 0:
-                raise DomainError('invalid_it_block_entry',
-                                  'Cannot set PC to interior of an IT block without active IT context.')
-        if name == 'sp' and value % 4:
-            raise DomainError('invalid_register', 'SP must be word-aligned.')
-        if name == 'cpsr':
-            if mask is None:
-                if (value ^ self.runtime.registers['cpsr']) & ~EDITABLE_FLAGS:
-                    raise DomainError('invalid_register', 'Protected CPSR bits cannot be changed.')
-                mask = EDITABLE_FLAGS
-            elif type(mask) is not int or mask <= 0 or mask & ~EDITABLE_FLAGS:
-                raise DomainError('invalid_register', 'CPSR mask must select only N/Z/C/V.')
+        if self.program.profile == 'rv32i-le':
+            from armstride.architecture import riscv
+            if name.lower() in ('x0', 'zero'):
+                raise DomainError('x0_immutable', 'Register x0 (zero) is hardwired to 0 and cannot be modified.')
+            name = riscv.canonical_register(name)
+            if type(value) is not int or not 0 <= value < 1 << 32:
+                raise DomainError('invalid_register', 'Register values must be unsigned 32-bit integers.')
+            if mask is not None:
+                raise DomainError('invalid_register', 'Register masks are not supported for RV32I.')
+            if name == 'pc':
+                riscv.validate_pc(self.program, value)
+            if name in ('x2', 'sp') and value % 4:
+                raise DomainError('invalid_register', 'SP must be word-aligned.')
+        else:
+            name = canonical_register(name)
+            if type(value) is not int or not 0 <= value < 1 << 32:
+                raise DomainError('invalid_register', 'Register values must be unsigned 32-bit integers.')
+            if mask is not None and name != 'cpsr':
+                raise DomainError('invalid_register', 'Only CPSR accepts a mask.')
+            if name == 'pc':
+                validate_pc(self.program, value)
+                if value in self._it_interior_addresses and get_itstate(self.runtime.registers['cpsr']) == 0:
+                    raise DomainError('invalid_it_block_entry',
+                                      'Cannot set PC to interior of an IT block without active IT context.')
+            if name == 'sp' and value % 4:
+                raise DomainError('invalid_register', 'SP must be word-aligned.')
+            if name == 'cpsr':
+                if mask is None:
+                    if (value ^ self.runtime.registers['cpsr']) & ~EDITABLE_FLAGS:
+                        raise DomainError('invalid_register', 'Protected CPSR bits cannot be changed.')
+                    mask = EDITABLE_FLAGS
+                elif type(mask) is not int or mask <= 0 or mask & ~EDITABLE_FLAGS:
+                    raise DomainError('invalid_register', 'CPSR mask must select only N/Z/C/V.')
         candidates = []
         for state in (self.runtime, self.baseline):
             registers = dict(state.registers)
@@ -155,6 +179,9 @@ class SimulationSession:
         self.set_register('pc', value)
 
     def set_flags(self, mask, value):
+        self._require_loaded()
+        if self.program.profile == 'rv32i-le':
+            raise DomainError('unsupported_architecture', 'Flags are not supported in RV32I.')
         self.set_register('cpsr', value, mask=mask)
 
     def patch_memory(self, address, raw_bytes):
@@ -206,12 +233,13 @@ class SimulationSession:
                 if any(dr.address <= pc < dr.address + dr.size for dr in self.program.data_regions):
                     raise DomainError('non_executable_target', 'Cannot execute non-executable data.')
                 raise DomainError('invalid_pc', 'PC must identify a loaded instruction start.')
-            current_mode = 'thumb' if before.registers['cpsr'] & 0x20 else 'arm'
-            if instruction.mode != current_mode:
-                raise DomainError('mode_mismatch', f'Execution mode {current_mode} does not match instruction mode {instruction.mode}.')
-            if pc in self._it_interior_addresses and get_itstate(before.registers['cpsr']) == 0:
-                raise DomainError('invalid_it_block_entry',
-                                  'Cannot execute instruction inside IT block without valid IT context.')
+            if self.program.profile == 'armv7-a-le':
+                current_mode = 'thumb' if before.registers['cpsr'] & 0x20 else 'arm'
+                if instruction.mode != current_mode:
+                    raise DomainError('mode_mismatch', f'Execution mode {current_mode} does not match instruction mode {instruction.mode}.')
+                if pc in self._it_interior_addresses and get_itstate(before.registers['cpsr']) == 0:
+                    raise DomainError('invalid_it_block_entry',
+                                      'Cannot execute instruction inside IT block without valid IT context.')
             if instruction.feature_exclusion:
                 raise DomainError('unsupported_instruction', instruction.feature_exclusion)
             outcome = self._backend.execute_one(instruction, before)
@@ -225,6 +253,10 @@ class SimulationSession:
             self.unavailable = code == 'backend_unavailable'
             stop = ('memory_fault' if code in ('unmapped_memory_access', 'unaligned_memory_access',
                                                'memory_permission_denied') else
+                    'environment_call' if code == 'environment_call' else
+                    'breakpoint_trap' if code == 'breakpoint_trap' else
+                    'unaligned_pc' if code == 'unaligned_pc' else
+                    'x0_immutable' if code == 'x0_immutable' else
                     'unsupported_instruction' if code == 'unsupported_instruction' else
                     'unsupported_mode_transition' if code == 'unsupported_mode_transition' else
                     'mode_mismatch' if code == 'mode_mismatch' else
@@ -281,8 +313,8 @@ class SimulationSession:
             history_entry = ExecutionHistoryEntry(
                 step_seq=self.step_seq,
                 registers=dict(before.registers),
-                cpsr=before.registers['cpsr'],
-                mode='thumb' if before.registers['cpsr'] & 0x20 else 'arm',
+                cpsr=before.registers.get('cpsr'),
+                mode='riscv32' if self.program.profile == 'rv32i-le' else ('thumb' if before.registers['cpsr'] & 0x20 else 'arm'),
                 pc=before.registers['pc'],
                 register_origins=dict(before.register_origins),
                 modified_memory=modified_memory,
@@ -291,51 +323,77 @@ class SimulationSession:
             self._history.append(history_entry)
 
             after = outcome.state.registers
+            if self.program.profile == 'rv32i-le':
+                after = dict(after)
+                after['x0'] = 0
             register_changes = changes(before.registers, after)
+            if self.program.profile == 'rv32i-le':
+                register_changes.pop('x0', None)
             origins = dict(before.register_origins) | dict.fromkeys(register_changes, 'execution')
             self.runtime = MachineState(after, outcome.state.memory, origins)
             self._max_step_seq = max(self._max_step_seq, self.step_seq)
             self.step_seq = self._max_step_seq + 1
             self._max_step_seq = self.step_seq
-            cpsr_change = register_changes.pop('cpsr', None)
-            resulting_mode = 'thumb' if after['cpsr'] & 0x20 else 'arm'
-            if after['pc'] in self.program.address_index:
-                target_instruction = self.program.address_index[after['pc']]
-                if target_instruction.mode != resulting_mode:
-                    stop_reason = 'mode_mismatch'
-                else:
-                    stop_reason = None
-            elif any(dr.address <= after['pc'] < dr.address + dr.size for dr in self.program.data_regions):
-                stop_reason = 'non_executable_target'
-            else:
-                stop_reason = 'pc_not_loaded'
 
-            itstate_before = get_itstate(before.registers['cpsr']) if instruction.mode == 'thumb' else 0
-            if itstate_before != 0:
-                cond_code = itstate_before >> 4
-                cond_name = IT_CONDITIONS.get(cond_code, 'AL')
-                cond_passed = evaluate_condition(cond_name, before.registers['cpsr'])
-                info = self._it_blocks.get(instruction.address)
-                b_idx = info[0] if info else 1
-                b_tot = info[1] if info else 1
-                it_context = {
-                    'block_index': b_idx,
-                    'block_total': b_tot,
-                    'condition': cond_name,
-                    'passed': cond_passed
-                }
-                executed = cond_passed
-            else:
+            if self.program.profile == 'rv32i-le':
+                cpsr_change = None
+                flag_changes = {}
                 it_context = None
                 cond_passed = condition_passed(instruction, before.registers)
-                executed = False if cond_passed is False else True
+                executed = True if cond_passed is None or cond_passed else False
+                if instruction.decode.operation == 'ecall':
+                    stop_reason = 'environment_call'
+                elif instruction.decode.operation == 'ebreak':
+                    stop_reason = 'breakpoint_trap'
+                elif after['pc'] % 4 != 0:
+                    stop_reason = 'unaligned_pc'
+                elif after['pc'] in self.program.address_index:
+                    stop_reason = None
+                elif any(dr.address <= after['pc'] < dr.address + dr.size for dr in self.program.data_regions):
+                    stop_reason = 'non_executable_target'
+                else:
+                    stop_reason = 'pc_not_loaded'
+            else:
+                cpsr_change = register_changes.pop('cpsr', None)
+                flag_changes = changes(flags(before.registers), flags(after))
+                resulting_mode = 'thumb' if after['cpsr'] & 0x20 else 'arm'
+                if after['pc'] in self.program.address_index:
+                    target_instruction = self.program.address_index[after['pc']]
+                    if target_instruction.mode != resulting_mode:
+                        stop_reason = 'mode_mismatch'
+                    else:
+                        stop_reason = None
+                elif any(dr.address <= after['pc'] < dr.address + dr.size for dr in self.program.data_regions):
+                    stop_reason = 'non_executable_target'
+                else:
+                    stop_reason = 'pc_not_loaded'
+
+                itstate_before = get_itstate(before.registers['cpsr']) if instruction.mode == 'thumb' else 0
+                if itstate_before != 0:
+                    cond_code = itstate_before >> 4
+                    cond_name = IT_CONDITIONS.get(cond_code, 'AL')
+                    cond_passed = evaluate_condition(cond_name, before.registers['cpsr'])
+                    info = self._it_blocks.get(instruction.address)
+                    b_idx = info[0] if info else 1
+                    b_tot = info[1] if info else 1
+                    it_context = {
+                        'block_index': b_idx,
+                        'block_total': b_tot,
+                        'condition': cond_name,
+                        'passed': cond_passed
+                    }
+                    executed = cond_passed
+                else:
+                    it_context = None
+                    cond_passed = condition_passed(instruction, before.registers)
+                    executed = False if cond_passed is False else True
 
             result.update(status='executed', executed=executed, pc_after=after['pc'],
                           condition_passed=cond_passed, it_context=it_context,
                           branch=branch_result(instruction, before.registers, after, outcome.reads),
                           stop_reason=stop_reason, watchpoint_hits=watchpoint_hits,
                           memory_reads=list(outcome.reads), memory_writes=list(outcome.writes),
-                          flag_changes=changes(flags(before.registers), flags(after)),
+                          flag_changes=flag_changes,
                           step_seq=self.step_seq, register_changes=register_changes, cpsr_change=cpsr_change)
         self._last_step = result
 
@@ -350,18 +408,24 @@ class SimulationSession:
         if address not in self.program.address_index:
             raise DomainError('invalid_breakpoint', 'Breakpoint address must be a loaded instruction start.')
         inst = self.program.address_index[address]
-        if inst.mode == 'arm' and address % 4 != 0:
-            raise DomainError('invalid_breakpoint', 'ARM breakpoint address must be 4-byte aligned.')
-        if inst.mode == 'thumb' and address % 2 != 0:
-            raise DomainError('invalid_breakpoint', 'Thumb breakpoint address must be 2-byte aligned.')
-        if mode is not None:
-            if mode not in ('arm', 'thumb'):
-                raise DomainError('invalid_breakpoint', 'Mode must be arm or thumb.')
-            if mode != inst.mode:
-                raise DomainError('invalid_breakpoint', f'Breakpoint mode {mode} does not match instruction mode {inst.mode}.')
+        if self.program.profile == 'rv32i-le':
+            if address % 4 != 0:
+                raise DomainError('invalid_breakpoint', 'RISC-V breakpoint address must be 4-byte aligned.')
+            bp_mode = 'riscv32'
         else:
-            mode = inst.mode
-        bp = Breakpoint(address, mode)
+            if inst.mode == 'arm' and address % 4 != 0:
+                raise DomainError('invalid_breakpoint', 'ARM breakpoint address must be 4-byte aligned.')
+            if inst.mode == 'thumb' and address % 2 != 0:
+                raise DomainError('invalid_breakpoint', 'Thumb breakpoint address must be 2-byte aligned.')
+            if mode is not None:
+                if mode not in ('arm', 'thumb'):
+                    raise DomainError('invalid_breakpoint', 'Mode must be arm or thumb.')
+                if mode != inst.mode:
+                    raise DomainError('invalid_breakpoint', f'Breakpoint mode {mode} does not match instruction mode {inst.mode}.')
+                bp_mode = mode
+            else:
+                bp_mode = inst.mode
+        bp = Breakpoint(address, bp_mode)
         self.breakpoints[address] = bp
         return bp
 
@@ -385,6 +449,8 @@ class SimulationSession:
         bp = self.breakpoints.get(pc)
         if bp is None:
             return None
+        if self.program and self.program.profile == 'rv32i-le':
+            return bp
         current_mode = 'thumb' if self.runtime.registers['cpsr'] & 0x20 else 'arm'
         if bp.mode == current_mode:
             return bp

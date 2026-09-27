@@ -12,7 +12,7 @@ from armstride.api.schemas import (AssemblyRequest, Breakpoint, BreakpointReques
 from armstride.api.sessions import IDLE_SECONDS, MAX_SESSIONS
 from armstride.api.views import (diagnostic_view, instruction_view, program_view,
     state_view, symbol_entry_view)
-from armstride.architecture.arm import STACK_BASE, STACK_SIZE
+from armstride.architecture import get_architecture
 from armstride.domain.models import (MAX_ELF_FILE_BYTES, MAX_INSTRUCTIONS,
     MAX_TEXT_BYTES, DomainError)
 from armstride.parser import parse
@@ -67,6 +67,7 @@ def get_state(session_id: str, request: Request):
 @router.post('/{session_id}/program', response_model=LoadResponse)
 def load_program(session_id: str, body: LoadRequest, request: Request):
     with request.app.state.registry.access(session_id) as entry:
+        arch = get_architecture(body.profile)
         if isinstance(body, ElfRequest):
             try:
                 import base64
@@ -78,11 +79,11 @@ def load_program(session_id: str, body: LoadRequest, request: Request):
                                   limit=MAX_ELF_FILE_BYTES, actual=len(raw_bytes))
             from armstride.elf.loader import load_elf
             program, metadata, entry_pc, initial_mode = load_elf(raw_bytes, profile=body.profile)
-            stack = body.stack.model_dump() if body.stack else dict(base=STACK_BASE, size=STACK_SIZE)
+            stack = body.stack.model_dump() if body.stack else dict(base=arch.STACK_BASE, size=arch.STACK_SIZE)
             entry.session.load(program, initial_pc=entry_pc, metadata=metadata,
                                stack_base=stack['base'], stack_size=stack['size'])
             entry.stack = stack
-            from armstride.parser.records import ParseResult
+            from armstride.domain.models import ParseResult
             parse_res = ParseResult(program=program, records=program.instructions, diagnostics=(),
                                     selected_format='elf', data_regions=program.data_regions)
             return dict(program=program_view(parse_res, metadata=metadata), state=state_view(session_id, entry))
@@ -108,7 +109,7 @@ def load_program(session_id: str, body: LoadRequest, request: Request):
             # Text was bounded above; producer input_limit now means instruction count.
             return error_response(diagnostic.code, diagnostic.message,
                                   503 if diagnostic.code == 'backend_unavailable' else 422, **extra)
-        stack = body.stack.model_dump() if body.stack else dict(base=STACK_BASE, size=STACK_SIZE)
+        stack = body.stack.model_dump() if body.stack else dict(base=arch.STACK_BASE, size=arch.STACK_SIZE)
         entry.session.load(result.program, stack_base=stack['base'], stack_size=stack['size'])
         entry.stack = stack
         return dict(program=program_view(result), state=state_view(session_id, entry))

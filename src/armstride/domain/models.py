@@ -4,7 +4,8 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Literal, Mapping
 
-Mode = Literal["arm", "thumb"]
+Mode = Literal["arm", "thumb", "riscv32"]
+Profile = Literal["armv7-a-le", "rv32i-le"]
 ADDRESS_SPACE = 1 << 32
 MAX_TEXT_BYTES = 1 << 20
 MAX_INSTRUCTIONS = 10_000
@@ -47,7 +48,7 @@ class Diagnostic:
 @dataclass(frozen=True, slots=True)
 class Breakpoint:
     address: int
-    mode: Mode
+    mode: Mode = "arm"
 
 
 @dataclass(frozen=True, slots=True)
@@ -212,9 +213,16 @@ class ProgramImage:
             raise DomainError("empty_program", "A program needs at least one instruction.")
         if len(ordered) > MAX_INSTRUCTIONS:
             raise DomainError("input_limit", "Too many instructions.", limit=MAX_INSTRUCTIONS)
-        if self.mode not in ("arm", "thumb") or any(
-                instruction.mode not in ("arm", "thumb") or instruction.profile != self.profile for instruction in ordered):
-            raise DomainError("invalid_input", "Instructions must share the program profile and have valid modes.")
+        if self.profile == "armv7-a-le":
+            if self.mode not in ("arm", "thumb") or any(
+                    instruction.mode not in ("arm", "thumb") or instruction.profile != self.profile for instruction in ordered):
+                raise DomainError("invalid_input", "Instructions must share the program profile and have valid modes.")
+        elif self.profile == "rv32i-le":
+            if self.mode != "riscv32" or any(
+                    instruction.mode != "riscv32" or instruction.profile != self.profile for instruction in ordered):
+                raise DomainError("invalid_input", "Instructions must share the program profile and have valid modes.")
+        else:
+            raise DomainError("unsupported_architecture", f"Unsupported architecture profile: {self.profile}")
         ordered_data = tuple(sorted(self.data_regions, key=lambda region: region.address))
         conflicts = program_conflicts(ordered, ordered_data)
         if conflicts:
@@ -318,7 +326,7 @@ class ProgramMetadata:
 class ExecutionHistoryEntry:
     step_seq: int
     registers: Mapping[str, int]
-    cpsr: int
+    cpsr: int | None
     mode: Mode
     pc: int
     register_origins: Mapping[str, str]

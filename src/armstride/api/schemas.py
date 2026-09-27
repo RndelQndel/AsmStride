@@ -83,12 +83,12 @@ class Region(Schema):
 
 class Breakpoint(Schema):
     address: UInt32
-    mode: Literal['arm', 'thumb']
+    mode: Literal['arm', 'thumb', 'riscv32'] | None = None
 
 
 class BreakpointRequest(Schema):
     address: UInt32
-    mode: Literal['arm', 'thumb'] | None = None
+    mode: Literal['arm', 'thumb', 'riscv32'] | None = None
 
 
 class WatchpointView(Schema):
@@ -119,7 +119,7 @@ class State(Schema):
     session_id: str
     status: Literal['empty', 'ready', 'stopped', 'unavailable']
     profile: str | None
-    mode: Literal['arm', 'thumb'] | None
+    mode: Literal['arm', 'thumb', 'riscv32'] | None
     baseline_pc: UInt32 | None
     step_seq: int
     state_revision: int = 1
@@ -153,7 +153,7 @@ class InstructionView(Schema):
     display_text: str
     decoded_text: str
     feature_exclusion: str | None
-    mode: Literal['arm', 'thumb'] | None = None
+    mode: Literal['arm', 'thumb', 'riscv32'] | None = None
 
 
 class DataRegionView(Schema):
@@ -185,7 +185,7 @@ class LineEntryView(Schema):
 
 class Program(Schema):
     profile: str
-    mode: Literal['arm', 'thumb']
+    mode: Literal['arm', 'thumb', 'riscv32']
     format: str
     source_text: str
     instructions: list[InstructionView]

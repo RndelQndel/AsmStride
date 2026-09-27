@@ -37,6 +37,9 @@ def source_diagnostics(source: str, mode: str) -> tuple[Diagnostic, ...]:
 class KeystoneAssembler:
     def assemble(self, source: str, *, mode: str, base_address: int,
                  profile: str = PROFILE) -> AssemblyResult:
+        if profile == "rv32i-le":
+            from armstride.backends.riscv_assembler import RiscvAssembler
+            return RiscvAssembler().assemble(source, mode=mode or "riscv32", base_address=base_address, profile=profile)
         try:
             validate_profile(profile, mode)
             validate_range(base_address, 4 if mode == "arm" else 2)

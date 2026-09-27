@@ -7,6 +7,9 @@ def state_view(session_id, entry):
     session = entry.session
     machine = session.snapshot()
     registers = machine.register_view() if machine else {}
+    is_riscv = session.program and session.program.profile == 'rv32i-le'
+    cpsr_val = None if is_riscv else registers.pop('cpsr', None)
+    flags_val = None if is_riscv else (flags(machine.registers) if machine else None)
     return dict(session_id=session_id, status=session.status,
                 profile=session.program.profile if session.program else None,
                 mode=session.program.mode if session.program else None,
@@ -14,8 +17,8 @@ def state_view(session_id, entry):
                 step_seq=session.step_seq,
                 state_revision=session.state_revision,
                 history_depth=session.history_depth,
-                cpsr=registers.pop('cpsr', None), registers=registers,
-                flags=flags(machine.registers) if machine else None,
+                cpsr=cpsr_val, registers=registers,
+                flags=flags_val,
                 pc=machine.registers['pc'] if machine else None,
                 stack=entry.stack, last_step=session.last_step,
                 regions=[dict(base=r.address, size=len(r.raw_bytes), kind=r.origin,

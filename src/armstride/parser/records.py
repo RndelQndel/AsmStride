@@ -48,13 +48,14 @@ def addressed_record(text: str, mode: str, encoding: str, *, fromelf: bool = Fal
         count = 0
         while count < len(tokens) and len(tokens[count][0]) == 2 and HEX.fullmatch(tokens[count][0]):
             count += 1
-        if count not in ((4,) if mode == "arm" else (2, 4)):
+        is_word_width = (mode in ("arm", "riscv32"))
+        if count not in ((4,) if is_word_width else (2, 4)):
             raise DomainError("invalid_encoding", "Incorrect number of byte tokens.")
         raw = bytes.fromhex("".join(token[0] for token in tokens[:count]))
     else:
-        width = 8 if mode == "arm" else 4
+        width = 8 if mode in ("arm", "riscv32") else 4
         if len(first) != width or not HEX.fullmatch(first):
-            raise DomainError("invalid_encoding", "Use ARM words or separate Thumb halfwords, not compact Thumb words.")
+            raise DomainError("invalid_encoding", "Use 32-bit instruction words or separate halfwords.")
         count = 1
         if mode == "thumb" and len(tokens) > 1 and len(tokens[1][0]) == 4 and HEX.fullmatch(tokens[1][0]):
             count = 2

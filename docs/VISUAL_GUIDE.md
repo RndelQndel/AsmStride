@@ -20,26 +20,26 @@ The ArmStride workspace is organized into a clean, focused, light-themed debuggi
    - **Status Badge (`READY` / `STOPPED`) & Step Sequence Counter**: Displays current engine state and total committed step count.
 
 2. **Program Input (Top-Left)**:
-   - Input format selector: **Assembly source** or **Disassembly import**.
-   - Architecture Mode: **ARM** (32-bit) or **Thumb / Thumb-2**.
+   - Architecture selector: **ARMv7-A** (32-bit LE) or **RISC-V (RV32I)**.
+   - Input format selector: **Assembly source**, **Disassembly import**, or **ELF32 Binary (.elf)**.
+   - Mode: **ARM**, **Thumb / Thumb-2**, or **RV32I**.
    - Base address configuration (default: `0x1000`).
-   - File loader (`.s`, `.txt`) or direct multi-line text input.
+   - File loader (`.s`, `.txt`, `.elf`) or direct multi-line text input.
+   - Quick presets for mixed ARM/Thumb, IT blocks, loops, and RV32I arithmetic & stack operations.
    - Optional **Custom Scratch Stack setup** (Base address & size).
 
 3. **Instructions View (Middle-Left)**:
    - Synchronized instruction table showing:
      - Step indicator (`▶` arrow pointer on current PC).
      - Instruction Hex Address.
-     - Raw Opcode Bytes in hex (e.g. `2a 00 a0 e3`).
+     - Raw Opcode Bytes in hex (e.g. `2a 00 a0 e3` or `13 05 a0 02`).
      - Decoded instruction mnemonic and operands.
-     - Source line cross-reference.
+     - Source line and DWARF/symbol cross-references.
 
 4. **Registers & Flags (Right Column)**:
-   - **Ultra-compact 2-Column Grid**:
-     - Left column: `R0` – `R7`.
-     - Right column: `R8` – `R12`, `SP` (R13), `LR` (R14), `PC` (R15).
-   - **Flags Panel**: Live boolean indicators for `N` (Negative), `Z` (Zero), `C` (Carry), and `V` (Overflow).
-   - **CPSR Input**: Direct hex editing for condition code flags.
+   - **Profile-Driven Register Grid**:
+     - **ARMv7-A**: 2-column layout (`R0`–`R7` and `R8`–`R12`, `SP`, `LR`, `PC`), flags bar (`N`, `Z`, `C`, `V`), and CPSR editor.
+     - **RISC-V (RV32I)**: Full 32-register grid (`x0`–`x31` + `PC`) annotated with standard ABI aliases (`zero`, `ra`, `sp`, `gp`, `tp`, `t0`–`t6`, `s0`–`s11`, `a0`–`a7`). CPSR and condition flags are cleanly suppressed. `x0 (zero)` is locked to 0 and immutable.
    - **Delta Highlighting**: Registers modified during the latest step are highlighted with an orange border.
    - **In-place Value Editing**: Modify any register at any time; changes update the baseline for Reset.
 
