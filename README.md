@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/assets/banner.png" alt="ArmStride - Interactive ARMv7-A Assembly & Crash Disassembly Simulator" width="100%" />
+
 # ⚡ ArmStride
 
 **Paste assembly. Inject state. Step through it.**
@@ -11,11 +13,7 @@
 [![Svelte 5](https://img.shields.io/badge/Svelte-5-FF3E00.svg)](https://svelte.dev)
 [![Unicorn Engine](https://img.shields.io/badge/Emulation-Unicorn%20Engine-brightgreen.svg)](https://www.unicorn-engine.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Status: P1 Complete](https://img.shields.io/badge/Milestone-P1%20Verified-success.svg)](docs/SRS.md)
-
-<br/>
-
-<img src="docs/assets/hero_workspace.png" alt="ArmStride Workspace Preview" width="100%" />
+[![Status: P1 Complete / P2 Planning](https://img.shields.io/badge/Milestone-P1%20Verified%20%7C%20P2%20Planning-blue.svg)](docs/milestones/P2.md)
 
 </div>
 
@@ -164,6 +162,7 @@ Detailed architectural specifications and milestone documentation:
 - [System Requirements Specification (SRS)](docs/SRS.md)
 - [Architecture & State Management](docs/ARCHITECTURE.md)
 - [Product P1 Specification & Roadmap](docs/milestones/P1.md)
+- [Product P2 Specification & Roadmap](docs/milestones/P2.md)
 - [Example Snippets & Crash Logs](examples/README.md)
 
 ---
